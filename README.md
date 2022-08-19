@@ -1,6 +1,13 @@
 # KFDTool-Web
 
 Open Source browser-based GUI for [KFDtool](https://github.com/KFDtool/KFDtool)
+Compliant with P25 standards (TIA-102.AACD-A)
+
+Features
+----------------
+KFDtool-Web is designed to interface with the KFDtool hardware adapter (TWI/3WI/Three Wire Interface). Currently, desktop versions of Chrome, Edge, and Opera are compatible with KFDtool-Web, but support will soon allow for support on Android devices using Chrome.
+
+Key Containers can be transerred back and forth between KFDtool software (Windows), version 1.5.1 and greater.
 
 Compatibility
 ----------------
