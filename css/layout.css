@@ -1,0 +1,22 @@
+#menuList li.ui-li-static {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+#menuList li .ui-collapsible-heading {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+#menuList li .ui-collapsible-heading-toggle {
+    border: 0;
+}
+.invalid {
+    color: red;
+    border: 2px solid red;
+}
+#iconLock {
+    background-color: rgba(255,0,0,0.3);
+}
+.keyCheckbox-small {
+    font-size: 12px;
+    font-style: normal;
+}

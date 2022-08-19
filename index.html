@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+    	<title>KFDtool Web</title>
+    	<link rel="shortcut icon" href="favicon.ico">
+    	<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    	<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    	<script src="js/P25/ThreeWire/ThreeWireProtocol.js"></script>
+        <script src="js/P25/ThreeWire/CRC16.js"></script>
+        <script src="js/Adaptor/Protocol/Adapter/AdapterProtocol.js"></script>
+        <script src="js/Adaptor/Protocol/Serial/SerialProtocol.js"></script>
+        <script src="js/p25.kmm.kmmBody.js"></script>
+        <script src="js/p25.kmm.kmmFrame.js"></script>
+        <script src="js/p25.kmm.keyItem.js"></script>
+        <script src="js/p25.kmm.modifyKeyCommand.js.js"></script>
+        <script src="js/KeyContainer.js"></script>
+        <script src="js/KeyGenerator.js"></script>
+        <script src="js/pako.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.13/dist/serial.js"> </script> 
+    	<link rel="stylesheet" href="css/layout.css" />
+    </head>
+    <body>
+        <div data-role="page">
+            <div id="panelMenu" data-role="panel" data-position="left" data-display="reveal" data-theme="a">
+                <ul id="menuList" data-role="listview" data-inset="false" data-shadow="false">
+                    <li data-icon="home"><a id="menu_homeDiv" href="#" class="menuItem ui-btn ui-btn-icon-right ui-icon-home">Home</a></li>
+                    <li class="disconnected"><a class="menuItem" id="menu_configKfd" href="#">Configure Key Fill Device</a></li>
+                    <li><a class="menuItem" id="menu_manageKeys" href="#">Manage Keys</a></li>
+                    <li><a class="menuItem" id="menu_manageGroups" href="#">Manage Groups</a></li>
+                    <li><a class="menuItem" id="menu_loadKeySingle" href="#">Load Single Key</a></li>
+                    <li><a class="menuItem" id="menu_loadKeyMultiple" href="#">Load Multiple Keys</a></li>
+                    <li><a class="menuItem" id="menu_eraseKeySingle" href="#">Erase Single Key</a></li>
+                    <li><a class="menuItem" id="menu_eraseKeyAll" href="#">Erase All Keys</a></li>
+                    <li>
+                        <div data-role="collapsible" data-inset="false" data-iconpos="left">
+                            <h2>Manage Radio</h2>
+                            <ul data-role="listview">
+                                <li><a class="menuItem" id="menu_viewKeyInfo" href="#">Key Information</a></li>
+                                <li><a class="menuItem" id="menu_viewKeysetInfo" href="#">Keyset Information</a></li>
+                                <li><a class="menuItem" id="menu_viewRsiItems" href="#">RSI Items</a></li>
+                                <li><a class="menuItem" id="menu_viewKmfInfo" href="#">KMF Information</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div data-role="collapsible" data-inset="false" data-iconpos="left">
+                            <h2>Key Container</h2>
+                            <ul data-role="listview">
+                                <li><a class="menuItem" id="menu_loadKeyContainer" href="#">Load Key Container</a></li>
+                                <li><a class="menuItem" id="menu_exportKeyContainer" href="#">Export Key Container</a></li>
+                                <li><a class="menuItem" id="menu_resetKeyContainer" href="#">Reset Key Container</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div data-role="header" data-position="fixed">
+                <h2>KFDtool Web</h2>
+                <a href="#panelMenu" data-icon="bullets" class="ui-btn-left">Menu</a>
+                <a href="#p" data-icon="bars" class="ui-btn-right">Actions</a>
+                <a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-bars ui-btn-icon-notext ui-btn-right" id="iconBars" style="display:none;">Bars</a>
+                <a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-lock ui-btn-icon-notext ui-btn-right" id="iconLock" style="display:none;">Lock</a>
+            </div>
+        	<div role="main" class="ui-content">
+            	<div id="homeDiv" class="menu_divs">
+                	<h1>KFDtool Web</h1>
+                	<p><h3 id="secureContextStatus"></h3><span id="secureContextDetails"></span></p>
+                </div>
+            	<div id="configKfd" class="menu_divs" style="display:none;">
+                	<h3>Configure Key Fill Device</h3>
+                	<button id="buttonConnectKfd">Connect KFD</button>
+                	<button id="buttonDisconnectKfd">Disconnect KFD</button>
+                	<p><h3>Connection method:</h3><span id="connectionMethod"></span></p>
+                	<p><h3>Connection status:</h3><span id="connectionStatus">Disconnected</span></p>
+                	<p><h3>Device properties:</h3><span id="deviceProperties"></span></p>
+            	</div>
+            	<div id="addGroup" class="menu_divs" style="display:none;">
+                	<h3>Add Group</h3>
+                	<div class="ui-field-contain">
+                        <label for="addGroup_name">Name:</label>
+                    	<input type="text" id="addGroup_name" placeholder="" value="">
+                	</div>
+                	<fieldset id="addGroupKeyList" data-role="controlgroup" data-filter="true" data-filter-placeholder="Filter keys..." data-mini="false">
+                    	<label for="checkbox-1a"><p data-key-id="1">DALLAS</p><p>AES256, TEK, SLN 2001, KID 2001</p></label>
+                    	<input type="checkbox" name="checkbox-1a" id="checkbox-1a">
+                    	<label for="checkbox-2a">Doritos</label>
+                    	<input type="checkbox" name="checkbox-2a" id="checkbox-2a">
+                    	<label for="checkbox-3a">Fritos</label>
+                    	<input type="checkbox" name="checkbox-3a" id="checkbox-3a">
+                    	<label for="checkbox-4a">Sun Chips</label>
+                    	<input type="checkbox" name="checkbox-4a" id="checkbox-4a">
+                	</fieldset>
+            	</div>
+            	<div id="loadKeySingle" class="menu_divs" style="display:none;">
+                	<h3>Load Single Key</h3>
+                	<div class="ui-field-contain" id="hexDecSlider">
+                    	<select id="loadKeySingle_HexDec" data-role="slider" data-mini="true">
+                        	<option value="dec">Dec</option>
+                        	<option value="hex">Hex</option>
+                    	</select>
+                	</div>
+                	<div class="ui-field-contain">
+                        <label for="loadKeySingle_name">Name:</label>
+                    	<input type="text" id="loadKeySingle_name" placeholder="" value="">
+                	</div>
+                	<div class="ui-field-contain" id="activeKeysetSlider">
+                    	<label for="loadKeySingle_activeKeysetSlider">Active Keyset:</label>
+                    	<select id="loadKeySingle_activeKeysetSlider" data-role="slider">
+                        	<option value="no">No</option>
+                        	<option value="yes" selected="">Yes</option>
+                    	</select>
+                	</div>
+                	<div class="ui-field-contain"id="loadKeySingle_keysetDiv" style="display:none;">
+                        <label for="loadKeySingle_keysetId">Keyset ID:</label>
+                    	<input class="hexdec-input" type="text" name="loadKeySingle_keysetId" id="loadKeySingle_keysetId" placeholder="" value="" data-min-value="0" data-max-value="255">
+                	</div>
+                	<div class="ui-field-contain">
+                    	<label for="loadKeySingle_SlnCkr">SLN/CKR:</label>
+                    	<input class="hexdec-input" type="text" name="loadKeySingle_SlnCkr" id="loadKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="255">
+                	</div>
+                	<div class="ui-field-contain">
+                	<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                    	<legend>Key Type:</legend>
+                    	<label for="radioKeyType_auto">Auto</label>
+                    	<input type="radio" name="radioKeyType" id="radioKeyType_auto" value="auto" checked="checked">
+                    	<label for="radioKeyType_tek">TEK</label>
+                    	<input type="radio" name="radioKeyType" id="radioKeyType_tek" value="tek">
+                    	<label for="radioKeyType_kek">KEK</label>
+                    	<input type="radio" name="radioKeyType" id="radioKeyType_kek" value="kek">
+                	</fieldset>
+                	</div>
+                	<div class="ui-field-contain">
+                    	<label for="loadKeySingle_keyId">Key ID:</label>
+                    	<input class="hexdec-input" type="text" name="loadKeySingle_keyId" id="loadKeySingle_keyId" placeholder="" value="" data-min-value="0" data-max-value="255">
+                	</div>
+                	<div class="ui-field-contain">
+                    	<label for="loadKeySingle_algorithm" class="select">Algorithm</label>
+                    	<select name="loadKeySingle_algorithm" id="loadKeySingle_algorithm" data-mini="true" data-inline="true">
+                        	<option value="0" data-length="" data-parity="false">ACCORDION</option>
+                        	<option value="1" data-length="" data-parity="false">BATON_ODD</option>
+                        	<option value="2" data-length="" data-parity="false">FIREFLY</option>
+                        	<option value="3" data-length="" data-parity="false">MAYFLY</option>
+                        	<option value="4" data-length="" data-parity="false">SAVILLE</option>
+                        	<option value="5" data-length="" data-parity="false">PADSTONE</option>
+                        	<option value="65" data-length="" data-parity="false">BATON_EVEN</option>
+                        	<option value="128" data-length="" data-parity="false">CLEAR</option>
+                        	<option value="129" data-length="8" data-parity="true">DES-OFB</option>
+                        	<option value="131" data-length="" data-parity="false">TDES</option>
+                        	<option value="132" data-length="32" data-parity="false" selected>AES-256</option>
+                        	<option value="133" data-length="16" data-parity="false">AES-128</option>
+                        	<option value="159" data-length="8" data-parity="true">DES-XL</option>
+                        	<option value="160" data-length="" data-parity="false">DVI-XL</option>
+                        	<option value="161" data-length="" data-parity="false">DVP-XL</option>
+                        	<option value="170" data-length="5" data-parity="false">ADP/RC4</option>
+                        	<option value="256" data-length="">Custom</option>
+                    	</select>
+                	</div>
+                	<div id="loadKeySingle_algorithmOtherDiv" class="ui-field-contain" style="display:none;">
+                    	<label for="loadKeySingle_algorithmOther">Algorithm ID:</label>
+                    	<input class="hexdec-input" type="text" name="loadKeySingle_algorithmOther" id="loadKeySingle_algorithmOther" placeholder="" value="132" data-min-value="0" data-max-value="255">
+                	</div>
+                    <div class="ui-field-contain">
+                    	<label for="loadKeySingle_key" id="label_loadKeySingle_key">Key (hex): (0/64 digits)</label>
+                    	<input class="hex-input key-input" type="password" name="loadKeySingle_key" id="loadKeySingle_key" pattern="[a-fA-F\d]+" placeholder="" value="">
+                	</div>
+                	<div class="ui-field-contain">
+                    	<button id="buttonGenerateRandomKey" class="ui-btn ui-btn-inline">Generate key</button>
+                        <select id="loadKeySingle_toggleKeyVis" data-role="slider" data-mini="true">
+                        	<option value="hide">Hide</option>
+                        	<option value="show">Show</option>
+                    	</select>
+                	</div>
+                	<div class="ui-field-contain">
+                    	<button id="buttonLoadKeyToRadio" class="ui-btn ui-btn-inline">Load Key to Radio</button>
+                    	<button id="buttonLoadKeyToContainer" class="ui-btn ui-btn-inline">Load Key to Container</button>
+                	</div>
+            	</div>
+            	<div id="loadKeyMultiple" class="menu_divs" style="display:none;">
+                	<h3>Load Multiple Keys</h3>
+            	</div>
+            	<div id="eraseKeySingle" class="menu_divs" style="display:none;">
+                	<h3>Erase Single Key</h3>
+                	<div class="ui-field-contain" id="hexDecSlider">
+                    	<select id="loadKeySingle_HexDec" data-role="slider" data-mini="true">
+                        	<option value="dec">Dec</option>
+                        	<option value="hex">Hex</option>
+                    	</select>
+                	</div>
+                	<div class="ui-field-contain">
+                        <label for="eraseKeySingle_keysetId">Keyset ID:</label>
+                    	<input class="hexdec-input" type="text" name="eraseKeySingle_keysetId" id="eraseKeySingle_keysetId" placeholder="" value="" data-min-value="0" data-max-value="255">
+                	</div>
+                	<div class="ui-field-contain">
+                    	<label for="eraseKeySingle_SlnCkr">SLN/CKR:</label>
+                    	<input class="hexdec-input" type="text" name="eraseKeySingle_SlnCkr" id="eraseKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="255">
+                	</div>
+                	<div class="ui-field-contain">
+                    	<button id="buttonEraseKeyFromRadio" class="ui-btn ui-btn-inline">Erase From Radio</button>
+                	</div>
+            	</div>
+            	<div id="eraseKeyAll" class="menu_divs" style="display:none;">
+                	<h3>Erase All Keys</h3>
+                	<div class="ui-field-contain">
+                    	<button id="buttonEraseKeysFromRadio" class="ui-btn ui-btn-inline">Erase All Keys From Radio</button>
+                	</div>
+            	</div>
+            	<div id="viewKeyInfo" class="menu_divs" style="display:none;">
+                	<h3>View Key Information</h3>
+                	<div class="ui-field-contain">
+                    	<button id="buttonViewKeyInformation" class="ui-btn ui-btn-inline">View Key Information</button>
+                	</div>
+            	</div>
+            	<div id="viewKeysetInfo" class="menu_divs" style="display:none;">
+                	<h3>View Keyset Information</h3>
+                	<div class="ui-field-contain">
+                    	<button id="buttonViewKeysetInformation" class="ui-btn ui-btn-inline">View Keyset Information</button>
+                	</div>
+            	</div>
+            	<div id="viewRsiItems" class="menu_divs" style="display:none;">
+                	<h3>View RSI Items</h3>
+                	<div class="ui-field-contain">
+                    	<button id="buttonViewRsiInformation" class="ui-btn ui-btn-inline">View RSI Information</button>
+                	</div>
+            	</div>
+            	<div id="viewKmfInfo" class="menu_divs" style="display:none;">
+                	<h3>View KMF Information</h3>
+                	<div class="ui-field-contain">
+                    	<button id="buttonViewKmfInformation" class="ui-btn ui-btn-inline">View KMF Information</button>
+                	</div>
+            	</div>
+            	<div id="loadKeyContainer" class="menu_divs" style="display:none;">
+                	<h3>Load Key Container</h3>
+                	<h5 style="color:red;">WARNING: This will clear any existing keys and groups!</h5>
+                	<input type="file" id="inputFile" accept=".ekc">
+                	<label for="passwordEkc" class="ui-hidden-accessible">Password:</label>
+                	<input type="password" id="passwordEkc" value="osu4192@CFD556" placeholder="Password...">
+                	<button id="buttonOpenEkc" type="submit" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-btn-icon-left ui-icon-check">Open File</button>
+            	</div>
+            	<div id="exportKeyContainer" class="menu_divs" style="display:none;">
+                	<div class="ui-field-contain">
+                    	<label for="exportKeyContainer_password">Password:</label>
+                    	<input type="password" id="exportKeyContainer_password" value="" placeholder="Password...">
+                	</div>
+                	<div class="ui-field-contain">
+                    	<label for="exportKeyContainer_passwordVerify">Verify password:</label>
+                    	<input type="password" id="exportKeyContainer_passwordVerify" value="" placeholder="Password...">
+                	</div>
+                	<div class="ui-field-contain">
+                	    <label for="exportKeyContainer_filename">File name:</label>
+                    	<input type="text" id="exportKeyContainer_filename" placeholder="" value="">
+                	</div>
+                	<a id="createEkc" href="#" class="ui-btn">Create key container</a>
+                	<a id="downloadEkc" download="" href=”#” class="ui-btn" style="display:none;">Download key container</a>
+            	</div>
+            	<div id="resetKeyContainer" class="menu_divs" style="display:none;">
+                	<h3>Reset key container</h3>
+                	<h5 style="color:red;">WARNING: This will clear any existing keys and groups!</h5>
+                	<button id="buttonResetEkc">Clear all keys and groups</button>
+            	</div>
+            	<div id="manageKeys" class="menu_divs" style="display:none;">
+                	<h3>Manage Keys</h3>
+                	<a id="buttonManageKeyActions" href="#" class="ui-btn ui-corner-all ui-shadow ui-mini ui-btn-inline ui-icon-gear ui-btn-icon-left">Actions...</a>
+                	<ul id="keyContainerKeyList" data-role="listview" data-filter="true" data-filter-placeholder="Filter keys..." data-inset="false"></ul>
+            	</div>
+            	<div id="manageGroups" class="menu_divs" style="display:none;">
+                	<h3>Manage Groups</h3>
+                	<a id="buttonManageGroup_addGroup" href="#" class="ui-btn ui-corner-all ui-shadow ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left">Add Group</a>
+                	<ul id="keyContainerGroupList" data-role="listview" data-filter="true" data-filter-placeholder="Filter groups..." data-inset="false"></ul>
+            	</div>
+            	<div data-role="popup" id="popupMenuKeyOptions">
+                	<div id="popupMenuKeyOptions_list">
+                    	<ul data-role="listview" data-inset="true" style="min-width:210px;">
+                        	<li><a href="#">Add new key</a></li>
+                        	<li><a href="#">Add multiple keys</a></li>
+                        	<li><a href="#popupMenuKeyOptions_sort" data-rel="dialog" data-transition="slide">Sort</a></li>
+                    	</ul>
+                	</div>
+                	<div id="popupMenuKeyOptions_sort" style="display:none;">
+                    	<fieldset data-role="controlgroup">
+                        	<label for="popupMenuKeyOptions_sort_none">None</label>
+                        	<input type="radio" name="radiosortKeys" id="popupMenuKeyOptions_sort_none" value="none" checked="checked">
+                        	<label for="radio-choice-1">CKR ID</label>
+                        	<input type="radio" name="radiosortKeys" id="popupMenuKeyOptions_sort_ckr" value="ckrid">
+                        	<label for="radio-choice-1">Key ID</label>
+                        	<input type="radio" name="radiosortKeys" id="popupMenuKeyOptions_sort_key" value="keyid">
+                        	<label for="radio-choice-1">Key type</label>
+                        	<input type="radio" name="radiosortKeys" id="popupMenuKeyOptions_sort_type" value="keytype">
+                    	</fieldset>
+                	</div>
+            	</div>
+            	<div data-role="popup" id="popupMenuKeyOptions_sort_DEP">
+                	
+            	</div>
+            	
+        	</div><!-- /content -->
+        </div><!-- /page -->
+        <script src="js/webserial.js"></script>
+    </body>
+</html>
