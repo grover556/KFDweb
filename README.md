@@ -1,6 +1,6 @@
 # KFDTool-Web
 
-Open Source browser-based GUI for [KFDtool] (https://github.com/KFDtool/KFDtool)
+Open Source browser-based GUI for [KFDtool](https://github.com/KFDtool/KFDtool)
 
 Compatibility
 ----------------
