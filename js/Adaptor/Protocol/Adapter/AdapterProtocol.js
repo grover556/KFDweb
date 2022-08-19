@@ -263,7 +263,7 @@ async function ReadSerialNumber() {
     
     //SEND
     let rsp = await Send(cmd);
-    console.log(rsp);
+    //console.log(rsp);
     if (!rsp) return;
     rsp = UnpackResponse(rsp);
     //Send(cmd);

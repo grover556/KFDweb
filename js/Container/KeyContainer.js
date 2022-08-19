@@ -16,29 +16,99 @@ async function CreateEkc(keyContainer, password) {
     return outerContainerCompressed;
 }
 
-async function ExportEkcDEPRECATED(keyContainer, password, filename) {
-    //https://javascript.info/blob
-    //https://dev.to/halan/4-ways-of-symmetric-cryptography-and-javascript-how-to-aes-with-javascript-3o1b
-    //https://stackoverflow.com/questions/51000585/javascript-equivilant-of-c-sharp-frombase64string
+async function OpenEkc(file, password) {
+    ResetKeyContainer();
+
+    let fileContents = await ReadFileAsync(file);//ArrayBuffer
     
-    $.mobile.loading("show", { text: "Processing...", textVisible: true});
+    let enc = new TextEncoder("utf-8");
+    let dec = new TextDecoder("utf-8");
     
-    let innerContainer, innerContainerEncrypted, outerContainer, outerContainerCompressed;
+    let dataLength = new DataView(fileContents, 0, 4).getInt32(0, true);
+    let compressedData = fileContents.slice(4);//ArrayBuffer
+    let inflated = await Decompress(compressedData);
     
-    innerContainer = await CreateInnerContainer(keyContainer);
-    innerContainerEncrypted = await EncryptInnerContainer(innerContainer, password);
-    outerContainerContent = await CreateOuterContainer(innerContainerEncrypted.content, innerContainerEncrypted.params);
-    outerContainerCompressed = await CompressOuterContainer(outerContainerContent);
+    if (inflated.length != dataLength) {
+        alert("File size mismatch - file may be corrupt.");
+        return;
+    }
+    let outerString = dec.decode(inflated);
+    let outerXml = $.parseXML(outerString);
     
-    $.mobile.loading("hide");
+    let cipherValue = $(outerXml).find("CipherValue").text();
+    let saltB64 = $(outerXml).find("Salt").text();
+    saltBytes = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
     
-    let link = document.createElement("a");
-    if (filename == "") filename = Date.now();
-    link.download = filename + ".ekc";
-    let blob = new Blob([outerContainerCompressed]);
-    link.href = URL.createObjectURL(blob);
-    link.click();
-    URL.revokeObjectURL(link.href);
+    let data = window.atob(cipherValue);
+    data = Uint8Array.from(data, b => b.charCodeAt(0));
+    let iv = data.slice(0,16);
+    let cipher_data = data.slice(16);
+
+    let keyLength = 512;
+    let passwordBuffer = enc.encode(password);
+    let importedKey = await window.crypto.subtle.importKey(
+        "raw",
+        passwordBuffer,
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+    );
+    
+    let params = {name: "PBKDF2", hash: "SHA-512", salt: saltBytes, iterations: 100000};
+    let derivation = await window.crypto.subtle.deriveKey(
+        params,
+        importedKey,
+        {
+            name: "AES-CBC",
+            length: 256
+        },
+        true,
+        ["decrypt"]
+    );
+    let decrypted_content;
+    try {
+        decrypted_content = await window.crypto.subtle.decrypt(
+            {
+                name: "AES-CBC",
+                iv
+            },
+            derivation,
+            cipher_data
+        );
+    }
+    catch(e) {
+        console.log(e);
+        alert("Unable to decrypt encyrpted key container. Please make sure to use a Key Container from KFDtool v1.5.1 or newer");
+        return;
+    }
+
+    let decrypted_data = dec.decode(decrypted_content);
+    var isXml;
+    try {
+        isXml = $.parseXML(decrypted_data);
+    }
+    catch (e) {
+        isXml = false;
+    }
+    if (!isXml) {
+        alert("Invalid password for selected file");
+        return;
+    }
+    else {
+        var innerXml = $.parseXML(decrypted_data);
+        innerContainer = $(innerXml).find("InnerContainer");
+        
+        // Convert the InnerContainer to JSON
+        ImportKeys(innerContainer);
+        ImportGroups(innerContainer);
+
+        // Populate the UI
+        PopulateKeys();
+        PopulateGroups();
+        
+        //$(".menu_divs").hide();
+        //$("#manageKeys").show();
+    }
 }
 
 async function CreateInnerContainer(keyContainer) {
@@ -178,7 +248,7 @@ async function EncryptInnerContainer(decrypted_content, password) {
         passwordBuffer,
         "PBKDF2",
         false,
-        ["deriveBits", "deriveKey"]
+        ["deriveKey"]
     );
     let keyParams = {name: "PBKDF2", hash: "SHA-512", salt: saltBytes, iterations: 100000};
     let derivation = await window.crypto.subtle.deriveKey(
@@ -189,7 +259,7 @@ async function EncryptInnerContainer(decrypted_content, password) {
             length: 256
         },
         true,
-        ["encrypt","decrypt","unwrapKey","wrapKey"]
+        ["encrypt"]
     );
     let encrypted_data = await window.crypto.subtle.encrypt(
         {
@@ -279,8 +349,29 @@ async function CreateOuterContainer(cipherValue, params) {
 
 async function CompressOuterContainer(content) {
     //https://stackoverflow.com/questions/15761790/convert-a-32bit-integer-into-4-bytes-of-data-in-javascript
-    var inflatedLength = content.length;
-    var deflated = pako.deflate(content);
+    let inflatedLength = content.length;
+/*
+    let deflated;
+    console.log(content);
+    if (window.CompressionStream) {
+        let decompressedBlob = new Blob([content], { type: "text/plain" });
+        console.log(decompressedBlob);
+        const compressor = new CompressionStream("gzip");
+        const compression_stream = decompressedBlob.stream().pipeThrough(compressor);
+        console.log(compression_stream);
+        const compressed_ab = await new Response(compression_stream).arrayBuffer();
+        console.log(compressed_ab);
+        deflated = new Uint8Array(compressed_ab);
+        console.log(deflated);
+    }
+    else {
+        console.log("DecompressionStream not supported, using pako");
+        deflated = pako.deflate(content);//returns Uint8Array
+        console.log(deflated);
+    }
+*/
+    let deflated = await Compress(content);
+    
     let arr = new ArrayBuffer(4);
     let view = new DataView(arr);
     view.setUint32(0, inflatedLength, true);

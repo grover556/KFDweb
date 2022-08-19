@@ -15,14 +15,15 @@
         <script src="js/P25/ThreeWire/CRC16.js"></script>
         <script src="js/Adaptor/Protocol/Adapter/AdapterProtocol.js"></script>
         <script src="js/Adaptor/Protocol/Serial/SerialProtocol.js"></script>
-        <script src="js/p25.kmm.kmmBody.js"></script>
-        <script src="js/p25.kmm.kmmFrame.js"></script>
-        <script src="js/p25.kmm.keyItem.js"></script>
-        <script src="js/p25.kmm.modifyKeyCommand.js.js"></script>
-        <script src="js/KeyContainer.js"></script>
-        <script src="js/KeyGenerator.js"></script>
-        <script src="js/pako.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.13/dist/serial.js"> </script> 
+        <script src="js/P25/Kmm/KmmBody.js"></script>
+        <script src="js/P25/Kmm/KmmFrame.js"></script>
+        <script src="js/P25/Kmm/KeyItem.js"></script>
+        <script src="js/P25/Kmm/ModifyKeyCommand.js"></script>
+        <script src="js/Container/KeyContainer.js?v=11"></script>
+        <script src="js/P25/Generator/KeyGenerator.js"></script>
+		<script src="js/Shared/Utility.js?v=11"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.13/dist/serial.js"></script> 
     	<link rel="stylesheet" href="css/layout.css" />
     </head>
     <body>
@@ -63,9 +64,10 @@
             <div data-role="header" data-position="fixed">
                 <h2>KFDtool Web</h2>
                 <a href="#panelMenu" data-icon="bullets" class="ui-btn-left">Menu</a>
-                <a href="#p" data-icon="bars" class="ui-btn-right">Actions</a>
+                <a href="#" data-icon="bars" class="ui-btn-right" style="display:none;">Actions</a>
                 <a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-bars ui-btn-icon-notext ui-btn-right" id="iconBars" style="display:none;">Bars</a>
-                <a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-lock ui-btn-icon-notext ui-btn-right" id="iconLock" style="display:none;">Lock</a>
+                <a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-notext ui-btn-right connection-status-disconnected" id="iconConnectionStatuss" style="display:none;">Connected</a>
+				<button class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-notext ui-btn-right connection-status-disconnected" id="iconConnectionStatus" style="background-color:#ffaaaa;"></button>
             </div>
         	<div role="main" class="ui-content">
             	<div id="homeDiv" class="menu_divs">
@@ -300,6 +302,6 @@
             	
         	</div><!-- /content -->
         </div><!-- /page -->
-        <script src="js/webserial.js"></script>
+        <script src="js/webserial.js?v=11"></script>
     </body>
 </html>

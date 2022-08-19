@@ -10,12 +10,6 @@
 
 let inputType = "dec";
 let xmlDoc;
-//let outerContainer, innerContainer;
-//let stuff;
-
-//const url = ("https:" == document.location.protocol ? "wss://" : "ws:") + "saver-cpd.coc.ads/websocket/?userName=" + userName + "&userGroup=" + userGroup + "&userGroups=" + userGroups.join() + "&userAgency=" + userAgency + "&mdcId=" + _MDC_ID;
-
-//console.log(document.location.protocol);
 
 let secureContext = false;
 if (document.location.protocol.includes("https")) secureContext = true;
@@ -27,28 +21,10 @@ else if ((document.location.host == "127.0.0.1") || (document.location.host == "
 //var decompressedData = atob(compressedData);
 //console.log(decompressedData);
 
-//GZip decompression
-//https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API
-async function DecompressBlob(blob) {
-    const ds = new DecompressionStream('gzip');
-    const decompressedStream = blob.stream().pipeThrough(ds);
-    return await new Response(decompressedStream).blob();
-}
-
 //https://github.com/mdn/dom-examples/blob/master/web-crypto/encrypt-decrypt/aes-cbc.js
-let key = window.crypto.subtle.generateKey(
-    {
-        name: "AES-CBC",
-        length: 256
-    },
-    true,
-    [ "encrypt", "decrypt" ]
-);
 
 //https://developer.mozilla.org/en-US/docs/Web/API/File_API/Using_files_from_web_applications
 const fileInputElement = document.getElementById("inputFile");
-//const input = document.querySelector("input[type=file]");
-//fileInputElement.addEventListener("change", importFile, false);
 
 $(document).ready(function() {
     let status, description;
@@ -110,7 +86,8 @@ $("#buttonOpenEkc").click(function() {
         return;
     }
     $("#popupImportEkc").popup("close");
-    importFile($("#passwordEkc").val());
+    //importFile($("#passwordEkc").val());
+    OpenEkc(fileInputElement.files[0], $("#passwordEkc").val());
     //loadFile();
     clearPopupEkc();
 });
@@ -555,9 +532,9 @@ $("#buttonDisconnectKfd").click(function() {
     console.log("buttonDisconnectKfd clicked");
 });
 
-function DownloadEkc(keyContainer, password, filename) {
+async function DownloadEkc(keyContainer, password, filename) {
     $.mobile.loading("show", { text: "Processing...", textVisible: true});
-    let outerContainerCompressed = CreateEkc(keyContainer, password);
+    let outerContainerCompressed = await CreateEkc(keyContainer, password);
     $.mobile.loading("hide");
     
     let link = document.createElement("a");
@@ -587,15 +564,15 @@ async function ConnectToDevice() {
         connectionMethod = "ws";
         await connectSerial();
         //await connectPolyfill();
-        ReadDeviceSettings();
+        if (connected) ReadDeviceSettings();
     }
     else {
         // Use Polyfill API
         console.log("Web Serial API not supported, switching to Polyfill");
-        $("#connectionMethod").text("Web Serial Polyfill");
+        $("#connectionMethod").text("Web USB Polyfill");
         connectionMethod = "poly";
         await connectPolyfill();
-        ReadDeviceSettings();
+        if (connected) ReadDeviceSettings();
     }
 }
 
@@ -604,16 +581,11 @@ async function ReadDeviceSettings() {
     
     device.type = "KFDtool P25 KFD";
     
-    let serial = await ReadSerialNumber();
-    let serialString = serial.map(hex => String.fromCharCode(hex));
-    device.serial = serialString.join("");
-    $("#deviceProperties").html(device.serial);
-    return;
+    let apVersion = await ReadAdapterProtocolVersion();//NOTHING
+    device.adapterProtocolVersion = apVersion.join(".");
+    
     let fwVersion = await ReadFirmwareVersion();
     device.firmwareVersion = fwVersion.join(".");
-    
-    let apVersion = await ReadAdapterProtocolVersion();//NOTHING
-    //device.adapterProtocolVersion = apVersion.join(".");
     
     let uniqueId = await ReadUniqueId();
     device.uniqueId = uniqueId.join("");
@@ -624,6 +596,11 @@ async function ReadDeviceSettings() {
     
     let hwVersion = await ReadHardwareRevision();
     device.hardwareVersion = hwVersion.join(".");
+
+    let serial = await ReadSerialNumber();
+    let serialString = serial.map(hex => String.fromCharCode(hex));
+    device.serial = serialString.join("");
+    //$("#deviceProperties").html(device.serial);
     
     //console.log("device", device);
     
@@ -632,179 +609,21 @@ async function ReadDeviceSettings() {
         "Model: " + "KFD" + device.modelId + "00" + "<br>" +
         "Revision: " + device.hardwareVersion + "<br>" +
         "Firmware: " + device.firmwareVersion + "<br>" +
+        "Protocol: " + device.adapterProtocolVersion + "<br>" +
         "Serial: " + device.serial + "<br>" +
         "Unique ID: " + device.uniqueId
     );
 }
 
-function importFile(password) {
-    ResetKeyContainer();
-    
-    var fr = new FileReader();
-    fr.onload = async function() {
-        let enc = new TextEncoder("utf-8");
-        let dec = new TextDecoder("utf-8");
-        let stuff = fr.result;
-        var sliced = fr.result.slice(0, 4);
-        var dataLength = new DataView(fr.result, 0, 4).getInt32(0, true);
-        var compressedData = fr.result.slice(4);
-        //console.log(compressedData);
-        var inflated;
-        try {
-            inflated = pako.inflate(compressedData);
-            //inflated = pako.inflate(new Uint8Array(compressedData) , {"to":"string"});
-        }
-        catch(e) {
-            console.error(e);
-            alert(e);
-            return;
-        }
-        
-        if (inflated.length != dataLength) {
-            alert("File size mismatch - file may be corrupt.");
-            return;
-        }
-        var outerString = dec.decode(inflated);
-        var outerXml = $.parseXML(outerString);
-        //console.log(outerXml);
-        var cipherValue = $(outerXml).find("CipherValue").text();
-        var saltB64 = $(outerXml).find("Salt").text();
-        saltBytes = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
-        //var words = CryptoJS.enc.Base64.parse(saltB64);
-        //console.log(words);
-        
-        let data = window.atob(cipherValue);
-        data = Uint8Array.from(data, b => b.charCodeAt(0));
-        let iv = data.slice(0,16);
-        let cipher_data = data.slice(16);
-        
-        
-        let keyLength = 512;
-        let passwordBuffer = enc.encode(password);
-        let importedKey = await window.crypto.subtle.importKey(
-            "raw",
-            passwordBuffer,
-            "PBKDF2",
-            false,
-            ["deriveBits","deriveKey"]
-        );
-        //console.log(importedKey);
-        
-        let params = {name: "PBKDF2", hash: "SHA-512", salt: saltBytes, iterations: 100000};
-        let derivation = await window.crypto.subtle.deriveKey(
-            params,
-            importedKey,
-            {
-                name: "AES-CBC",
-                length: 256
-            },
-            true,
-            ["encrypt","decrypt","unwrapKey","wrapKey"]
-        );
-        //console.log(iv);
-        //console.log(derivation);
-        //console.log(cipher_data);
-        //console.log(data);
-        
-        /*
-        // If Chrome, export raw key, then use CryptoJS to decrypt
-        let exported = await window.crypto.subtle.exportKey(
-            "raw",
-            derivation
-        );
-        let exportedKeyBuffer = new Uint8Array(exported);
-        console.log(exportedKeyBuffer);
-        
-        
-        //https://stackoverflow.com/questions/72111641/why-does-decrypting-modified-aes-cbc-ciphertext-fail-decryption
-        //https://stackoverflow.com/questions/60122638/web-crypto-api-throws-domexception-on-aes-decryption
-        //http://www.ostack.cn/qa/?qa=1513357/
-        //https://stackoverflow.com/questions/14958103/how-to-decrypt-message-with-cryptojs-aes-i-have-a-working-ruby-example
-        //https://stackoverflow.com/questions/56949907/how-to-decrypt-message-with-cryptojs-aes-i-have-a-working-node-crypto-example
-        //https://github.com/brix/crypto-js
-        //https://odedhb.github.io/AES-encrypt/
-        //https://cryptojs.gitbook.io/docs/
-        //http://crypto.stanford.edu/sjcl/
-        
-        let encrypted = CryptoJS.AES.encrypt("this is text", "password");
-        console.log(encrypted);
-        
-        
-        let plaintextArray = CryptoJS.AES.decrypt(
-            CryptoJS.enc.Latin1.parse(cipher_data),
-            CryptoJS.enc.Hex.parse(key),
-            { iv: CryptoJS.enc.Latin1.parse(iv) }
-        );
-        console.log(CryptoJS.enc.Utf8.stringify(plaintextArray));
-        */
-        
-        let decrypted_content;
-        try {
-            decrypted_content = await window.crypto.subtle.decrypt(
-                {
-                    name: "AES-CBC",
-                    iv//Uint8Array
-                },
-                derivation,//CryptoKey
-                cipher_data//Uint8Array
-            );
-        }
-        catch(e) {
-            console.log(e);
-            alert("Unable to decrypt encyrpted key container");
-            return;
-        }
-        
-        /*
-        //https://peculiarventures.github.io/pv-webcrypto-tests/
-        //http://www.ostack.cn/qa/?qa=1513357/
-        decrypted_content = await window.crypto.subtle.decrypt(
-            {
-                name: "AES-CBC",
-                iv//Uint8Array
-            },
-            derivation,//CryptoKey
-            cipher_data//Uint8Array
-        );
-        */
-        
-        /*
-        if (typeof decrypted_content === "undefined") {
-            alert("Unable to decrypt encyrpted key container");
-            return;
-        }
-        */
-        
-        //console.log(decrypted_content);
-        
-        let decrypted_data = dec.decode(decrypted_content);
-        var isXml;
-        try {
-            isXml = $.parseXML(decrypted_data);
-        }
-        catch (e) {
-            isXml = false;
-        }
-        if (!isXml) {
-            alert("Invalid password for selected file");
-            return;
-        }
-        else {
-            var innerXml = $.parseXML(decrypted_data);
-            innerContainer = $(innerXml).find("InnerContainer");
-            
-            // Convert the InnerContainer to JSON
-            ImportKeys(innerContainer);
-            ImportGroups(innerContainer);
-            PopulateKeys();
-            PopulateGroups();
-            
-            $(".menu_divs").hide();
-            $("#manageKeys").show();
-        }
-        
-    }
-    fr.readAsArrayBuffer(fileInputElement.files[0]);
+function ReadFileAsync(file) {
+    return new Promise((resolve, reject) => {
+        let reader = new FileReader();
+        reader.onload = () => {
+            resolve(reader.result);
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
 }
 
 function LookupAlgId(algId) {
@@ -888,6 +707,8 @@ function PopulateKeys() {
     $("#addGroupKeyList").append('</div>');
     $("#keyContainerKeyList").listview("refresh");
     $("[data-role=controlgroup]").enhanceWithin().controlgroup("refresh");
+    $(".menu_divs").hide();
+    $("#manageKeys").show();
 }
 
 function PopulateGroups() {
@@ -1034,42 +855,6 @@ function RemoveKeyFromAllGroups(key_id) {
     console.log("Key removed from " + counter + " groups");
 }
 
-async function getDerivation(hash, salt, password, iterations, keyLength) {
-    const textEncoder = new TextEncoder("utf-8");
-    const passwordBuffer = textEncoder.encode(password);
-    const importedKey = await window.crypto.subtle.importKey("raw", passwordBuffer, "PBKDF2", false, ["deriveBits","deriveKey"]);
-    //const saltBuffer = textEncoder.encode(salt);
-    const saltBuffer = salt;
-    const params = {name: "PBKDF2", hash: hash, salt: saltBuffer, iterations: iterations};
-    //const derivation = await window.crypto.subtle.deriveBits(params, importedKey, keyLength);
-    const derivation = await window.crypto.subtle.deriveKey(params, importedKey, { name:"AES-CBC", length:256 }, true, ["encrypt","decrypt","unwrapKey","wrapKey"]);
-    return derivation;
-}
-
-async function encrypt(text, keyObject) {
-    const textEncoder = new TextEncoder("utf-8");
-    const textBuffer = textEncoder.encode(text);
-    const encryptedText = await window.crypto.subtle.encrypt({ name: 'AES-CBC', iv: keyObject.iv }, keyObject.key, textBuffer);
-    return encryptedText;
-}
-
-async function decrypt(encrypedText, keyObject) {
-    const textDecoder = new TextDecoder("utf-8");
-    //const textBuffer = textDecoder.decode(text);
-    const decryptedText = crypto.subtle.decrypt({ name: 'AES-CBC', iv: keyObject.iv }, keyObject.key, encrypedText);
-    //console.log(decryptedText);
-    return decryptedText;
-    //return textDecoder.decode(decryptedText);
-}
-
-async function exportCryptoKey(key) {
-    const exported = await window.crypto.subtle.exportKey(
-        "raw",
-        key
-    );
-    const exportedKeyBuffer = new Uint8Array(exported);
-    return exportedKeyBuffer;
-}
 
 // Encryption examples
 // https://stackoverflow.com/questions/64067812/how-to-properly-decrypt-text-via-subtle-crypto-which-was-encrypted-via-cryptojs
@@ -1084,9 +869,6 @@ function bytesToArrayBuffer(bytes) {
     bytesUint8.set(bytes);
     return bytesAsArrayBuffer;
 }
-
-//const port = await navigator.serial.requestPort({ filters: [filter] });
-
 
 function SwitchHexDec(newVal) {
     inputType = newVal;

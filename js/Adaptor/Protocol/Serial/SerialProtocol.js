@@ -40,8 +40,32 @@ async function connectSerial() {
     
     try {
         port = await navigator.serial.requestPort({filters: [filter]});
-        await port.open(serialPortSettings);
         
+        port.addEventListener("connect", (event) => {
+            // Device has been connected
+            //$("#iconConnectionStatus").removeClass("connection-status-disconnected");
+            //$("#iconConnectionStatus").addClass("connection-status-connected");
+            $("#iconConnectionStatus").css("background-color", "#aaffaa");
+            $("#buttonConnectKfd").prop("disabled", true);
+            console.log(event);
+        });
+        port.addEventListener("disconnect", (event) => {
+            // Device has been disconnected
+            //$("#iconConnectionStatus").removeClass("connection-status-connected");
+            //$("#iconConnectionStatus").addClass("connection-status-disconnected");
+            connected = false;
+            //port.close();
+            $("#iconConnectionStatus").css("background-color", "#ffaaaa");
+            $("#buttonConnectKfd").prop("disabled", false);
+            $("#connectionStatus").text("Disconnected");
+            $("#deviceProperties").html("");
+            console.log(event);
+        });
+
+        await port.open(serialPortSettings);
+        connected = true;
+        $("#iconConnectionStatus").css("background-color", "#aaffaa");
+        $("#buttonConnectKfd").prop("disabled", true);
         $("#connectionStatus").text("Connected");
         
         //const decoder = new TransformStream();
@@ -89,7 +113,7 @@ async function connectSerial() {
         */
     }
     catch(e) {
-        console.log(e);
+        console.error("Error", e);
     }
 }
 async function mySendIt(myData) {
@@ -105,6 +129,10 @@ async function mySendIt(myData) {
 }
 
 async function Send(data) {
+    if (!connected) {
+        alert("No device is connected");
+        return;
+    }
     console.log("send", data);
     let frameBuffer = [];
     let frameData = [];
@@ -127,6 +155,7 @@ async function Send(data) {
     console.log("frame data", frameData);
     
     if (connectionMethod == "poly") {
+        console.log("sending via polyfill");
         polyWriter.ready.then(() => {
             //let inputArrayBuffer = str2ab(myData2);
             const myWritten = polyWriter.write(frameData);
@@ -194,77 +223,6 @@ async function Send(data) {
     console.log(readResult.value);
     return readResult.value;
     */
-}
-
-async function SendTest2DEPRECATED(data) {
-    console.log("send", data);
-    var returnData;
-    var frameData = [];
-    frameData.push(SOM_EOM);
-    data.forEach(item => {
-        if (item == ESC) {
-            frameData.push(ESC);
-            frameData.push(ESC_PLACEHOLDER);
-        }
-        else if (item == SOM_EOM) {
-            frameData.push(ESC);
-            frameData.push(SOM_EOM_PLACEHOLDER_);
-        }
-        else {
-            frameData.push(item);
-        }
-    });
-    frameData.push(SOM_EOM);
-    var outData = new Uint8Array(frameData);
-    console.log("frameData", outData);
-    //console.log(temp);
-    //return temp;
-    
-    /*
-    const writer = port.writable.getWriter();
-    await writer.write(outData);
-    writer.releaseLock();
-    */
-    
-    /*
-    const writer = port.writable.getWriter();
-    writer.write(outData)
-    .then(() => {
-        writer.releaseLock();
-        const decoder = new TransformStream();
-        port.readable.pipeTo(decoder.writable);
-        const inputStream = decoder.readable;
-        const reader = inputStream.getReader();
-        //let response = await reader.read();
-        //console.log(response);
-        
-        reader.read()
-        .then((value, done) => {
-            console.log(value);
-            reader.releaseLock();
-            //resolve(value.value);
-            //return value.value;
-        })
-        .finally(() => {
-            console.log("reader finally");
-        });
-        
-    })
-    .finally(() => {
-        console.log("writer finally");
-    });
-    */
-    
-    const writer = port.writable.getWriter();
-    let writeResult = await writer.write(outData);
-    const decoder = new TransformStream();
-    port.readable.pipeTo(decoder.writable);
-    const inputStream = decoder.readable;
-    const reader = inputStream.getReader();
-    let readResult = await reader.read();
-    console.log(readResult);
-    return readResult.value;
-    
 }
 
 //https://hpssjellis.github.io/web-serial-polyfill/desktop-serial05.html
@@ -343,6 +301,77 @@ async function mySend(myData2) {
         const myWritten = polyWriter.write(inputArrayBuffer);
         console.log("myWritten", myWritten);
     });
+}
+
+async function SendTest2DEPRECATED(data) {
+    console.log("send", data);
+    var returnData;
+    var frameData = [];
+    frameData.push(SOM_EOM);
+    data.forEach(item => {
+        if (item == ESC) {
+            frameData.push(ESC);
+            frameData.push(ESC_PLACEHOLDER);
+        }
+        else if (item == SOM_EOM) {
+            frameData.push(ESC);
+            frameData.push(SOM_EOM_PLACEHOLDER_);
+        }
+        else {
+            frameData.push(item);
+        }
+    });
+    frameData.push(SOM_EOM);
+    var outData = new Uint8Array(frameData);
+    console.log("frameData", outData);
+    //console.log(temp);
+    //return temp;
+    
+    /*
+    const writer = port.writable.getWriter();
+    await writer.write(outData);
+    writer.releaseLock();
+    */
+    
+    /*
+    const writer = port.writable.getWriter();
+    writer.write(outData)
+    .then(() => {
+        writer.releaseLock();
+        const decoder = new TransformStream();
+        port.readable.pipeTo(decoder.writable);
+        const inputStream = decoder.readable;
+        const reader = inputStream.getReader();
+        //let response = await reader.read();
+        //console.log(response);
+        
+        reader.read()
+        .then((value, done) => {
+            console.log(value);
+            reader.releaseLock();
+            //resolve(value.value);
+            //return value.value;
+        })
+        .finally(() => {
+            console.log("reader finally");
+        });
+        
+    })
+    .finally(() => {
+        console.log("writer finally");
+    });
+    */
+    
+    const writer = port.writable.getWriter();
+    let writeResult = await writer.write(outData);
+    const decoder = new TransformStream();
+    port.readable.pipeTo(decoder.writable);
+    const inputStream = decoder.readable;
+    const reader = inputStream.getReader();
+    let readResult = await reader.read();
+    console.log(readResult);
+    return readResult.value;
+    
 }
 
 async function SendDEPRECATED(data) {
