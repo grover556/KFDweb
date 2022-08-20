@@ -11,17 +11,19 @@
     	<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
     	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
     	<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-    	<script src="js/P25/ThreeWire/ThreeWireProtocol.js"></script>
-        <script src="js/P25/ThreeWire/CRC16.js"></script>
+		<script src="js/P25/Constant/AlgorithmId.js"></script>
         <script src="js/Adaptor/Protocol/Adapter/AdapterProtocol.js"></script>
         <script src="js/Adaptor/Protocol/Serial/SerialProtocol.js"></script>
         <script src="js/P25/Kmm/KmmBody.js"></script>
         <script src="js/P25/Kmm/KmmFrame.js"></script>
         <script src="js/P25/Kmm/KeyItem.js"></script>
         <script src="js/P25/Kmm/ModifyKeyCommand.js"></script>
-        <script src="js/Container/KeyContainer.js?v=11"></script>
+        <script src="js/Container/KeyContainer.js?v=12"></script>
         <script src="js/P25/Generator/KeyGenerator.js"></script>
-		<script src="js/Shared/Utility.js?v=11"></script>
+		<script src="js/P25/ThreeWire/ThreeWireProtocol.js"></script>
+        <script src="js/P25/ThreeWire/CRC16.js"></script>
+		<script src="js/P25/Validator/FieldValidator.js"></script>
+		<script src="js/Shared/Utility.js?v=12"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.13/dist/serial.js"></script> 
     	<link rel="stylesheet" href="css/layout.css" />
@@ -89,14 +91,6 @@
                     	<input type="text" id="addGroup_name" placeholder="" value="">
                 	</div>
                 	<fieldset id="addGroupKeyList" data-role="controlgroup" data-filter="true" data-filter-placeholder="Filter keys..." data-mini="false">
-                    	<label for="checkbox-1a"><p data-key-id="1">DALLAS</p><p>AES256, TEK, SLN 2001, KID 2001</p></label>
-                    	<input type="checkbox" name="checkbox-1a" id="checkbox-1a">
-                    	<label for="checkbox-2a">Doritos</label>
-                    	<input type="checkbox" name="checkbox-2a" id="checkbox-2a">
-                    	<label for="checkbox-3a">Fritos</label>
-                    	<input type="checkbox" name="checkbox-3a" id="checkbox-3a">
-                    	<label for="checkbox-4a">Sun Chips</label>
-                    	<input type="checkbox" name="checkbox-4a" id="checkbox-4a">
                 	</fieldset>
             	</div>
             	<div id="loadKeySingle" class="menu_divs" style="display:none;">
@@ -302,6 +296,6 @@
             	
         	</div><!-- /content -->
         </div><!-- /page -->
-        <script src="js/webserial.js?v=11"></script>
+        <script src="js/webserial.js?v=12"></script>
     </body>
 </html>

@@ -8,7 +8,7 @@ class KeyItem {
         return this.#_sln;
     }
     set SLN(val) {
-        if (value < 0 || value > 0xFFFF) {
+        if (val < 0 || val > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
         this.#_sln = val;
@@ -17,7 +17,7 @@ class KeyItem {
         return this.#_keyId;
     }
     set KeyId(val) {
-        if (value < 0 || value > 0xFFFF) {
+        if (val < 0 || val > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
         this.#_keyId = val;
@@ -26,18 +26,18 @@ class KeyItem {
         return this.#_key;
     }
     set Key(val) {
-        if (value == null) {
+        if (val == null) {
             throw "ArgumentNullException";
         }
         this.#_key = val;
     }
     KEK;
     Erase;
-    get KeyItem() {
+    constructor() {
         this.KEK = false;
         this.Erase = false;
     }
-    get ToBytes() {
+    ToBytes() {
         //let contents = new Uint8Array(5 + this.Key.length);
         let contents = [];
 
@@ -46,6 +46,11 @@ class KeyItem {
         //keyFormat.Set(7, KEK);
         //keyFormat.Set(5, Erase);
         //keyFormat.CopyTo(contents, 0);
+        
+        //let keyFormat = "00000" + (this.Erase ? "1":"0") + "0" + (this.KEK ? "1":"0");
+        let keyFormat = "00000" + Number(this.Erase) + "0" + Number(this.KEK);
+        console.log(keyFormat);
+        contents[0] = parseInt(keyFormat, 2);
 
         /* sln */
         contents[1] = this.SLN >> 8;
@@ -57,7 +62,15 @@ class KeyItem {
 
         /* key */ 
         //Array.Copy(Key, 0, contents, 5, Key.length);
-        contents = contents.concat(this.Key);
+        //contents = contents.concat(this.Key);
+/*
+        this.Key.forEach(c => {
+            contents.push(parseInt(c, 16));
+        });
+*/
+        for (var i=0; i<this.Key.length; i++) {
+            contents.push(parseInt(this.Key[i], 16));
+        }
 
         return contents;
     }

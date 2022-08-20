@@ -99,6 +99,51 @@ $("#buttonManageKeyActions").on("click", function() {
     $("#popupMenuKeyOptions").popup("open");
 });
 $("#buttonLoadKeyToContainer").on("click", function() {
+    let keyItem = CreateKeyFromFields();
+    
+    if (keyItem === undefined) {
+        return;
+    }
+
+    let validation = KeyloadValidate(keyItem.KeysetId, keyItem.Sln, keyItem.KeyTypeKek, keyItem.KeyId, keyItem.AlgorithmId, keyItem.Key);
+    if (validation.status == "Success") {
+        AddKey(keyItem);
+        ClearKeyInfo();
+    }
+    else if (validation.status == "Warning") {
+        if (window.confirm("Warning: " + validation.message + " - do you wish to continue anyways?")) {
+            AddKey(keyItem);
+            ClearKeyInfo();
+        }
+    }
+    else if (validation.status == "Error") {
+        alert("Error: " + validation.message);
+    }
+});
+$("#buttonLoadKeyToRadio").on("click", function() {
+    let keyItem = CreateKeyFromFields();
+    
+    if (keyItem === undefined) {
+        return;
+    }
+
+    let validation = KeyloadValidate(keyItem.KeysetId, keyItem.Sln, keyItem.KeyTypeKek, keyItem.KeyId, keyItem.AlgorithmId, keyItem.Key);
+    if (validation.status == "Success") {
+        SendKeyToRadio(keyItem);
+        ClearKeyInfo();
+    }
+    else if (validation.status == "Warning") {
+        if (window.confirm("Warning: " + validation.message + " - do you wish to continue anyways?")) {
+            SendKeyToRadio(keyItem);
+            ClearKeyInfo();
+        }
+    }
+    else if (validation.status == "Error") {
+        alert("Error: " + validation.message);
+    }
+});
+
+function CreateKeyFromFields() {
     let base = 10;
     if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "hex") {
         base = 16;
@@ -134,6 +179,7 @@ $("#buttonLoadKeyToContainer").on("click", function() {
         alert("Key cannot be empty");
         return;
     }
+    /*
     let keylen = parseInt($("#loadKeySingle_algorithm option:selected").data("length"));
     if (!isNaN(keylen)) {
         if ($("#loadKeySingle_key").val().length != keylen*2) {
@@ -141,20 +187,31 @@ $("#buttonLoadKeyToContainer").on("click", function() {
             return;
         }
     }
-    let matchingKeys = _keyContainer.keys.filter(function(obj) { return obj.Name === key.Name; });
+    */
+    keyItem.Name = $("#loadKeySingle_name").val();
+    let matchingKeys = _keyContainer.keys.filter(function(obj) { return obj.Name === keyItem.Name; });
     if (matchingKeys.length) {
         alert("Key name must be unique");
         return;
     }
     
     keyItem.Id = _keyContainer.nextKeyNumber;
-    keyItem.Name = $("#loadKeySingle_name").val();
     keyItem.KeysetId = parseInt($("#loadKeySingle_keysetId").val(), base);
     //keyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
     keyItem.Sln = parseInt($("#loadKeySingle_SlnCkr").val(), base);
     keyItem.KeyId = parseInt($("#loadKeySingle_keyId").val(), base);
     keyItem.AlgorithmId = parseInt($("#loadKeySingle_algorithmOther").val(), base);
-    keyItem.Key = $("#loadKeySingle_key").val();
+    keyString = $("#loadKeySingle_key").val();
+    if (keyString.length % 2 != 0) {
+        alert("Key length is not valid");
+        return;
+    }
+    let keyArray = [];
+    for (var i = 0; i< keyString.length; i=i+2) {
+        let pair = keyString[i] + keyString[i+1];
+        keyArray.push(parseInt(pair , 16));
+    }
+    keyItem.Key = keyArray;
     if (auto) {
         if (keyItem.Sln >=0 && keyItem.Sln <= 61439) tek = true;
         else if (keyItem.Sln >= 61440 && keyItem.Sln <= 65535) kek = true;
@@ -164,144 +221,38 @@ $("#buttonLoadKeyToContainer").on("click", function() {
     keyItem.KeyTypeKek = kek;
     
     
-    if ((key.KeysetId < 1) || (key.KeysetId > 255)) {
+    if ((keyItem.KeysetId < 1) || (keyItem.KeysetId > 255)) {
         alert("Keyset ID out of range");
         return;
     }
-    else if ((key.Sln < 0) || (key.Sln > 65535)) {
+    else if ((keyItem.Sln < 0) || (keyItem.Sln > 65535)) {
         alert("SLN/CKR out of range");
         return;
     }
-    else if ((key.KeyId < 0) || (key.KeyId > 65535)) {
+    else if ((keyItem.KeyId < 0) || (keyItem.KeyId > 65535)) {
         alert("Key ID out of range");
         return;
     }
-    
-    if (key.KeyTypeTek && (key.Sln >= 61440)) {
+    /*
+    if (keyItem.KeyTypeTek && (keyItem.Sln >= 61440)) {
         alert("Key type set to TEK, but SLN indicates KEK");
         return;
     }
-    else if (key.KeyTypeKek && (key.Sln <= 61439)) {
+    else if (keyItem.KeyTypeKek && (keyItem.Sln <= 61439)) {
         alert("Key type set to KEK, but SLN indicates TEK");
-        return;
-    }
-    
-    //console.log(keyItem);
-    /*
-    let validated = CheckKeyValidation(keyItem);
-    if (!validated.valid) {
-        alert(validated.reason);
         return;
     }
     */
-    AddKey(keyItem);
-    ClearKeyInfo();
-});
-$("#buttonLoadKeyToRadio").on("click", function() {
-    SendKeyToRadio("test");
-    return;
-    
-    let base = 10;
-    if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "hex") {
-        base = 16;
-    }
-    let keyItem = {};
-    let auto = false;
-    let tek = false;
-    let kek = false;
-    if ($("input[name='radioKeyType']:checked").val() == "auto") auto = true;
-    else if ($("input[name='radioKeyType']:checked").val() == "tek") tek = true;
-    else if ($("input[name='radioKeyType']:checked").val() == "kek") kek = true;
-    
-    keyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
-    if (keyItem.ActiveKeyset) $("#loadKeySingle_keysetId").val("1");
-    
-    if ($("#loadKeySingle_name").val() == "") {
-        alert("Key name cannot be empty");
-        return;
-    }
-    else if ($("#loadKeySingle_keysetId").val() == "") {
-        alert("Keyset ID cannot be empty");
-        return;
-    }
-    else if ($("#loadKeySingle_SlnCkr").val() == "") {
-        alert("SLN/CKR cannot be empty");
-        return;
-    }
-    else if ($("#loadKeySingle_keyId").val() == "") {
-        alert("Key ID cannot be empty");
-        return;
-    }
-    else if ($("#loadKeySingle_key").val() == "") {
-        alert("Key cannot be empty");
-        return;
-    }
-    let keylen = parseInt($("#loadKeySingle_algorithm option:selected").data("length"));
-    if (!isNaN(keylen)) {
-        if ($("#loadKeySingle_key").val().length != keylen*2) {
-            alert("Invalid key length");
-            return;
-        }
-    }
-    let matchingKeys = _keyContainer.keys.filter(function(obj) { return obj.Name === key.Name; });
-    if (matchingKeys.length) {
-        alert("Key name must be unique");
-        return;
-    }
-    
-    keyItem.Id = _keyContainer.nextKeyNumber;
-    keyItem.Name = $("#loadKeySingle_name").val();
-    keyItem.KeysetId = parseInt($("#loadKeySingle_keysetId").val(), base);
-    //keyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
-    keyItem.Sln = parseInt($("#loadKeySingle_SlnCkr").val(), base);
-    keyItem.KeyId = parseInt($("#loadKeySingle_keyId").val(), base);
-    keyItem.AlgorithmId = parseInt($("#loadKeySingle_algorithmOther").val(), base);
-    keyItem.Key = $("#loadKeySingle_key").val();
-    if (auto) {
-        if (keyItem.Sln >=0 && keyItem.Sln <= 61439) tek = true;
-        else if (keyItem.Sln >= 61440 && keyItem.Sln <= 65535) kek = true;
-    }
-    keyItem.KeyTypeAuto = auto;
-    keyItem.KeyTypeTek = tek;
-    keyItem.KeyTypeKek = kek;
-    
-    
-    if ((key.KeysetId < 1) || (key.KeysetId > 255)) {
-        alert("Keyset ID out of range");
-        return;
-    }
-    else if ((key.Sln < 0) || (key.Sln > 65535)) {
-        alert("SLN/CKR out of range");
-        return;
-    }
-    else if ((key.KeyId < 0) || (key.KeyId > 65535)) {
-        alert("Key ID out of range");
-        return;
-    }
-    
-    if (key.KeyTypeTek && (key.Sln >= 61440)) {
-        alert("Key type set to TEK, but SLN indicates KEK");
-        return;
-    }
-    else if (key.KeyTypeKek && (key.Sln <= 61439)) {
-        alert("Key type set to KEK, but SLN indicates TEK");
-        return;
-    }
-    
-    //console.log(keyItem);
-    SendKeyToRadio(keyItem);
-    //AddKey(keyItem);
-    ClearKeyInfo();
-});
+    return keyItem;
+}
 
 function SendKeyToRadio(key) {
     console.log("SendKeyToRadio", key);
-    
     let ki = new KeyItem();
-    
-    ki.SLN = 0x01;
-    ki.KeyId = 0x01;
-    ki.Key = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F];
+
+    ki.SLN = key.Sln;
+    ki.KeyId = key.KeyId;
+    ki.Key = key.Key;
     
     console.log(ki);
     console.log(ki.ToBytes());
@@ -704,7 +655,7 @@ function PopulateKeys() {
         groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
         $("#addGroupKeyList").append(groupCheckbox);
     });
-    $("#addGroupKeyList").append('</div>');
+    //$("#addGroupKeyList").append('</div>');
     $("#keyContainerKeyList").listview("refresh");
     $("[data-role=controlgroup]").enhanceWithin().controlgroup("refresh");
     $(".menu_divs").hide();
@@ -741,7 +692,9 @@ function AddKey(key) {
     }
     let keyListItem = '<li data-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></a></li>';
     $("#keyContainerKeyList").append(keyListItem);
-    let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><p data-key-id=' + key.Id + '>' + key.Name + '</p><p>' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></label>';
+    //let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span>' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
+    //groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
+    let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
     groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
     $("#addGroupKeyList").append(groupCheckbox);
     $("#keyContainerKeyList").listview("refresh");
