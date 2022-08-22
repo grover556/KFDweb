@@ -10,7 +10,7 @@ class InventoryCommandListActiveKsetIds extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    ToBytes() {
+    get ToBytes() {
         var contents = new Uint8Array(1);
         
         /* inventory type */

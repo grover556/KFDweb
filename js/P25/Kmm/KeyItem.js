@@ -37,7 +37,7 @@ class KeyItem {
         this.KEK = false;
         this.Erase = false;
     }
-    ToBytes() {
+    get ToBytes() {
         //let contents = new Uint8Array(5 + this.Key.length);
         let contents = [];
 

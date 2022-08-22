@@ -40,7 +40,7 @@ class KmmFrame {
         }
     }
 */
-    ToBytes() {
+    get ToBytes() {
         let body = Array.from(this.KmmBody.ToBytes());
         
         let length = 10 + body.length;
