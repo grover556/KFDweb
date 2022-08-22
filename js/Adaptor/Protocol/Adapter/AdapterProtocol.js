@@ -71,7 +71,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         //READ
         
@@ -101,7 +101,7 @@ class AdapterProtocol {
     }
     async SendTest(cmd) {
         let rsp = await Send(cmd);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         return rsp;
         //console.log("rsp", rsp);
     }
@@ -121,7 +121,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //return;
         //console.log("rsp", rsp);
         
@@ -167,7 +167,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -215,7 +215,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -254,7 +254,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -295,7 +295,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -352,7 +352,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -383,7 +383,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -414,7 +414,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -445,7 +445,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
 
         //READ
@@ -480,7 +480,7 @@ class AdapterProtocol {
         //let rsp = await Send2(cmd);
         await SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -499,7 +499,7 @@ class AdapterProtocol {
     }
     async SendByte(dataByte) {
         let cmd = [];
-        console.log("SendByte", dataByte.toString(16).toUpperCase().padStart(2,"0"));
+        //console.log("SendByte", dataByte.toString(16).toUpperCase().padStart(2,"0"));
         /*
             CMD: SEND BYTE
             [0] CMD_SEND_BYTE
@@ -513,9 +513,11 @@ class AdapterProtocol {
         
         //SEND
         //let rsp = await Send(cmd);
-        SendSerial(cmd);
+        await SendSerial(cmd);// added await
         let rsp = await readWithTimeout(AP_TIMEOUT);
-        rsp = UnpackResponse(rsp);
+        //let rsp = await this.GetByte(AP_TIMEOUT);
+        //console.log("SendByte rsp", rsp[0].toString(16).toUpperCase().padStart(2,"0"));
+        //rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
         
         //READ
@@ -533,7 +535,7 @@ class AdapterProtocol {
         else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
     }
     async SendData(data) {
-        //console.log("SendData:", BCTS(data).join("-"));
+        console.log("SendData:", BCTS(data).join("-"));
         for (var i=0; i<data.length; i++) {
             await this.SendByte(data[i]);
         }
@@ -542,7 +544,8 @@ class AdapterProtocol {
     async GetByte(timeout) {
         console.log("GetByte");
         let rsp = await readWithTimeout(timeout);
-        rsp = UnpackResponse(rsp);
+        console.log("byte rsp:", BCTS(rsp).join("-"));
+        //rsp = UnpackResponse(rsp);
         
         /*
             BCST: RECEIVE BYTE
@@ -554,7 +557,7 @@ class AdapterProtocol {
 
         if (rsp.length == 3) {
             if (rsp[0] == BCST_RECEIVE_BYTE) {
-                console.log("byte:", rsp[2].toString(16).toUpperCase().padStart(2, "0"));
+                //console.log("byte:", rsp[2].toString(16).toUpperCase().padStart(2, "0"));
                 return rsp[2];
             }
             else {

@@ -126,7 +126,7 @@ class ThreeWireProtocol {
         // send transfer done opcode
         let cmd1 = [];
         cmd1.push(OPCODE_TRANSFER_DONE);
-        this.Protocol.SendData(cmd1);
+        await this.Protocol.SendData(cmd1);
 
         // receive transfer done opcode
         let rsp1 = await this.Protocol.GetByte(TIMEOUT_STD);
@@ -137,7 +137,7 @@ class ThreeWireProtocol {
         // send disconnect opcode
         let cmd2 = [];
         cmd2.push(OPCODE_DISCONNECT);
-        this.Protocol.SendData(cmd2);
+        await this.Protocol.SendData(cmd2);
 
         // receive disconnect ack opcode
         let rsp2 = await this.Protocol.GetByte(TIMEOUT_STD);
@@ -153,13 +153,14 @@ class ThreeWireProtocol {
         
         let txFrame = await this.CreateKmmFrame(inKmm);
         console.log("TWP.SendKmm txFrame", BCTS(txFrame).join("-"));
-        this.Protocol.SendData(txFrame);
+        //this.Protocol.SendData(txFrame);
+        await this.Protocol.SendData(txFrame);
     }
     async PerformKmmTransfer(inKmm) {
-        console.log("TWP.PerformKmmTransfer(toRadio)", BCTS(inKmm).join("-"));
+        console.log("TWP.PerformKmmTransfer inKmm", BCTS(inKmm).join("-"));
         // send kmm frame
         await this.SendKmm(inKmm);
-
+        console.log("TWP.PerformKmmTransfer KmmSent");
         let rx;
 
         // receive kmm opcode

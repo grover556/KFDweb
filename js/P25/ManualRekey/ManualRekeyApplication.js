@@ -21,7 +21,7 @@ class ManualRekeyApplication {
     }
     async Begin() {
         await this.DeviceProtocol.SendKeySignature();
-        //console.log("SendKeySignature DONE");
+        console.log("SendKeySignature DONE");
         await this.DeviceProtocol.InitSession();
         console.log("InitSession DONE");
     }
@@ -29,24 +29,26 @@ class ManualRekeyApplication {
         let commandKmmFrame = new KmmFrame(commandKmmBody);
         
         let toRadio = this.WithPreamble ? commandKmmFrame.ToBytesWithPreamble(this.Mfid) : commandKmmFrame.ToBytes();
-        //console.log("DeviceProtocol.PerformKmmTransfer(toRadio)", BCTS(toRadio).join("-"));
+        console.log("MRA.TxRxKmm toRadio", BCTS(toRadio).join("-"));
         let fromRadio = await this.DeviceProtocol.PerformKmmTransfer(toRadio);
-        console.log("TxRxKmm fromRadio", fromRadio);
+        console.log("MRA.TxRxKmm fromRadio", fromRadio);
         let responseKmmFrame = new KmmFrame(WithPreamble, fromRadio);
-        console.log("TxRxKmm responseKmmFrame", responseKmmFrame);
+        console.log("MRA.TxRxKmm responseKmmFrame", responseKmmFrame);
         return responseKmmFrame.KmmBody;
     }
     async End() {
+        console.log("END");
         await this.DeviceProtocol.EndSession();
+        //console.log("End() complete");
     }
     async TestMessage() {
         await this.Begin();
-
+        
         try {
             let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
             
             let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
-            console.log(rspKmmBody1);
+            console.log("rspKmmBody1", rspKmmBody1);
             let activeKeysetId = 0;
 
             if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {

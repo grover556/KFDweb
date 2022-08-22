@@ -229,7 +229,9 @@ async function readWithTimeout(timeout) {
     //console.log(result);
     clearTimeout(timer);
     reader.releaseLock();
-    return result.value;
+    //return result.value;
+    let rsp = UnpackResponse(result.value);
+    return rsp;
 }
 
 async function SendSerial(data) {
@@ -276,7 +278,7 @@ async function SendSerial(data) {
     }
     else {
         const writer = port.writable.getWriter();
-        await writer.write(outData);
+        writer.write(outData);//REMOVED await
         writer.releaseLock();
     }
 }
