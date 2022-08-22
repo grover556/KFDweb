@@ -1,6 +1,6 @@
 //ChangeRsiResponse
 
-class ChangeRsiResponse {
+class ChangeRsiResponse extends KmmBody {
     ChangeSequence;
     RsiOld;
     RsiNew;

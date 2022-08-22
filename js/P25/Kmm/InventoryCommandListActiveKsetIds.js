@@ -1,6 +1,6 @@
 //InventoryCommandListActiveKsetIds
 
-class InventoryCommandListActiveKsetIds {
+class InventoryCommandListActiveKsetIds extends KmmBody {
     get MessageId() {
         return MessageId.InventoryCommand;
     }

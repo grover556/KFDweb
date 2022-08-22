@@ -1,6 +1,6 @@
 //Mfid90SessionControlVer1
 
-class Mfid90SessionControlVer1 {
+class Mfid90SessionControlVer1 extends KmmBody {
     ScOpcode = {
         Connect: 0x01,
         ConnectAck: 0x02,

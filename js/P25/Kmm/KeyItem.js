@@ -74,9 +74,15 @@ class KeyItem {
             contents.push(parseInt(c, 16));
         });
 */
+/*
         for (var i=0; i<this.Key.length; i++) {
             contents.push(parseInt(this.Key[i], 16));
         }
+*/
+        this.Key.forEach((val) => {
+            //contents.push(parseInt(val, 16));
+            contents.push(val);
+        });
 
         return contents;
     }

@@ -1,6 +1,6 @@
 //InventoryCommandListActiveKeys
 
-class InventoryCommandListActiveKeys {
+class InventoryCommandListActiveKeys extends KmmBody {
     #_inventoryMarker;
     #_maxKeysRequested;
     get InventoryMarker() {

@@ -482,7 +482,7 @@ function UnpackResponse(rsp) {
 
     if ((rsp[0] != SOM_EOM) || (rsp[rsp.length - 1] != SOM_EOM)) {
         // invalid packet
-        console.error("invalid packet structure: ", rsp);
+        console.log("invalid packet structure: ", BCTS(rsp).join("-"));
         return [];
     }
 

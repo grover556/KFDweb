@@ -27,12 +27,12 @@ class ManualRekeyApplication {
     }
     async TxRxKmm(commandKmmBody) {
         let commandKmmFrame = new KmmFrame(commandKmmBody);
-        
+        console.log("MRA.TxRxKmm commandKmmFrame", commandKmmFrame);
         let toRadio = this.WithPreamble ? commandKmmFrame.ToBytesWithPreamble(this.Mfid) : commandKmmFrame.ToBytes();
         console.log("MRA.TxRxKmm toRadio", BCTS(toRadio).join("-"));
         let fromRadio = await this.DeviceProtocol.PerformKmmTransfer(toRadio);
-        console.log("MRA.TxRxKmm fromRadio", fromRadio);
-        let responseKmmFrame = new KmmFrame(WithPreamble, fromRadio);
+        console.log("MRA.TxRxKmm fromRadio", BCTS(fromRadio).join("-"));
+        let responseKmmFrame = new KmmFrame(this.WithPreamble, fromRadio);
         console.log("MRA.TxRxKmm responseKmmFrame", responseKmmFrame);
         return responseKmmFrame.KmmBody;
     }
@@ -46,21 +46,22 @@ class ManualRekeyApplication {
         
         try {
             let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
-            
+            //console.log(cmdKmmBody1);
             let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
             console.log("rspKmmBody1", rspKmmBody1);
             let activeKeysetId = 0;
 
             if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {
-                let kmm = (InventoryResponseListActiveKsetIds)(rspKmmBody1);
-
+                //let kmm = (InventoryResponseListActiveKsetIds)(rspKmmBody1);
+                let kmm = rspKmmBody1;
+                console.log(kmm);
                 for (var i=0; i<kmm.KsetIds.length; i++) {
                     console.log("* keyset id index " + i + " *");
-                    console.log("keyset id: " + KmmBody.KsetIds[i]);
+                    console.log("keyset id: " + kmm.KsetIds[i]);
                 }
 
                 // TODO support more than one crypto group
-                if (KmmBody.KsetIds.length > 0) {
+                if (kmm.KsetIds.length > 0) {
                     activeKeysetId = kmm.KsetIds[0];
                 }
                 else {
@@ -79,33 +80,37 @@ class ManualRekeyApplication {
             }
         }
         catch {
-            this.End();
+            await this.End();
             throw "";
         }
-        this.End();
+        await this.End();
     }
     async Keyload(keyItems) {
-        let keyGroups = KeyPartitioner.PartitionKeys(keyItems);
-
-        this.Begin();
+        let partitioner = new KeyPartitioner();
+        let keyGroups = partitioner.PartitionKeys(keyItems);
+        //console.log(keyGroups);
+        keyGroups = [keyItems];
+        console.log(keyGroups);
+        await this.Begin();
 
         try {
             let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
 
-            let rspKmmBody1 = this.TxRxKmm(cmdKmmBody1);
+            let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
 
             let activeKeysetId = 0;
 
             if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {
-                let kmm = (InventoryResponseListActiveKsetIds)(rspKmmBody1);
+                //let kmm = (InventoryResponseListActiveKsetIds)(rspKmmBody1);
+                let kmm = rspKmmBody1;
 
                 for (var i=0; i<kmm.KsetIds.length; i++) {
                     console.log("* keyset id index " + i + " *");
-                    console.log("keyset id: " + KmmBody.KsetIds[i]);
+                    console.log("keyset id: " + kmm.KsetIds[i]);
                 }
 
                 // TODO support more than one crypto group
-                if (KmmBody.KsetIds.length > 0) {
+                if (kmm.KsetIds.length > 0) {
                     activeKeysetId = kmm.KsetIds[0];
                 }
                 else {
@@ -113,7 +118,8 @@ class ManualRekeyApplication {
                 }
             }
             else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
-                let kmm = (NegativeAcknowledgment)(rspKmmBody1);
+                //let kmm = (NegativeAcknowledgment)(rspKmmBody1);
+                let kmm = rspKmmBody1;
 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -122,38 +128,53 @@ class ManualRekeyApplication {
             else {
                 throw "unexpected kmm";
             }
-
+            
             for (var i=0;i<keyGroups.length;i++) {
+                console.log(keyGroups[i]);
                 let modifyKeyCommand = new ModifyKeyCommand();
-
+                
                 // TODO support more than one crypto group
-                if (keyGroup[0].UseActiveKeyset && !keyGroup[0].IsKek) {
+                if (keyGroups[i][0].UseActiveKeyset && !keyGroups[i][0].IsKek) {
                     modifyKeyCommand.KeysetId = activeKeysetId;
                 }
-                else if (keyGroup[0].UseActiveKeyset && keyGroup[0].IsKek) {
+                else if (keyGroups[i][0].UseActiveKeyset && keyGroups[i][0].IsKek) {
                     modifyKeyCommand.KeysetId = 0xFF; // to match KFL3000+ R3.53.03 behavior
                 }
                 else {
-                    modifyKeyCommand.KeysetId = keyGroup[0].KeysetId;
+                    modifyKeyCommand.KeysetId = keyGroups[i][0].KeysetId;
                 }
 
-                modifyKeyCommand.AlgorithmId = keyGroup[0].AlgorithmId;
-
+                modifyKeyCommand.AlgorithmId = keyGroups[i][0].AlgorithmId;
+                console.log(modifyKeyCommand);
+/*
+                keyGroups.forEach((key) => {
+                    let keyItem = new KeyItem();
+                    keyItem.SLN = key.Sln;
+                    keyItem.KeyId = key.KeyId;
+                    keyItem.Key = key.Key;
+                    keyItem.KEK = key.IsKek;
+                    keyItem.Erase = false;
+                    console.log(keyItem);
+                    modifyKeyCommand.KeyItems.push(keyItem);
+                });
+*/
                 for (var j=0; j<keyGroups[i].length; j++) {
-
                     let keyItem = new KeyItem();
                     keyItem.SLN = keyGroups[i][j].Sln;
                     keyItem.KeyId = keyGroups[i][j].KeyId;
                     keyItem.Key = keyGroups[i][j].Key;
                     keyItem.KEK = keyGroups[i][j].IsKek;
                     keyItem.Erase = false;
-
+                    console.log(keyItem);
                     modifyKeyCommand.KeyItems.push(keyItem);
                 }
-                let rspKmmBody2 = this.TxRxKmm(modifyKeyCommand);
 
-                if (rspKmmBody2 == RekeyAcknowledgment) {
-                    let kmm = (RekeyAcknowledgment)(rspKmmBody2);
+                console.log(modifyKeyCommand);
+                let rspKmmBody2 = await this.TxRxKmm(modifyKeyCommand);
+
+                if (rspKmmBody2 instanceof RekeyAcknowledgment) {
+                    //let kmm = (RekeyAcknowledgment)(rspKmmBody2);
+                    let kmm = rspKmmBody2;
 
                     console.log("number of key status: " + kmm.Keys.length);
 
@@ -172,8 +193,9 @@ class ManualRekeyApplication {
                         }
                     }
                 }
-                else if (rspKmmBody2 == NegativeAcknowledgment) {
-                    let kmm = (NegativeAcknowledgment)(rspKmmBody2);
+                else if (rspKmmBody2 instanceof NegativeAcknowledgment) {
+                    //let kmm = (NegativeAcknowledgment)(rspKmmBody2);
+                    let kmm = rspKmmBody2;
 
                     let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                     let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);

@@ -1,6 +1,6 @@
 //ZeroizeResponse
 
-class ZeroizeResponse {
+class ZeroizeResponse extends KmmBody {
     get MessageId() {
         return MessageId.ZeroizeResponse;
     }

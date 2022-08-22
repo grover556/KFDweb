@@ -1,6 +1,6 @@
 //ChangeoverCommand
 
-class ChangeoverCommand {
+class ChangeoverCommand extends KmmBody {
     // Only supports a single changeover at this time, however response handles multiple keysets
     #_keysetIdSuperseded;
     #_keysetIdActivated;

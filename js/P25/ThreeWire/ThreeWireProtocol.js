@@ -166,7 +166,6 @@ class ThreeWireProtocol {
         // receive kmm opcode
         try {
             rx = await this.Protocol.GetByte(TIMEOUT_STD);
-            console.log(rx);
         }
         catch (exception) {
             console.error("in: timed out waiting for kmm opcode", exception);
@@ -180,7 +179,7 @@ class ThreeWireProtocol {
         }
 
         // receive kmm frame
-        let rxFrame = this.ParseKmmFrame();
+        let rxFrame = await this.ParseKmmFrame();
 
         console.log("MR -> KFD KMM FRAME:", BCTS(rxFrame).join("-"));
 

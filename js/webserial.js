@@ -130,12 +130,12 @@ $("#buttonLoadKeyToRadio").on("click", function() {
 
     let validation = KeyloadValidate(keyItem.KeysetId, keyItem.Sln, keyItem.KeyTypeKek, keyItem.KeyId, keyItem.AlgorithmId, keyItem.Key);
     if (validation.status == "Success") {
-        SendKeyToRadio(keyItem);
+        SendKeysToRadio([keyItem]);
         ClearKeyInfo();
     }
     else if (validation.status == "Warning") {
         if (window.confirm("Warning: " + validation.message + " - do you wish to continue anyways?")) {
-            SendKeyToRadio(keyItem);
+            SendKeysToRadio([keyItem]);
             ClearKeyInfo();
         }
     }
@@ -250,16 +250,27 @@ function CreateKeyFromFields() {
     return keyItem;
 }
 
-function SendKeyToRadio(key) {
-    console.log("SendKeyToRadio", key);
-    let ki = new KeyItem();
-
-    ki.SLN = key.Sln;
-    ki.KeyId = key.KeyId;
-    ki.Key = key.Key;
+function SendKeysToRadio(keys) {
+    console.log("SendKeysToRadio", keys);
     
-    console.log(ki);
-    console.log(ki.ToBytes());
+    let keyItems = [];
+    keys.forEach((k) => {
+        let key = new KeyItem();
+        let cmdKey = new CmdKeyItem(k.ActiveKeyset, k.KeysetId, k.Sln, k.KeyTypeKek, k.KeyId, k.AlgorithmId, k.Key);
+        key.SLN = k.Sln;
+        key.KeyId = k.KeyId;
+        key.Key = k.Key;
+        key.KEK = k.KeyTypeKek;
+        //keyItems.push(key);
+        keyItems.push(cmdKey);
+        //console.log(key);
+        //console.log(key.ToBytes());
+    });
+    //console.log(keyItems);
+
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let results = mra.Keyload(keyItems);
 }
 
 function ClearKeyInfo() {
@@ -402,6 +413,7 @@ $("#loadKeySingle_key").focusin(function(evt) {
 
 $("#loadKeySingle_algorithm").change(function() {
     // Clear the key entry input when a new algorithm is selected
+    let maxKeylenBytes = 64;
     if ($("#loadKeySingle_algorithm").val() == "256") {
         $("#loadKeySingle_algorithmOtherDiv").show();
         $("#loadKeySingle_algorithmOther").val("");
@@ -411,7 +423,7 @@ $("#loadKeySingle_algorithm").change(function() {
         $("#loadKeySingle_algorithmOther").val($("#loadKeySingle_algorithm").val());
     }
     if ($("#loadKeySingle_algorithm option:selected").data("length") != "") {
-        let maxKeylenBytes = parseInt($("#loadKeySingle_algorithm option:selected").data("length")*2);
+        maxKeylenBytes = parseInt($("#loadKeySingle_algorithm option:selected").data("length")*2);
         $("#buttonGenerateRandomKey").attr("disabled", false);
         $("#label_loadKeySingle_key").text("Key (hex): (0/" + maxKeylenBytes + " digits)");
     }
@@ -477,6 +489,7 @@ $("#buttonSendTest").click(async function() {
     //console.log(rspKmmBody1);
     //console.log(cmdKmmBody1);
     //console.log(cmdKmmBody1.ToBytes());
+    
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
     let testResults = mra.TestMessage();

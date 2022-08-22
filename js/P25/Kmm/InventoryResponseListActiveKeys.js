@@ -1,6 +1,6 @@
 //InventoryResponseListActiveKeys
 
-class InventoryResponseListActiveKeys {
+class InventoryResponseListActiveKeys extends KmmBody {
     InventoryMarker;
     NumberOfItems;
     Keys;

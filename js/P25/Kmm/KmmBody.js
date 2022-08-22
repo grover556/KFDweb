@@ -1,9 +1,9 @@
 //KmmBody
 
 class KmmBody {
-    MessageId;
-    ResponseKind;
-    get ToBytes() {
+    //MessageId;
+    //ResponseKind;
+    ToBytes() {
         
     }
     Parse(contents) {

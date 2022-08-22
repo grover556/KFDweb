@@ -1,6 +1,6 @@
 //NegativeAcknowledgment
 
-class NegativeAcknowledgment {
+class NegativeAcknowledgment extends KmmBody {
     AcknowledgedMessagetId;
     MessageNumber;
     Status;

@@ -1,6 +1,6 @@
 //SessionControl
 
-class SessionControl {
+class SessionControl extends KmmBody {
     SessionControlOpcode;
     SourceDeviceType;
     ScOpcode = {

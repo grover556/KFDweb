@@ -1,6 +1,6 @@
 //InventoryResponseListMnp
 
-class InventoryResponseListMnp {
+class InventoryResponseListMnp extends KmmBody {
     MessageNumberPeriod;
     get MessageId() {
         return this.MessageId.InventoryResponse;

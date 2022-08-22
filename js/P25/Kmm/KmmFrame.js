@@ -4,6 +4,27 @@ class KmmFrame {
     KmmBody;
     // TODO src rsi
     // TODO dest rsi
+    constructor(kmmBody, contents) {
+        /*
+        if (kmmBody == null) {
+            throw "ArgumentNullException";
+        }
+        this.KmmBody = kmmBody;
+        */
+        // Had to get creative becuase JS does not support construtor overloads
+        if (kmmBody instanceof KmmBody) {
+            this.KmmBody = kmmBody;
+        }
+        else if (typeof kmmBody == "boolean") {
+            if (kmmBody) {
+                this.ParseWithPreamble(contents);
+            }
+            else {
+                this.Parse(0x00, contents);
+            }
+        }
+    }
+/*
     constructor(kmmBody) {
         if (kmmBody == null) {
             throw "ArgumentNullException";
@@ -18,6 +39,7 @@ class KmmFrame {
             Parse(0x00, contents);
         }
     }
+*/
     ToBytes() {
         let body = Array.from(this.KmmBody.ToBytes());
         
@@ -94,7 +116,7 @@ class KmmFrame {
         if (contents.length < 10) {
             throw "ArgumentOutOfRangeException";
         }
-
+        console.log("contents", BCTS(contents).join("-"));
         let messageId = contents[0];
 
         let messageLength = 0;
@@ -104,8 +126,9 @@ class KmmFrame {
         let messageBodyLength = messageLength - 7;
         let messageBody = [messageBodyLength];
         messageBody = contents.slice(10, 10 + messageBodyLength);
-
+        console.log("messageBody", BCTS(messageBody).join("-"));
         if (messageId == MessageId.InventoryCommand) {
+            console.log("MessageId = InventoryCommand");
             if (messageBody.length > 0) {
                 let inventoryType = messageBody[0];
 
@@ -125,18 +148,19 @@ class KmmFrame {
                     this.KmmBody = kmmBody;
                 }
                 else {
+                    console.error("unknown inventory command type");
                     throw "unknown inventory command type";
                 }
             }
             else {
+                console.error("inventory command length zero");
                 throw "inventory command length zero";
             }
         }
         else if (messageId == MessageId.InventoryResponse) {
             if (messageBody.length > 0) {
                 let inventoryType = messageBody[0];
-
-                if (inventoryType == InventoryType.ListActiveKsetids) {
+                if (inventoryType == InventoryType.ListActiveKsetIds) {
                     let kmmBody = new InventoryResponseListActiveKsetIds();
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
@@ -171,10 +195,12 @@ class KmmFrame {
                     this.KmmBody = kmmBody;
                 }
                 else {
+                    console.error("unknown inventory response type");
                     throw "unknown inventory response type";
                 }
             }
             else {
+                console.error("inventory response length zero");
                 throw "inventory response length zero";
             }
         }
@@ -231,16 +257,20 @@ class KmmFrame {
                     this.KmmBody = kmmBody;
                 }
                 else {
+                    console.error("unknown session control");
                     throw "unknown session control";
                 }
             }
             else {
+                console.error("session control body length zero");
                 throw "session control body length zero";
             }
         }
         else {
+            console.error("unknown kmm - message id: " + messageId.toString());
             throw "unknown kmm - message id: " + messageId.toString();
         }
+        console.log("kmmBody", this.KmmBody);
     }
     ParseWithPreamble(contents) {
         // TODO bounds check

@@ -1,6 +1,6 @@
 //ZeroizeCommand
 
-class ZeroizeCommand {
+class ZeroizeCommand extends KmmBody {
     get MessageId() {
         return MessageId.ZeroizeCommand;
     }

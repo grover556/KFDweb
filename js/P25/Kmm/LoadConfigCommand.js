@@ -1,6 +1,6 @@
 //LoadConfigCommand
 
-class LoadConfigCommand {
+class LoadConfigCommand extends KmmBody {
     #_kmfRsi;
     #_mnp;
     get KmfRsi() {

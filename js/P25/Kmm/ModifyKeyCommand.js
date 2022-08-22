@@ -1,6 +1,6 @@
 //ModifyKeyCommand
 
-class ModifyKeyCommand {
+class ModifyKeyCommand extends KmmBody {
     #_keysetId;
     #_algorithmId;
     get KeysetId() {
@@ -21,7 +21,7 @@ class ModifyKeyCommand {
         }
         this.#_algorithmId = val;
     }
-    KeyItems;
+    KeyItems = [];
     get MessageId() {
         return MessageId.ModifyKeyCommand;
     }

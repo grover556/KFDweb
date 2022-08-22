@@ -2,7 +2,18 @@
 
 class KeyPartitioner {
     CheckForDifferentKeyLengths(inKeys) {
-
+        let len = new Map();
+        
+        inKeys.forEach((key) => {
+            if (!len.has(key.AlgorithmId)) {
+                len.set(key.AlgorithmId, key.Key.length);
+            }
+            else {
+                if (len.get(key.AlgorithmId) != key.Key.length) {
+                    throw "more than one length of key per algorithm id";
+                }
+            }
+        });
     }
     CalcMaxKeysPerKmm(keyLength) {
         // TODO make this calc more dynamic
@@ -21,13 +32,22 @@ class KeyPartitioner {
         return maxKeys;
     }
     PartitionByAlg(inKeys, outKeys) {
+        let alg = new Map();
 
+        inKeys.forEach((keyItem) => {
+            if (!alg.has(keyItem.AlgorithmId)) {
+                alg.set(keyItem.AlgorithmId, []);
+            }
+            let temp = alg.get(keyItem.AlgorithmId);
+            temp.push(keyItem);
+            alg.set(keyItem.AlgorithmId, temp);
+        });
     }
     PartitionByType(maxKeys, inKeys, outKeys) {
         let tek = new [];
         let kek = new [];
 
-        inKeys.foreach(keyItem => {
+        inKeys.foreach((keyItem) => {
             if (keyItem.IsKek) {
                 kek.push(keyItem);
             }
@@ -41,10 +61,10 @@ class KeyPartitioner {
         this.PartitionByKeyset(maxKeys, kek, outKeys);
     }
     PartitionByActive(maxKeys, inKeys, outKeys) {
-        let act = new [];
-        let def = new [];
+        let act = [];
+        let def = [];
 
-        inKeys.foreach(keyItem => {
+        inKeys.foreach((keyItem) => {
             if (keyItem.UseActiveKeyset) {
                 act.push(keyItem);
             }
@@ -58,16 +78,34 @@ class KeyPartitioner {
         this.PartitionByKeyset(maxKeys, def, outKeys);
     }
     PartitionByKeyset(maxKeys, inKeys, outKeys) {
+        let kset = new Map();
 
+        inKeys.forEach((keyItem) => {
+            if (!kset.has(keyItem.KeysetId)) {
+                kset.set(keyItem.KeysetId, []);
+            }
+            let temp = kset.get(keyItem.KeysetId);
+            temp.push(keyItem);
+            kset.set(keyItem.KeysetId, temp);
+        });
+
+        kset.forEach((ele) => {
+            this.PartitionByLength(maxKeys, ele, outKeys);
+        });
     }
     PartitionByLength(maxKeys, inKeys, outKeys) {
         for (var i=0; i<inKeys.length; i += maxKeys) {
-            outKeys.push(inKeys.GetRange(i, Math.Min(maxKeys, inKeys.length - i)));
+            //outKeys.Add(inKeys.GetRange(i, Math.Min(maxKeys, inKeys.Count - i)));
+            outKeys = outKeys.concat(inKeys.slice(i, Math.min(maxKeys, inKeys.length)))
         }
     }
     PartitionKeys(inKeys) {
-        CheckForDifferentKeyLengths(inKeys);
-
+        this.CheckForDifferentKeyLengths(inKeys);
         
+        let outKeys = [];
+        
+        this.PartitionByAlg(inKeys, outKeys);
+        console.log(outKeys);
+        return outKeys;
     }
 }

@@ -1,6 +1,6 @@
 //ChangeRsiCommand
 
-class ChangeRsiCommand {
+class ChangeRsiCommand extends KmmBody {
     #_changeSequence;
     #_rsiOld;
     #_rsiNew;

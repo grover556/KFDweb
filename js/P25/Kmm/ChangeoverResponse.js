@@ -1,6 +1,6 @@
 //ChangeoverResponse
 
-class ChangeoverResponse {
+class ChangeoverResponse extends KmmBody {
     KeysetIdSuperseded;
     KeysetIdActivated;
     get MessageId() {

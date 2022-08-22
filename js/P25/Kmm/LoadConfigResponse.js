@@ -1,6 +1,6 @@
 //LoadConfigResponse
 
-class LoadConfigResponse {
+class LoadConfigResponse extends KmmBody {
     RSI;
     MN;
     Status;

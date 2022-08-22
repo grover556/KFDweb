@@ -1,6 +1,6 @@
 //InventoryCommandListRsiItems
 
-class InventoryCommandListRsiItems {
+class InventoryCommandListRsiItems extends KmmBody {
     get MessageId() {
         return MessageId.InventoryCommand;
     }

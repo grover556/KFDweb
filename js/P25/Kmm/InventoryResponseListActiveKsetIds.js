@@ -1,46 +1,48 @@
 //InventoryResponseListActiveKsetIds
 
-class InventoryResponseListActiveKsetIds {
+class InventoryResponseListActiveKsetIds extends KmmBody {
     NumberOfItems;
     KsetIds;
     get MessageId() {
-        return this.MessageId.InventoryResponse;
+        return MessageId.InventoryResponse;
     }
     get InventoryType() {
-        return this.InventoryType.ListActiveKsetIds;
+        return InventoryType.ListActiveKsetIds;
     }
     get ResponseKind() {
         return ResponseKind.None;
     }
-    get ToBytes() {
-        var contents = new Uint8Array(4);
+    ToBytes() {
+        let contents = [];
 
         /* inventory type */
-        contents[0] = (InventoryType);
+        contents.push(this.InventoryType);
 
         /* number of items */
-        contents[1] = ((this.KsetIds.length >> 8) & 0xFF);
-        contents[2] = (this.KsetIds.length & 0xFF);
+        contents.push((this.KsetIds.length >> 8) & 0xFF);
+        contents.push(this.KsetIds.length && 0xFF);
 
-        /* items */
-        contents.AddRange(this.KsetIds);
+        for (var i=0; i<this.KsetIds.length; i++) {
+            contents.push(KsetIds[i]);
+        }
 
         return contents;
     }
     Parse(contents) {
+        this.KsetIds = [];
         if (contents.length < 3) {
             throw "length mismatch - expected at least 3, got " + contents.length;
         }
 
         /* inventory type */
-        if (contents[0] != InventoryType) {
+        if (contents[0] != this.InventoryType) {
             throw "inventory type mismatch";
         }
 
         /* number of items */
         this.NumberOfItems |= contents[1] << 8;
         this.NumberOfItems |= contents[2];
-
+        
         /* items */
         if ((this.NumberOfItems == 0) && (contents.length == 3)) {
             return;

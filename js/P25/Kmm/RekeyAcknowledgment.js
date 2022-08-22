@@ -1,6 +1,6 @@
 //RekeyAcknowledgment
 
-class RekeyAcknowledgment {
+class RekeyAcknowledgment extends KmmBody {
     MessageIdAcknowleged;
     NumberOfItems;
     Keys;

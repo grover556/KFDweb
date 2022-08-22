@@ -544,7 +544,7 @@ class AdapterProtocol {
     async GetByte(timeout) {
         console.log("GetByte");
         let rsp = await readWithTimeout(timeout);
-        console.log("byte rsp:", BCTS(rsp).join("-"));
+        //console.log("byte rsp:", BCTS(rsp).join("-"));
         //rsp = UnpackResponse(rsp);
         
         /*

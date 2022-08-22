@@ -1,6 +1,6 @@
 //InventoryCommandListKeysetTaggingInfo
 
-class InventoryCommandListKeysetTaggingInfo {
+class InventoryCommandListKeysetTaggingInfo extends KmmBody {
     get MessageId() {
         return MessageId.InventoryCommand;
     }

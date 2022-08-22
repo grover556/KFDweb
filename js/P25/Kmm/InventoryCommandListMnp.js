@@ -1,6 +1,6 @@
 //InventoryCommandListMnp
 
-class InventoryCommandListMnp {
+class InventoryCommandListMnp extends KmmBody {
     get MessageId() {
         return MessageId.InventoryCommand;
     }
