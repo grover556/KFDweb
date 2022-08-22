@@ -499,7 +499,7 @@ class AdapterProtocol {
     }
     async SendByte(dataByte) {
         let cmd = [];
-        
+        console.log("SendByte", dataByte.toString(16).toUpperCase().padStart(2,"0"));
         /*
             CMD: SEND BYTE
             [0] CMD_SEND_BYTE
@@ -513,7 +513,7 @@ class AdapterProtocol {
         
         //SEND
         //let rsp = await Send(cmd);
-        await SendSerial(cmd);
+        SendSerial(cmd);
         let rsp = await readWithTimeout(AP_TIMEOUT);
         rsp = UnpackResponse(rsp);
         //console.log("rsp", rsp);
@@ -543,6 +543,7 @@ class AdapterProtocol {
         console.log("GetByte");
         let rsp = await readWithTimeout(timeout);
         rsp = UnpackResponse(rsp);
+        
         /*
             BCST: RECEIVE BYTE
             
@@ -553,6 +554,7 @@ class AdapterProtocol {
 
         if (rsp.length == 3) {
             if (rsp[0] == BCST_RECEIVE_BYTE) {
+                console.log("byte:", rsp[2].toString(16).toUpperCase().padStart(2, "0"));
                 return rsp[2];
             }
             else {

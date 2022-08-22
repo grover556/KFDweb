@@ -29,7 +29,7 @@ class ManualRekeyApplication {
         let commandKmmFrame = new KmmFrame(commandKmmBody);
         
         let toRadio = this.WithPreamble ? commandKmmFrame.ToBytesWithPreamble(this.Mfid) : commandKmmFrame.ToBytes();
-        console.log("DeviceProtocol.PerformKmmTransfer(toRadio)", BCTS(toRadio).join("-"));
+        //console.log("DeviceProtocol.PerformKmmTransfer(toRadio)", BCTS(toRadio).join("-"));
         let fromRadio = await this.DeviceProtocol.PerformKmmTransfer(toRadio);
         console.log("TxRxKmm fromRadio", fromRadio);
         let responseKmmFrame = new KmmFrame(WithPreamble, fromRadio);

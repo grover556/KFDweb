@@ -59,7 +59,7 @@ class ThreeWireProtocol {
 
         frame.push(crc[0]); // crc high byte
         frame.push(crc[1]); // crc low byte
-        
+
         return frame;
     }
     async ParseKmmFrame() {
@@ -67,31 +67,31 @@ class ThreeWireProtocol {
         let length = 0;
 
         // receive length high byte
-        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD);
 
         length |= (temp & 0xFF) << 8;
 
         // receive length low byte
-        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD);
 
         length |= temp & 0xFF;
 
         let toCrc = [];
 
         // receive control
-        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD);
         toCrc.push(temp);
 
         // receive dest rsi high byte
-        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD);
         toCrc.push(temp);
 
         // receive dest rsi mid byte
-        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD);
         toCrc.push(temp);
 
         // receive dest rsi low byte
-        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD);
         toCrc.push(temp);
 
         let bodyLength = length - 6;
@@ -99,7 +99,7 @@ class ThreeWireProtocol {
         let kmm = [];
 
         for (var i=0;i<bodyLength;i++) {
-            temp = this.Protocol.GetByte(TIMEOUT_STD);
+            temp = await this.Protocol.GetByte(TIMEOUT_STD);
             kmm.push(temp);
         }
 
@@ -111,10 +111,10 @@ class ThreeWireProtocol {
         let crc = [2];
 
         // receive crc high byte
-        crc[0] = this.Protocol.GetByte(TIMEOUT_STD);
+        crc[0] = await this.Protocol.GetByte(TIMEOUT_STD);
 
         // receive crc low byte
-        crc[1] = this.Protocol.GetByte(TIMEOUT_STD);
+        crc[1] = await this.Protocol.GetByte(TIMEOUT_STD);
 
         if (expectedCrc[1] != crc[1]) {
             console.error("mr: crc low byte mismatch");
@@ -129,7 +129,7 @@ class ThreeWireProtocol {
         this.Protocol.SendData(cmd1);
 
         // receive transfer done opcode
-        let rsp1 = this.Protocol.GetByte(TIMEOUT_STD);
+        let rsp1 = await this.Protocol.GetByte(TIMEOUT_STD);
         if (rsp1 != OPCODE_TRANSFER_DONE) {
             console.error("mr: unexpected opcode");
         }
@@ -140,21 +140,23 @@ class ThreeWireProtocol {
         this.Protocol.SendData(cmd2);
 
         // receive disconnect ack opcode
-        let rsp2 = this.Protocol.GetByte(TIMEOUT_STD);
+        let rsp2 = await this.Protocol.GetByte(TIMEOUT_STD);
         if (rsp2 != OPCODE_DISCONNECT_ACK) {
             console.error("mr: unexpected opcode");
         }
     }
     async SendKmm(inKmm) {
+        console.log("TWP.SendKmm inKmm", BCTS(inKmm).join("-"));
         if (inKmm.length > 512) {
             console.error("kmm exceeds max size");
         }
         
-        let txFrame = this.CreateKmmFrame(inKmm);
-        
-        await this.Protocol.SendData(txFrame);
+        let txFrame = await this.CreateKmmFrame(inKmm);
+        console.log("TWP.SendKmm txFrame", BCTS(txFrame).join("-"));
+        this.Protocol.SendData(txFrame);
     }
     async PerformKmmTransfer(inKmm) {
+        console.log("TWP.PerformKmmTransfer(toRadio)", BCTS(inKmm).join("-"));
         // send kmm frame
         await this.SendKmm(inKmm);
 
