@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCJJFJPEDS"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-DCJJFJPEDS');
+        </script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -8,25 +16,71 @@
         <meta http-equiv="Expires" content="0" />
     	<title>KFDtool Web</title>
     	<link rel="shortcut icon" href="favicon.ico">
+		<link rel="stylesheet" href="css/layout.css" />
     	<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
     	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
     	<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-		<script src="js/P25/Constant/AlgorithmId.js"></script>
-        <script src="js/Adaptor/Protocol/Adapter/AdapterProtocol.js"></script>
+		<script src="js/Adaptor/Protocol/Adapter/AdapterProtocol.js"></script>
         <script src="js/Adaptor/Protocol/Serial/SerialProtocol.js"></script>
-        <script src="js/P25/Kmm/KmmBody.js"></script>
-        <script src="js/P25/Kmm/KmmFrame.js"></script>
-        <script src="js/P25/Kmm/KeyItem.js"></script>
-        <script src="js/P25/Kmm/ModifyKeyCommand.js"></script>
-        <script src="js/Container/KeyContainer.js?v=12"></script>
-        <script src="js/P25/Generator/KeyGenerator.js"></script>
+		
+		<script src="js/Container/KeyContainer.js"></script>
+		
+		<script src="js/P25/Constant/AlgorithmId.js"></script>
+		
+		<script src="js/P25/Generator/KeyGenerator.js"></script>
+		
+		<script src="js/P25/Kmm/ChangeoverCommand.js"></script>
+		<script src="js/P25/Kmm/ChangeoverResponse.js"></script>
+		<script src="js/P25/Kmm/ChangeRsiCommand.js"></script>
+		<script src="js/P25/Kmm/ChangeRsiResponse.js"></script>
+		<script src="js/P25/Kmm/InventoryCommandListActiveKeys.js"></script>
+		<script src="js/P25/Kmm/InventoryCommandListActiveKsetIds.js"></script>
+		<script src="js/P25/Kmm/InventoryCommandListKeysetTaggingInfo.js"></script>
+		<script src="js/P25/Kmm/InventoryCommandListKmfRsi.js"></script>
+		<script src="js/P25/Kmm/InventoryCommandListMnp.js"></script>
+		<script src="js/P25/Kmm/InventoryCommandListRsiItems.js"></script>
+		<script src="js/P25/Kmm/InventoryResponseListActiveKeys.js"></script>
+		<script src="js/P25/Kmm/InventoryResponseListActiveKsetIds.js"></script>
+		<script src="js/P25/Kmm/InventoryResponseListKeysetTaggingInfo.js"></script>
+		<script src="js/P25/Kmm/InventoryResponseListKmfRsi.js"></script>
+		<script src="js/P25/Kmm/InventoryResponseListMnp.js"></script>
+		<script src="js/P25/Kmm/InventoryResponseListRsiItems.js"></script>
+		<script src="js/P25/Kmm/InventoryType.js"></script>
+		<script src="js/P25/Kmm/KeyInfo.js"></script>
+		<script src="js/P25/Kmm/KeyItem.js"></script>
+		<script src="js/P25/Kmm/KeysetItem.js"></script>
+		<script src="js/P25/Kmm/KeyStatus.js"></script>
+		<script src="js/P25/Kmm/KmmBody.js"></script>
+		<script src="js/P25/Kmm/KmmFrame.js"></script>
+		<script src="js/P25/Kmm/LoadConfigCommand.js"></script>
+		<script src="js/P25/Kmm/LoadConfigResponse.js"></script>
+		<script src="js/P25/Kmm/MessageId.js"></script>
+		<script src="js/P25/Kmm/Mfid90SessionControlVer1.js"></script>
+		<script src="js/P25/Kmm/ModifyKeyCommand.js"></script>
+		<script src="js/P25/Kmm/NegativeAcknowledgment.js"></script>
+		<script src="js/P25/Kmm/OperationStatus.js"></script>
+		<script src="js/P25/Kmm/RekeyAcknowledgment.js"></script>
+		<script src="js/P25/Kmm/ResponseKind.js"></script>
+		<script src="js/P25/Kmm/RsiItem.js"></script>
+		<script src="js/P25/Kmm/SessionControl.js"></script>
+		<script src="js/P25/Kmm/ZeroizeCommand.js"></script>
+		<script src="js/P25/Kmm/ZeroizeReponse.js"></script>
+
+        <script src="js/P25/ManualRekey/ManualRekeyApplication.js"></script>
+		
+		<script src="js/P25/Partition/KeyPartitioner.js"></script>
+		
+		<script src="js/P25/ThreeWire/CRC16.js"></script>
 		<script src="js/P25/ThreeWire/ThreeWireProtocol.js"></script>
-        <script src="js/P25/ThreeWire/CRC16.js"></script>
+		
 		<script src="js/P25/Validator/FieldValidator.js"></script>
-		<script src="js/Shared/Utility.js?v=12"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.13/dist/serial.js"></script> 
-    	<link rel="stylesheet" href="css/layout.css" />
+		
+		<script src="js/Shared/Utility.js"></script>
+
+		<script src="js/utilities.js"></script>
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.13/dist/serial.js"></script>
     </head>
     <body>
         <div data-role="page">
@@ -80,6 +134,7 @@
                 	<h3>Configure Key Fill Device</h3>
                 	<button id="buttonConnectKfd">Connect KFD</button>
                 	<button id="buttonDisconnectKfd">Disconnect KFD</button>
+					<button id="buttonSendTest">Send Test Message</button>
                 	<p><h3>Connection method:</h3><span id="connectionMethod"></span></p>
                 	<p><h3>Connection status:</h3><span id="connectionStatus">Disconnected</span></p>
                 	<p><h3>Device properties:</h3><span id="deviceProperties"></span></p>
@@ -103,7 +158,7 @@
                 	</div>
                 	<div class="ui-field-contain">
                         <label for="loadKeySingle_name">Name:</label>
-                    	<input type="text" id="loadKeySingle_name" placeholder="" value="">
+                    	<input type="text" id="loadKeySingle_name" placeholder="" value="" maxlength="31">
                 	</div>
                 	<div class="ui-field-contain" id="activeKeysetSlider">
                     	<label for="loadKeySingle_activeKeysetSlider">Active Keyset:</label>
@@ -114,11 +169,11 @@
                 	</div>
                 	<div class="ui-field-contain"id="loadKeySingle_keysetDiv" style="display:none;">
                         <label for="loadKeySingle_keysetId">Keyset ID:</label>
-                    	<input class="hexdec-input" type="text" name="loadKeySingle_keysetId" id="loadKeySingle_keysetId" placeholder="" value="" data-min-value="0" data-max-value="255">
+                    	<input class="hexdec-input" type="text" name="loadKeySingle_keysetId" id="loadKeySingle_keysetId" placeholder="" value="" data-min-value="1" data-max-value="255">
                 	</div>
                 	<div class="ui-field-contain">
                     	<label for="loadKeySingle_SlnCkr">SLN/CKR:</label>
-                    	<input class="hexdec-input" type="text" name="loadKeySingle_SlnCkr" id="loadKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="255">
+                    	<input class="hexdec-input" type="text" name="loadKeySingle_SlnCkr" id="loadKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="65535">
                 	</div>
                 	<div class="ui-field-contain">
                 	<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
@@ -133,7 +188,7 @@
                 	</div>
                 	<div class="ui-field-contain">
                     	<label for="loadKeySingle_keyId">Key ID:</label>
-                    	<input class="hexdec-input" type="text" name="loadKeySingle_keyId" id="loadKeySingle_keyId" placeholder="" value="" data-min-value="0" data-max-value="255">
+                    	<input class="hexdec-input" type="text" name="loadKeySingle_keyId" id="loadKeySingle_keyId" placeholder="" value="" data-min-value="0" data-max-value="65535">
                 	</div>
                 	<div class="ui-field-contain">
                     	<label for="loadKeySingle_algorithm" class="select">Algorithm</label>
@@ -163,7 +218,7 @@
                 	</div>
                     <div class="ui-field-contain">
                     	<label for="loadKeySingle_key" id="label_loadKeySingle_key">Key (hex): (0/64 digits)</label>
-                    	<input class="hex-input key-input" type="password" name="loadKeySingle_key" id="loadKeySingle_key" pattern="[a-fA-F\d]+" placeholder="" value="">
+                    	<input class="hex-input key-input" type="password" name="loadKeySingle_key" id="loadKeySingle_key" pattern="[a-fA-F\d]+" placeholder="" value="" maxlength="64">
                 	</div>
                 	<div class="ui-field-contain">
                     	<button id="buttonGenerateRandomKey" class="ui-btn ui-btn-inline">Generate key</button>
@@ -190,11 +245,11 @@
                 	</div>
                 	<div class="ui-field-contain">
                         <label for="eraseKeySingle_keysetId">Keyset ID:</label>
-                    	<input class="hexdec-input" type="text" name="eraseKeySingle_keysetId" id="eraseKeySingle_keysetId" placeholder="" value="" data-min-value="0" data-max-value="255">
+                    	<input class="hexdec-input" type="text" name="eraseKeySingle_keysetId" id="eraseKeySingle_keysetId" placeholder="" value="" data-min-value="1" data-max-value="255">
                 	</div>
                 	<div class="ui-field-contain">
                     	<label for="eraseKeySingle_SlnCkr">SLN/CKR:</label>
-                    	<input class="hexdec-input" type="text" name="eraseKeySingle_SlnCkr" id="eraseKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="255">
+                    	<input class="hexdec-input" type="text" name="eraseKeySingle_SlnCkr" id="eraseKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="65535">
                 	</div>
                 	<div class="ui-field-contain">
                     	<button id="buttonEraseKeyFromRadio" class="ui-btn ui-btn-inline">Erase From Radio</button>

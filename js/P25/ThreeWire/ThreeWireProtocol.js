@@ -8,73 +8,182 @@ const OPCODE_KMM = 0xC2;
 const OPCODE_DISCONNECT_ACK = 0x90;
 const OPCODE_DISCONNECT = 0x92;
 
-
-function SendKeySignature() {
-    
-}
-
-function InitSession() {
-    // send ready req opcode
-    var cmd = [];
-    cmd.push(OPCODE_READY_REQ);
-    //SendData(cmd);
-    
-    // receive ready general mode opcode
-    var rsp = Protocol.GetByte(TIMEOUT_STD);
-    if (rsp != OPCODE_READY_GENERAL_MODE) {
-        console.error("mr: unexpected opcode");
+class ThreeWireProtocol {
+    Protocol = new AdapterProtocol();
+    async SendKeySignature() {
+        await this.Protocol.SendKeySignature();
     }
-}
+    async InitSession() {
+        // send ready req opcode
+        var cmd = [];
+        cmd.push(OPCODE_READY_REQ);
+        //SendData(cmd);
+        await this.Protocol.SendData(cmd);
 
-function CheckTargetMrConnection() {
-    SendKeySignature();
-    InitSession();
-    EndSession();
-}
+        // receive ready general mode opcode
+        var rsp = await this.Protocol.GetByte(TIMEOUT_STD);
+        
+        if (rsp != OPCODE_READY_GENERAL_MODE) {
+            console.error("mr: unexpected opcode");
+        }
+    }
+    async CheckTargetMrConnection() {
+        await this.SendKeySignature();
+        await this.InitSession();
+        await this.EndSession();
+    }
+    async CreateKmmFrame(kmm) {
+        // create body
+        let body = [];
 
-function CreateKmmFrame(kmm) {
-    // create body
-    var body = [];
-    
-    body.push(0x00); // control
-    body.push(0xff); // destination RSI high byte
-    body.push(0xff); // destination RSI mid byte
-    body.push(0xff); // destination RSI low byte
-    body.push(kmm);
-    
-    // calculate crc
-    var crc = CalculateCrc(body);
-    
-    // create frame
-    var frame = [];
-    
-    var len = body.length + 2; // control + dest rsi + kmm + crc
-    
-    frame.push(OPCODE_KMM); // kmm opcode
-    
-    frame.push((byte)((length >> 8) & 0xFF)); // length high byte
-    frame.push((byte)(length & 0xFF)); // length low byte
-    
-    frame.push(body); // kmm body
-    
-    frame.push(crc[0]); // crc high byte
-    frame.push(crc[1]); // crc low byte
-    
-    return frame;
-}
+        body.push(0x00); // control
+        body.push(0xFF); // destination RSI high byte
+        body.push(0xFF); // destination RSI mid byte
+        body.push(0xFF); // destination RSI lob byte
+        body = body.concat(kmm); //kmm
 
-function ParseKmmFrame() {
-    
-}
+        // calculate crc
+        let crc = CalculateCrc(body);
 
-function EndSession() {
-    
-}
+        // create frame
+        let frame = [];
 
-function SendKmm(inKmm) {
-    
-}
+        let length = body.length + 2; // control + dest rsi + kmm + crc
 
-function PerformKmmTransfer(inKmm) {
-    
+        frame.push(OPCODE_KMM); // kmm opcode
+
+        frame.push((length >> 8) & 0xFF); // length high byte
+        frame.push(length & 0xFF); // length low byte
+
+        frame = frame.concat(body); // kmm body
+
+        frame.push(crc[0]); // crc high byte
+        frame.push(crc[1]); // crc low byte
+        
+        return frame;
+    }
+    async ParseKmmFrame() {
+        let temp = [];
+        let length = 0;
+
+        // receive length high byte
+        temp = this.Protocol.GetByte(TIMEOUT_STD);
+
+        length |= (temp & 0xFF) << 8;
+
+        // receive length low byte
+        temp = this.Protocol.GetByte(TIMEOUT_STD);
+
+        length |= temp & 0xFF;
+
+        let toCrc = [];
+
+        // receive control
+        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        toCrc.push(temp);
+
+        // receive dest rsi high byte
+        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        toCrc.push(temp);
+
+        // receive dest rsi mid byte
+        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        toCrc.push(temp);
+
+        // receive dest rsi low byte
+        temp = this.Protocol.GetByte(TIMEOUT_STD);
+        toCrc.push(temp);
+
+        let bodyLength = length - 6;
+
+        let kmm = [];
+
+        for (var i=0;i<bodyLength;i++) {
+            temp = this.Protocol.GetByte(TIMEOUT_STD);
+            kmm.push(temp);
+        }
+
+        toCrc = toCrc.concat(kmm);
+
+        // calculate crc
+        let expectedCrc = CalculateCrc(toCrc);
+
+        let crc = [2];
+
+        // receive crc high byte
+        crc[0] = this.Protocol.GetByte(TIMEOUT_STD);
+
+        // receive crc low byte
+        crc[1] = this.Protocol.GetByte(TIMEOUT_STD);
+
+        if (expectedCrc[1] != crc[1]) {
+            console.error("mr: crc low byte mismatch");
+        }
+        
+        return kmm;
+    }
+    async EndSession() {
+        // send transfer done opcode
+        let cmd1 = [];
+        cmd1.push(OPCODE_TRANSFER_DONE);
+        this.Protocol.SendData(cmd1);
+
+        // receive transfer done opcode
+        let rsp1 = this.Protocol.GetByte(TIMEOUT_STD);
+        if (rsp1 != OPCODE_TRANSFER_DONE) {
+            console.error("mr: unexpected opcode");
+        }
+
+        // send disconnect opcode
+        let cmd2 = [];
+        cmd2.push(OPCODE_DISCONNECT);
+        this.Protocol.SendData(cmd2);
+
+        // receive disconnect ack opcode
+        let rsp2 = this.Protocol.GetByte(TIMEOUT_STD);
+        if (rsp2 != OPCODE_DISCONNECT_ACK) {
+            console.error("mr: unexpected opcode");
+        }
+    }
+    async SendKmm(inKmm) {
+        if (inKmm.length > 512) {
+            console.error("kmm exceeds max size");
+        }
+        
+        let txFrame = this.CreateKmmFrame(inKmm);
+        
+        await this.Protocol.SendData(txFrame);
+    }
+    async PerformKmmTransfer(inKmm) {
+        // send kmm frame
+        await this.SendKmm(inKmm);
+
+        let rx;
+
+        // receive kmm opcode
+        try {
+            rx = await this.Protocol.GetByte(TIMEOUT_STD);
+            console.log(rx);
+        }
+        catch (exception) {
+            console.error("in: timed out waiting for kmm opcode", exception);
+        }
+
+        if (rx == OPCODE_KMM) {
+            console.log("in: got kmm opcode");
+        }
+        else {
+            console.error("in: unexpected kmm opcode, expected " + OPCODE_KMM + " got " + rx);
+        }
+
+        // receive kmm frame
+        let rxFrame = this.ParseKmmFrame();
+
+        console.log("MR -> KFD KMM FRAME:", BCTS(rxFrame).join("-"));
+
+        return rxFrame;
+    }
+    async MrRunProducer() {
+        // NOT IMPLEMENTED
+    }
 }

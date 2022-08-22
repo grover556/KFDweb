@@ -11,7 +11,7 @@ class SessionControl {
         EndSessionAck: 0x05,
         Disconnect: 0x06,
         DisconnectAck: 0x07
-    },
+    }
     ScSourceDeviceType = {
         Kfd: 0x01,
         Mr: 0x02
@@ -29,7 +29,7 @@ class SessionControl {
         contents[2] = SourceDeviceType;
         return contents;
     }
-    get Parse(contents) {
+    Parse(contents) {
         if (contents[0] != 0x00) {
             throw "Unsupported version";
         }

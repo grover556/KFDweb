@@ -29,3 +29,11 @@ function hex2dec(hex) {
     // hex2dec("FF") returns 255
     return parseInt(hex, 16).toString(10);
 }
+
+function BCTS(decArr) {
+    let hexArr = [];
+    for (let i=0; i<decArr.length; i++) {
+        hexArr.push(decArr[i].toString(16).toUpperCase().padStart(2, "0"));
+    }
+    return hexArr;
+}

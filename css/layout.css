@@ -11,7 +11,7 @@
 }
 .invalid {
     color: red;
-    border: 2px solid red;
+    /*border: 2px solid red;*/
 }
 #iconLock {
     background-color: rgba(255,0,0,0.3);

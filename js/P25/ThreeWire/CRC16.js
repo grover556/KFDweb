@@ -44,12 +44,26 @@ var crcTable = [
     0x3DE3, 0x2C6A, 0x1EF1, 0x0F78
 ];
 
-function CalculateCrc(value) {
-    var crc = 0xffff;
-    for (var i = 0; i < value.length; i++) {
-        c = value.charCodeAt(i);
-        var j = (c ^ (crc >> 8)) & 0xFF;
-        crc = crcTable[j] ^ (crc << 8);
+class CRC16 {
+    CalculateCrc(value) {
+        let crc = 65535;
+        for (var i=0; i<value.length; i++) {
+            crc = (crcTable[value[i] ^ (crc & 0xFF)] ^ (crc >> 8));
+        }
+        let list = [2];
+        list[0] = crc & 0xFF;
+        list[1] = crc >> 8;
+        return list;
     }
-    return ((crc ^ 0) & 0xFFFF);
+}
+
+function CalculateCrc(value) {
+    let crc = 65535;
+    for (var i=0; i<value.length; i++) {
+        crc = (crcTable[value[i] ^ (crc & 0xFF)] ^ (crc >> 8));
+    }
+    let list = [2];
+    list[0] = crc & 0xFF;
+    list[1] = crc >> 8;
+    return list;
 }

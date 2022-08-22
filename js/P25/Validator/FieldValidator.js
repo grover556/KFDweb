@@ -141,19 +141,17 @@ function IsValidAlgorithmId(algId) {
 }
 
 function IsValidSingleDesKeyParity(key) {
-    // TODO: NEED TO FINISH CONVERTING FROM C#
     if (key.length != 8) {
         return false;
     }
-    let result = true;
+    
+    for (var index=0;index<key.length; index++) {
+        let set = Boolean(key[index] & 0x01);// least significant bit is the parity bit
 
-    for (var i=0; i<key.length; i++) {
-        let set = Boolean(key[i] & 0x01);
-
-        let c = Byte(key[i] & 0xFE);
-        let tmp1 = Byte((c & 0xF) ^ (c >> 4));
-        let tmp2 = Byte((tmp1 & 0x3) ^ (tmp1 >> 2));
-        let sumBitsMod2 = Byte((tmp2 & 0x1) ^ (tmp2 >> 1));
+        let c = (key[index] & 0xFE);
+        var tmp1 = ((c & 0xF) ^ (c >> 4));
+        var tmp2 = ((tmp1 & 0x3) ^ (tmp1 >> 2));
+        var sumBitsMod2 = ((tmp2 & 0x1) ^ (tmp2 >> 1));
 
         let calc = false;
 
@@ -161,7 +159,7 @@ function IsValidSingleDesKeyParity(key) {
             calc = true;
         }
 
-        if (set != calc) { // parity bit is incorrect
+        if (set != calc) {// parity bit is incorrect
             return false;
         }
     }

@@ -9,6 +9,7 @@
 //https://github.com/google/web-serial-polyfill/issues
 
 let inputType = "dec";
+let inputBase = 10;
 let xmlDoc;
 
 let secureContext = false;
@@ -144,10 +145,13 @@ $("#buttonLoadKeyToRadio").on("click", function() {
 });
 
 function CreateKeyFromFields() {
+    // Disabled for use of inputBase, and replaced below on assigning keyItem fields
+    /*
     let base = 10;
     if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "hex") {
         base = 16;
     }
+    */
     let keyItem = {};
     let auto = false;
     let tek = false;
@@ -196,11 +200,11 @@ function CreateKeyFromFields() {
     }
     
     keyItem.Id = _keyContainer.nextKeyNumber;
-    keyItem.KeysetId = parseInt($("#loadKeySingle_keysetId").val(), base);
+    keyItem.KeysetId = parseInt($("#loadKeySingle_keysetId").val(), inputBase);
     //keyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
-    keyItem.Sln = parseInt($("#loadKeySingle_SlnCkr").val(), base);
-    keyItem.KeyId = parseInt($("#loadKeySingle_keyId").val(), base);
-    keyItem.AlgorithmId = parseInt($("#loadKeySingle_algorithmOther").val(), base);
+    keyItem.Sln = parseInt($("#loadKeySingle_SlnCkr").val(), inputBase);
+    keyItem.KeyId = parseInt($("#loadKeySingle_keyId").val(), inputBase);
+    keyItem.AlgorithmId = parseInt($("#loadKeySingle_algorithmOther").val(), inputBase);
     keyString = $("#loadKeySingle_key").val();
     if (keyString.length % 2 != 0) {
         alert("Key length is not valid");
@@ -308,6 +312,7 @@ $("#buttonGenerateRandomKey").click(function() {
     let parity = $("#loadKeySingle_algorithm option:selected").data("parity");
     key = generateRandomKey(keylen, parity);
     $("#loadKeySingle_key").val(key);
+    $("#loadKeySingle_key").attr("maxlength", keylen*2);
     $("#label_loadKeySingle_key").text("Key (hex): (" + keylen*2 + "/" + keylen*2 + " digits)");
     // Flash the key field to indicate that a new key has been generated
     $("#loadKeySingle_key").fadeTo(100, 0.25, function() { $(this).fadeTo(500, 1.0); });
@@ -337,10 +342,12 @@ $(".hex-input").keyup(function() {
         if (maxKeylenBytes == 0) maxKeylenBytes = 512;
         //$("#label_" + eleId).text("Key (hex): (" + $(this).val().length + "/" + maxKeylenBytes + ") bytes");
         textInput.val(textInput.val().replace(/[^a-fA-F0-9\n\r]+/g, '').toUpperCase());
+        /*
         if (textInput.val().length > maxKeylenBytes) {
             //textInput.val(textInput.val().slice(0, -1));
             textInput.val(textInput.val().slice(0, maxKeylenBytes));
         }
+        */
         $("#label_" + eleId).text("Key (hex): (" + textInput.val().length + "/" + maxKeylenBytes + " digits)");
     }
     else {
@@ -360,44 +367,23 @@ $(".hexdec-input").keyup(function() {
     if (inputType == "dec") {
         $(this).val(curVal.replace(/[^0-9\n\r]+/g, ''));
     }
-    else if (inputType = "hex") {
+    else if (inputType == "hex") {
         $(this).val(curVal.replace(/[^a-fA-F0-9\n\r]+/g, '').toUpperCase());
     }
-});
-
-$("#loadKeySingle_keysetId").keyup(function() {
-    let decValue = 0;
-    let maxValue = parseInt($("#loadKeySingle_keysetId").data("max-value"));
-    /*
-    if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "hex") {
-        let decVal = parseInt($("#loadKeySingle_keysetId").val(), 16);
-        if (decVal > maxValue) {
-            $("#loadKeySingle_keysetId").parent().addClass("invalid");
+    if ($(this).data().hasOwnProperty("maxValue")) {
+        let minValue = $(this).data("minValue");
+        let maxValue = $(this).data("maxValue");
+        let maxLength = maxValue.toString(inputBase).length;
+        $(this).attr("maxlength", maxLength);//Doesn't work right when 5 digits are entered in Dec mode then switch to Hex - maxlength is still 5, which allows FFFFF to be entered
+        let actualValue = parseInt($(this).val(), inputBase);
+        if ((actualValue < minValue) || (actualValue > maxValue)) {
+            $(this).parent().addClass("invalid");
+            $(this).parent().removeClass("ui-body-inherit");
         }
         else {
-            $("#loadKeySingle_keysetId").parent().removeClass("invalid");
+            $(this).parent().removeClass("invalid");
+            $(this).parent().addClass("ui-body-inherit");
         }
-    }
-    else if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "dec") {
-        if ($("#loadKeySingle_keysetId").val() > maxValue) {
-            $("#loadKeySingle_keysetId").parent().addClass("invalid").change();
-        }
-        else {
-            $("#loadKeySingle_keysetId").parent().removeClass("invalid").change();
-        }
-    }
-    */
-    if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "hex") {
-        decValue = parseInt($("#loadKeySingle_keysetId").val(), 16);
-    }
-    else if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "dec") {
-        decValue = parseInt($("#loadKeySingle_keysetId").val());
-    }
-    if (decValue > maxValue) {
-        $("#loadKeySingle_keysetId").parent().addClass("invalid");
-    }
-    else {
-        $("#loadKeySingle_keysetId").parent().removeClass("invalid");
     }
 });
 
@@ -434,6 +420,7 @@ $("#loadKeySingle_algorithm").change(function() {
         $("#label_loadKeySingle_key").text("Key (hex):");
     }
     $("#loadKeySingle_key").val("");
+    $("#loadKeySingle_key").attr("maxlength", maxKeylenBytes);
 });
 
 $("#loadKeySingle_toggleKeyVis").change(function() {
@@ -483,6 +470,35 @@ $("#buttonDisconnectKfd").click(function() {
     console.log("buttonDisconnectKfd clicked");
 });
 
+$("#buttonSendTest").click(async function() {
+    console.log("buttonSendTest clicked");
+    //let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
+    //let rspKmmBody1 = TxRxKmm(cmdKmmBody1);
+    //console.log(rspKmmBody1);
+    //console.log(cmdKmmBody1);
+    //console.log(cmdKmmBody1.ToBytes());
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let testResults = mra.TestMessage();
+
+/*
+    let testResults;
+    testResults = await ap.SendKeySignature();
+    
+    testResults = await ap.SendData(OPCODE_READY_REQ);
+    testResults = await ap.SendData(
+        [
+            0xc2,0x00,0x11,0x00,0xff,0xff,0xff,
+            0x0d,0x00,0x08,0x80,0xff,0xff,0xff,
+            0xff,0xff,0xff,0x02,0x3b,0x80
+        ]
+    );
+    testResults = await ap.SendData(OPCODE_TRANSFER_DONE);
+    testResults = await ap.SendData(OPCODE_DISCONNECT);
+*/
+    //console.log(testResults);
+});
+
 async function DownloadEkc(keyContainer, password, filename) {
     $.mobile.loading("show", { text: "Processing...", textVisible: true});
     let outerContainerCompressed = await CreateEkc(keyContainer, password);
@@ -514,6 +530,7 @@ async function ConnectToDevice() {
         $("#connectionMethod").text("Web Serial API");
         connectionMethod = "ws";
         await connectSerial();
+        //readUntilClosed();
         //await connectPolyfill();
         if (connected) ReadDeviceSettings();
     }
@@ -523,7 +540,7 @@ async function ConnectToDevice() {
         $("#connectionMethod").text("Web USB Polyfill");
         connectionMethod = "poly";
         await connectPolyfill();
-        if (connected) ReadDeviceSettings();
+        if (connected) await ReadDeviceSettings();
     }
 }
 
@@ -531,27 +548,29 @@ async function ReadDeviceSettings() {
     let device = {};
     
     device.type = "KFDtool P25 KFD";
+
+    let ap = new AdapterProtocol();
     
-    let apVersion = await ReadAdapterProtocolVersion();//NOTHING
+    let apVersion = await ap.ReadAdapterProtocolVersion();//NOTHING
     device.adapterProtocolVersion = apVersion.join(".");
     
-    let fwVersion = await ReadFirmwareVersion();
+    let fwVersion = await ap.ReadFirmwareVersion();
     device.firmwareVersion = fwVersion.join(".");
     
-    let uniqueId = await ReadUniqueId();
+    let uniqueId = await ap.ReadUniqueId();
     device.uniqueId = uniqueId.join("");
     
-    let modelId = await ReadModelId();
-    //device.modelId = modelId.join();
+    let modelId = await ap.ReadModelId();
+    ////device.modelId = modelId.join();
     device.modelId = modelId;
     
-    let hwVersion = await ReadHardwareRevision();
+    let hwVersion = await ap.ReadHardwareRevision();
     device.hardwareVersion = hwVersion.join(".");
 
-    let serial = await ReadSerialNumber();
+    let serial = await ap.ReadSerialNumber();
     let serialString = serial.map(hex => String.fromCharCode(hex));
     device.serial = serialString.join("");
-    //$("#deviceProperties").html(device.serial);
+    ////$("#deviceProperties").html(device.serial);
     
     //console.log("device", device);
     
@@ -564,6 +583,7 @@ async function ReadDeviceSettings() {
         "Serial: " + device.serial + "<br>" +
         "Unique ID: " + device.uniqueId
     );
+    
 }
 
 function ReadFileAsync(file) {
@@ -758,19 +778,6 @@ function AddKeyToGroup(key_id, group_id) {
         }
     }
     console.log("Group not found");
-    return;
-    /*
-    let tempGroup = _keyContainer.groups.filter(function(obj) { return obj.Id === group_id; });
-    console.log(tempGroup);
-    alert("Check console to make sure tempGroup was found (=== vs ==)");
-    if (tempGroup.keys.includes(key_id)) {
-        alert("Group already includes key!");
-        return;
-    }
-    tempGroup.keys.push(key_id);
-    _keyContainer.groups = _keyContainer.groups.filter(function(obj) { return obj.Id !== group_id; });
-    _keyContainer.groups.push(tempGroup);
-    */
 }
 
 function RemoveKeyFromGroup(key_id, group_id) {
@@ -782,19 +789,6 @@ function RemoveKeyFromGroup(key_id, group_id) {
         }
     }
     console.log("Key not found in group");
-    return;
-    /*
-    let tempGroup = _keyContainer.groups.filter(function(obj) { return obj.Id === group_id; });
-    console.log(tempGroup);
-    alert("Check console to make sure tempGroup was found (=== vs ==)");
-    if (!tempGroup.keys.includes(key_id)) {
-        alert("Group does not include the key!");
-        return;
-    }
-    tempGroup.keys = tempGroup.keys.filter(function(e) { return e !== key_id; });
-    _keyContainer.groups = _keyContainer.groups.filter(function(obj) { return obj.Id !== group_id; });
-    _keyContainer.groups.push(tempGroup);
-    */
 }
 
 function RemoveKeyFromAllGroups(key_id) {
@@ -826,9 +820,9 @@ function bytesToArrayBuffer(bytes) {
 function SwitchHexDec(newVal) {
     inputType = newVal;
     if (newVal == "dec") {
+        inputBase = 10;
         // Convert hexidecimal values to decimal
         $(".hexdec-input").each(function() {
-            //console.log($(this));
             if ($(this).val() == "") return;
             let hexVal = $(this).val();
             let decVal = parseInt(hexVal, 16);
@@ -836,9 +830,9 @@ function SwitchHexDec(newVal) {
         });
     }
     else if (newVal = "hex") {
+        inputBase = 16;
         // Convert decimal values to hexidecimal
         $(".hexdec-input").each(function() {
-            //console.log($(this));
             if ($(this).val() == "") return;
             let decVal = parseInt($(this).val());
             let hexVal = decVal.toString(16).toUpperCase();

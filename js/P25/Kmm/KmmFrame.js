@@ -2,7 +2,9 @@
 
 class KmmFrame {
     KmmBody;
-    KmmFrame(kmmBody) {
+    // TODO src rsi
+    // TODO dest rsi
+    constructor(kmmBody) {
         if (kmmBody == null) {
             throw "ArgumentNullException";
         }
@@ -16,9 +18,9 @@ class KmmFrame {
             Parse(0x00, contents);
         }
     }
-    get ToBytes() {
-        let body = this.KmmBody.ToBytes();
-
+    ToBytes() {
+        let body = Array.from(this.KmmBody.ToBytes());
+        
         let length = 10 + body.length;
 
         //let frame = new Uint8Array(length);
@@ -34,7 +36,15 @@ class KmmFrame {
 
         /* message format */
         //BitArray messageFormat = new BitArray(8, false);
-        frame[3] = 0;
+        let bitSeven = ((this.KmmBody.ResponseKind & 0x02) >> 1);
+        let bitSix = (this.KmmBody.ResponseKind & 0x01);
+        
+        //let messageFormat = Number(bitSeven) + Number(bitSix) + "000000";
+        let temp = [0,0,0,0,0,0,0,0];
+        temp[7] = Number(bitSeven);
+        temp[6] = Number(bitSix);
+        let messageFormat = parseInt(temp.reverse().join(""), 2);
+        frame[3] = messageFormat;
 
         /* destination rsi */
         frame[4] = 0xFF;
@@ -49,6 +59,8 @@ class KmmFrame {
         /* message body */
         //Array.Copy(body, 0, frame, 10, body.length);
         frame = frame.concat(body);
+        
+        return frame;
     }
     ToBytesWithPreamble(mfid) {
         // TODO add encryption, currently hardcoded to clear

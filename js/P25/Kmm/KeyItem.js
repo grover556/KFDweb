@@ -48,9 +48,15 @@ class KeyItem {
         //keyFormat.CopyTo(contents, 0);
         
         //let keyFormat = "00000" + (this.Erase ? "1":"0") + "0" + (this.KEK ? "1":"0");
-        let keyFormat = "00000" + Number(this.Erase) + "0" + Number(this.KEK);
-        console.log(keyFormat);
-        contents[0] = parseInt(keyFormat, 2);
+        //let keyFormat = "00000" + Number(this.Erase) + "0" + Number(this.KEK);
+        //console.log(keyFormat);
+
+        let temp = [0,0,0,0,0,0,0,0];
+        temp[7] = Number(this.KEK);
+        temp[5] = Number(this.Erase);
+        let keyFormat = parseInt(temp.reverse().join(""), 2);
+
+        contents[0] = keyFormat;
 
         /* sln */
         contents[1] = this.SLN >> 8;

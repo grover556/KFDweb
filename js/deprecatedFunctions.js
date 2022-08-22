@@ -1,3 +1,175 @@
+async function readLoopDEPRECATED() {
+    while(true) {
+        const { value, done } = await reader.read();
+        if (value) {
+            console.log(value);
+            frameBuffer.push(value);
+        }
+        if (done) {
+            console.log("[readLoop] DONE", done);
+            reader.releaseLock();
+            break;
+        }
+    }
+}
+
+async function writeToStreamDEPRECATED(data) {
+    const writer = port.writable.getWriter();
+
+    let frameData = [];
+
+    frameData.push(SOM_EOM);
+
+    data.forEach(item => {
+        if (item == ESC) {
+            frameData.push(ESC);
+            frameData.push(ESC_PLACEHOLDER);
+        }
+        else if (item == SOM_EOM) {
+            frameData.push(ESC);
+            frameData.push(SOM_EOM_PLACEHOLDER_);
+        }
+        else {
+            frameData.push(item);
+        }
+    });
+
+    frameData.push(SOM_EOM);
+
+    let outData = new Uint8Array(frameData);
+
+    console.log("outData:", BCTS(frameData).join("-"));
+
+    writer.write(outData);
+    writer.releaseLock();
+}
+
+async function SendTest2DEPRECATED(data) {
+    console.log("send", data);
+    var returnData;
+    var frameData = [];
+    frameData.push(SOM_EOM);
+    data.forEach(item => {
+        if (item == ESC) {
+            frameData.push(ESC);
+            frameData.push(ESC_PLACEHOLDER);
+        }
+        else if (item == SOM_EOM) {
+            frameData.push(ESC);
+            frameData.push(SOM_EOM_PLACEHOLDER_);
+        }
+        else {
+            frameData.push(item);
+        }
+    });
+    frameData.push(SOM_EOM);
+    var outData = new Uint8Array(frameData);
+    console.log("frameData", outData);
+    //console.log(temp);
+    //return temp;
+    
+    /*
+    const writer = port.writable.getWriter();
+    await writer.write(outData);
+    writer.releaseLock();
+    */
+    
+    /*
+    const writer = port.writable.getWriter();
+    writer.write(outData)
+    .then(() => {
+        writer.releaseLock();
+        const decoder = new TransformStream();
+        port.readable.pipeTo(decoder.writable);
+        const inputStream = decoder.readable;
+        const reader = inputStream.getReader();
+        //let response = await reader.read();
+        //console.log(response);
+        
+        reader.read()
+        .then((value, done) => {
+            console.log(value);
+            reader.releaseLock();
+            //resolve(value.value);
+            //return value.value;
+        })
+        .finally(() => {
+            console.log("reader finally");
+        });
+        
+    })
+    .finally(() => {
+        console.log("writer finally");
+    });
+    */
+    
+    const writer = port.writable.getWriter();
+    let writeResult = await writer.write(outData);
+    const decoder = new TransformStream();
+    port.readable.pipeTo(decoder.writable);
+    const inputStream = decoder.readable;
+    const reader = inputStream.getReader();
+    let readResult = await reader.read();
+    console.log(readResult);
+    return readResult.value;
+    
+}
+
+async function SendDEPRECATED(data) {
+    var returnData;
+    var frameData = [];
+    frameData.push(SOM_EOM);
+    data.forEach(item => {
+        if (item == ESC) {
+            frameData.push(ESC);
+            frameData.push(ESC_PLACEHOLDER);
+        }
+        else if (item == SOM_EOM) {
+            frameData.push(ESC);
+            frameData.push(SOM_EOM_PLACEHOLDER_);
+        }
+        else {
+            frameData.push(item);
+        }
+    });
+    frameData.push(SOM_EOM);
+    var outData = new Uint8Array(frameData);
+    //console.log(temp);
+    //return temp;
+    
+    var writer = device.writable.getWriter();
+    writer.write(outData)
+    .then(() => {
+        writer.releaseLock();
+        const reader = device.readable.getReader();
+        reader.read()
+        .then((value, done) => {
+            //ReadPacketFromPacketBuffer(value.value);
+            console.log(value.value);
+            returnData = value.value;
+            return returnData;
+        })
+        .catch(error => {
+            console.error(error);
+        })
+        .finally(() => {
+            console.log("reader finally");
+            reader.releaseLock();
+            return returnData;
+        });
+    })
+    .catch(error => {
+        console.error(error);
+    })
+    .finally(() => {
+        console.log("writer finally");
+        return returnData;
+        //if (device.writable.locked) writer.releaseLock();
+        //if (device.readable.locked) reader.releaseLock();
+    });
+    return returnData;
+}
+
 async function importFileDEPRECATEDfinal(password) {
     ResetKeyContainer();
 
