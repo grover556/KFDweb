@@ -70,6 +70,40 @@ $("#buttonOpenEkc").on("click", function() {
     //loadFile();
     clearPopupEkc();
 });
+$("#buttonEraseKeysFromRadio").on("click", function() {
+    if (window.confirm("Warning: this will erase all keys from the radio. Do you wish to continue?")) {
+        
+    }
+});
+$(".key-delete").on("click", function() {
+    //console.log($(this).parent().data("keyset"));
+    //console.log($(this).parent().data("sln"));
+    let th = $(this).parent().parent();
+    let keyset = th.data("keyset");
+    let sln = th.data("sln");
+    console.log(th, keyset, sln);
+    if (window.confirm("WARNING: this will erase the key (Keyset ID: " + keyset + ", SLN/CKR: " + sln + ") from the radio. Do you wish to continue?")) {
+        
+    }
+});
+$(".keyset-activate").on("click", function() {
+    //console.log($(this).parent().data("keyset"));
+    //console.log($(this).parent().data("sln"));
+    let th = $(this).parent().parent();
+    let keyset_activate = th.data("keyset");
+    //let keyset_active = th.data("active");
+    let th2 = $("table#table_keysets tr[data-active='true']")[0];
+    let keyset_deactivate = th2.attributes.getNamedItem("data-keyset").value;
+    if (keyset_deactivate == 255) {
+        alert("Error: Cannot deactivate KEK keyset");
+        return;
+    }
+    //let keyset_deactivate = th2.data("keyset");
+    //console.log(th2, keyset_activate, keyset_deactivate);
+    if (window.confirm("WARNING: this will deactivate Keyset " + keyset_deactivate + ", and activate Keyset " + keyset_activate + " on the radio. Do you wish to continue?")) {
+        
+    }
+});
 $(".menuItem").on("click", function() {
     var menuName = $(this).attr("id").replace("menu_", "");
     //console.log(menuName);

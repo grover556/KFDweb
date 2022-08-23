@@ -94,8 +94,8 @@
                     <li><a class="menuItem" id="menu_manageGroups" href="#">Manage Groups</a></li>
                     <li><a class="menuItem" id="menu_loadKeySingle" href="#">Load Single Key</a></li>
                     <li><a class="menuItem" id="menu_loadKeyMultiple" href="#">Load Multiple Keys</a></li>
-                    <li><a class="menuItem" id="menu_eraseKeySingle" href="#">Erase Single Key</a></li>
-                    <li><a class="menuItem" id="menu_eraseKeyAll" href="#">Erase All Keys</a></li>
+                    <li style="display:none;"><a class="menuItem" id="menu_eraseKeySingle" href="#">Erase Single Key</a></li>
+                    <li style="display:none;"><a class="menuItem" id="menu_eraseKeyAll" href="#">Erase All Keys</a></li>
                     <li>
                         <div data-role="collapsible" data-inset="false" data-iconpos="left">
                             <h2>Manage Radio</h2>
@@ -260,7 +260,7 @@
             	<div id="eraseKeyAll" class="menu_divs" style="display:none;">
                 	<h3>Erase All Keys</h3>
                 	<div class="ui-field-contain">
-                    	<button id="buttonEraseKeysFromRadio" class="ui-btn ui-btn-inline">Erase All Keys From Radio</button>
+                    	<button id="buttonEraseKeysFromRadio_DEPRECATED" class="ui-btn ui-btn-inline">Erase All Keys From Radio</button>
                 	</div>
             	</div>
             	<div id="viewKeyInfo" class="menu_divs" style="display:none;">
@@ -268,12 +268,85 @@
                 	<div class="ui-field-contain">
                     	<button id="buttonViewKeyInformation" class="ui-btn ui-btn-inline">View Key Information</button>
                 	</div>
+					<table data-role="table" id="table_keyinfo" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
+						<thead>
+							<tr>
+								<th>Keyset ID</th>
+								<th>SLN</th>
+								<th>Key ID</th>
+								<th>Algorithm</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-keyset="1" data-sln="999">
+								<th>1</th>
+								<th>999</th>
+								<th>999</th>
+								<th>AES-256</th>
+								<th><a class="key-delete" href="#">Delete</a></th>
+							</tr>
+							<tr data-keyset="2" data-sln="999">
+								<th>2</th>
+								<th>999</th>
+								<th>999</th>
+								<th>AES-256</th>
+								<th><a class="key-delete" href="#">Delete</a></th>
+							</tr>
+							<tr data-keyset="255" data-sln="61957">
+								<th>255</th>
+								<th>61957</th>
+								<th>61957</th>
+								<th>AES-256</th>
+								<th><a class="key-delete" href="#">Delete</a></th>
+							</tr>
+						</tbody>
+					</table>
+					<button id="buttonEraseKeysFromRadio" class="ui-btn ui-btn-inline">Erase All Keys From Radio</button>
             	</div>
             	<div id="viewKeysetInfo" class="menu_divs" style="display:none;">
                 	<h3>View Keyset Information</h3>
                 	<div class="ui-field-contain">
                     	<button id="buttonViewKeysetInformation" class="ui-btn ui-btn-inline">View Keyset Information</button>
                 	</div>
+					<table data-role="table" id="table_keysets" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
+						<thead>
+							<tr>
+								<th>Active</th>
+								<th>Keyset ID</th>
+								<th>Keyset Name</th>
+								<th>Keyset Type</th>
+								<th>Active Datetime</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-keyset="1" data-active="true">
+								<th>Yes</th>
+								<th>1</th>
+								<th>SET 01</th>
+								<th>TEK</th>
+								<th>2022-08-01 07:00</th>
+								<th></th>
+							</tr>
+							<tr data-keyset="2" data-active="false">
+								<th>No</th>
+								<th>2</th>
+								<th>SET 02</th>
+								<th>TEK</th>
+								<th>2022-09-01 07:00</th>
+								<th><a class="keyset-activate" href="#">Activate</a></th>
+							</tr>
+							<tr data-keyset="255" data-active="true">
+								<th>Yes</th>
+								<th>255</th>
+								<th></th>
+								<th>KEK</th>
+								<th>2022-08-01 07:00</th>
+								<th></th>
+							</tr>
+						</tbody>
+					</table>
             	</div>
             	<div id="viewRsiItems" class="menu_divs" style="display:none;">
                 	<h3>View RSI Items</h3>
