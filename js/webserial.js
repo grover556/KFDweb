@@ -47,6 +47,29 @@ $(document).ready(function() {
     }
 });
 
+
+$("#buttonImportFile").on("click", function() {
+    $("#popupImportEkc").popup("open");
+});
+$("#buttonCancelEkc").on("click", function() {
+    $("#popupImportEkc").popup("close");
+    clearPopupEkc();
+});
+$("#buttonOpenEkc").on("click", function() {
+    if ($("#passwordEkc").val() == "") {
+        alert("Please enter a password");
+        return;
+    }
+    if (fileInputElement.files.length == 0) {
+        alert("Please select a valid EKC file");
+        return;
+    }
+    $("#popupImportEkc").popup("close");
+    //importFile($("#passwordEkc").val());
+    OpenEkc(fileInputElement.files[0], $("#passwordEkc").val());
+    //loadFile();
+    clearPopupEkc();
+});
 $(".menuItem").on("click", function() {
     var menuName = $(this).attr("id").replace("menu_", "");
     //console.log(menuName);
@@ -64,34 +87,6 @@ $(".menuItem").on("click", function() {
         
     }
 });
-
-$("input:file").change(function() {
-    //var fileName = $(this).val();
-    //console.log(fileName);
-});
-
-$("#buttonImportFile").click(function() {
-    $("#popupImportEkc").popup("open");
-});
-$("#buttonCancelEkc").click(function() {
-    $("#popupImportEkc").popup("close");
-    clearPopupEkc();
-});
-$("#buttonOpenEkc").click(function() {
-    if ($("#passwordEkc").val() == "") {
-        alert("Please enter a password");
-        return;
-    }
-    if (fileInputElement.files.length == 0) {
-        alert("Please select a valid EKC file");
-        return;
-    }
-    $("#popupImportEkc").popup("close");
-    //importFile($("#passwordEkc").val());
-    OpenEkc(fileInputElement.files[0], $("#passwordEkc").val());
-    //loadFile();
-    clearPopupEkc();
-});
 $("#buttonManageGroup_addGroup").on("click", function() {
     $(".menu_divs").hide();
     $("#addGroup").show();
@@ -100,7 +95,7 @@ $("#buttonManageKeyActions").on("click", function() {
     $("#popupMenuKeyOptions").popup("open");
 });
 $("#buttonLoadKeyToContainer").on("click", function() {
-    let keyItem = CreateKeyFromFields();
+    let keyItem = CreateKeyFromFields("container");
     
     if (keyItem === undefined) {
         return;
@@ -122,7 +117,7 @@ $("#buttonLoadKeyToContainer").on("click", function() {
     }
 });
 $("#buttonLoadKeyToRadio").on("click", function() {
-    let keyItem = CreateKeyFromFields();
+    let keyItem = CreateKeyFromFields("radio");
     
     if (keyItem === undefined) {
         return;
@@ -144,7 +139,8 @@ $("#buttonLoadKeyToRadio").on("click", function() {
     }
 });
 
-function CreateKeyFromFields() {
+
+function CreateKeyFromFields(target) {
     // Disabled for use of inputBase, and replaced below on assigning keyItem fields
     /*
     let base = 10;
@@ -162,8 +158,7 @@ function CreateKeyFromFields() {
     
     keyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
     if (keyItem.ActiveKeyset) $("#loadKeySingle_keysetId").val("1");
-    
-    if ($("#loadKeySingle_name").val() == "") {
+    if ((target == "container") && ($("#loadKeySingle_name").val() == "")) {
         alert("Key name cannot be empty");
         return;
     }
@@ -316,7 +311,7 @@ $("#buttonResetEkc").on("click", function() {
     alert("All keys and groups have been cleared from memory");
 });
 
-$("#buttonGenerateRandomKey").click(function() {
+$("#buttonGenerateRandomKey").on("click", function() {
     // Generate a random key
     let key = "";
     let keylen = $("#loadKeySingle_algorithm option:selected").data("length");
@@ -328,20 +323,24 @@ $("#buttonGenerateRandomKey").click(function() {
     // Flash the key field to indicate that a new key has been generated
     $("#loadKeySingle_key").fadeTo(100, 0.25, function() { $(this).fadeTo(500, 1.0); });
 });
-
-$("#passwordEkc").keyup(function(event) {
+$("#inputFile").on("change", function() {
+    $("#passwordEkc").focus();
+});
+$("#passwordEkc").on("keyup", function(event) {
     //console.log(event);
     //event.key = "Enter", event.which = 13, event.keyCode = 13
     if (event.which == 13) {
         $("#buttonOpenEkc").trigger("click");
     }
 });
-
-$("#inputFile").on("change", function() {
-    $("#passwordEkc").focus();
+$("#loadKeySingle_name").on("keyup", function(event) {
+    // Limit key name to valid ASCII characters
+    //https://en.wikipedia.org/wiki/List_of_Unicode_characters
+    let str = $("#loadKeySingle_name").val().replace(/[\u{0000}-\u{001F}]/gu,"");
+    str = str.replace(/[\u{007F}-\u{FFFF}]/gu,"");
+    $("#loadKeySingle_name").val(str);
 });
-
-$(".hex-input").keyup(function() {
+$(".hex-input").on("keyup", function() {
     // Ensure that only hexidecimal values are input
     if ($(this).hasClass("key-input")) {
         //loadKeySingleKey
@@ -366,13 +365,11 @@ $(".hex-input").keyup(function() {
         $(this).val(curVal.replace(/[^a-fA-F0-9\n\r]+/g, '').toUpperCase());
     }
 });
-
-$(".dec-input").keyup(function() {
+$(".dec-input").on("keyup", function() {
     let curVal = $(this).val();
     $(this).val(curVal.replace(/[^0-9\n\r]+/g, ''));
 });
-
-$(".hexdec-input").keyup(function() {
+$(".hexdec-input").on("keyup", function() {
     // Ensure that only decimal or hexidecimal values are input
     let curVal = $(this).val();
     if (inputType == "dec") {
@@ -398,7 +395,7 @@ $(".hexdec-input").keyup(function() {
     }
 });
 
-$("#loadKeySingle_key").focusin(function(evt) {
+$("#loadKeySingle_key").on("focusin", function(evt) {
     // Show the key when the user clicks inside the key entry input
     // Disregard if the focus is caused by a tab from the field above
     if (evt.relatedTarget == null) {
@@ -411,7 +408,11 @@ $("#loadKeySingle_key").focusin(function(evt) {
     $("#loadKeySingle_key").attr("type", "text");
 });
 
-$("#loadKeySingle_algorithm").change(function() {
+$("input:file").on("change", function() {
+    //var fileName = $(this).val();
+    //console.log(fileName);
+});
+$("#loadKeySingle_algorithm").on("change", function() {
     // Clear the key entry input when a new algorithm is selected
     let maxKeylenBytes = 64;
     if ($("#loadKeySingle_algorithm").val() == "256") {
@@ -434,8 +435,7 @@ $("#loadKeySingle_algorithm").change(function() {
     $("#loadKeySingle_key").val("");
     $("#loadKeySingle_key").attr("maxlength", maxKeylenBytes);
 });
-
-$("#loadKeySingle_toggleKeyVis").change(function() {
+$("#loadKeySingle_toggleKeyVis").on("change", function() {
     //if ($("#loadKeySingle_key").attr("type") == "text") $("#loadKeySingle_key").attr("type", "password");
     //else if ($("#loadKeySingle_key").attr("type") == "password") $("#loadKeySingle_key").attr("type", "text");
     
@@ -446,8 +446,7 @@ $("#loadKeySingle_toggleKeyVis").change(function() {
         $("#loadKeySingle_key").attr("type", "password");
     }
 });
-
-$("#loadKeySingle_HexDec").change(function() {
+$("#loadKeySingle_HexDec").on("change", function() {
     //console.log($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow"));
     if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "hex") {
         SwitchHexDec("hex");
@@ -456,8 +455,7 @@ $("#loadKeySingle_HexDec").change(function() {
         SwitchHexDec("dec");
     }
 });
-
-$("#loadKeySingle_activeKeysetSlider").change(function() {
+$("#loadKeySingle_activeKeysetSlider").on("change", function() {
     //console.log($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow"));
     if ($("#loadKeySingle [aria-labelledby='loadKeySingle_activeKeysetSlider-label']").attr("aria-valuenow") == "no") {
         $("#loadKeySingle_keysetDiv").show();
@@ -469,20 +467,20 @@ $("#loadKeySingle_activeKeysetSlider").change(function() {
 
 //$("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow");
 
-$("#buttonConnectKfd").click(function() {
+$("#buttonConnectKfd").on("click", function() {
     //console.log("buttonConnectKfd clicked");
     ConnectToDevice();
 });
-$("#buttonGetDevices").click(function() {
+$("#buttonGetDevices").on("click", function() {
     //console.log("buttonGetDevices clicked");
     
 });
 
-$("#buttonDisconnectKfd").click(function() {
+$("#buttonDisconnectKfd").on("click", function() {
     console.log("buttonDisconnectKfd clicked");
 });
 
-$("#buttonSendTest").click(async function() {
+$("#buttonSendTest").on("click", async function() {
     console.log("buttonSendTest clicked");
     //let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
     //let rspKmmBody1 = TxRxKmm(cmdKmmBody1);
