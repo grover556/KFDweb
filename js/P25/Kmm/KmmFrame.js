@@ -5,12 +5,6 @@ class KmmFrame {
     // TODO src rsi
     // TODO dest rsi
     constructor(kmmBody, contents) {
-        /*
-        if (kmmBody == null) {
-            throw "ArgumentNullException";
-        }
-        this.KmmBody = kmmBody;
-        */
         // Had to get creative becuase JS does not support construtor overloads
         if (kmmBody instanceof KmmBody) {
             this.KmmBody = kmmBody;
@@ -24,25 +18,12 @@ class KmmFrame {
             }
         }
     }
-/*
-    constructor(kmmBody) {
-        if (kmmBody == null) {
-            throw "ArgumentNullException";
-        }
-        this.KmmBody = kmmBody;
-    }
-    KmmFrame(preamble, contents) {
-        if (preamble) {
-            ParseWithPreamble(contents);
-        }
-        else {
-            Parse(0x00, contents);
-        }
-    }
-*/
-    get ToBytes() {
-        let body = Array.from(this.KmmBody.ToBytes());
-        
+    ToBytes() {
+        // for whatever reason, "get ToBytes()" breaks async/await functionality
+        console.log("here");
+        //let body = Array.from(this.KmmBody.ToBytes());
+        let body = this.KmmBody.ToBytes();
+        console.log("body", BCTS(body).join("-"));
         let length = 10 + body.length;
 
         //let frame = new Uint8Array(length);
@@ -81,7 +62,7 @@ class KmmFrame {
         /* message body */
         //Array.Copy(body, 0, frame, 10, body.length);
         frame = frame.concat(body);
-        
+        console.log("frame", BCTS(frame).join("-"));
         return frame;
     }
     ToBytesWithPreamble(mfid) {

@@ -46,7 +46,7 @@ class ManualRekeyApplication {
         
         try {
             let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
-            //console.log(cmdKmmBody1);
+            console.log(cmdKmmBody1);
             let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
             console.log("rspKmmBody1", rspKmmBody1);
             let activeKeysetId = 0;

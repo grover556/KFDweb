@@ -37,7 +37,7 @@ class KeyItem {
         this.KEK = false;
         this.Erase = false;
     }
-    get ToBytes() {
+    ToBytes() {
         //let contents = new Uint8Array(5 + this.Key.length);
         let contents = [];
 
@@ -59,12 +59,21 @@ class KeyItem {
         contents[0] = keyFormat;
 
         /* sln */
-        contents[1] = this.SLN >> 8;
+        contents[1] = (this.SLN >> 8);
         contents[2] = this.SLN;
 
         /* key id */
-        contents[3] = this.KeyId >> 8;
+        contents[3] = (this.KeyId >> 8);
         contents[4] = this.KeyId;
+
+        // Having problems with bit shifting
+        let temp1 = this.SLN.toString(16).padStart(4, "0");
+        contents[1] = parseInt(temp1.substr(0, 2), 16);
+        contents[2] = parseInt(temp1.substr(2, 2), 16);
+
+        let temp2 = this.KeyId.toString(16).padStart(4, "0");
+        contents[3] = parseInt(temp2.substr(0, 2), 16);
+        contents[4] = parseInt(temp2.substr(2, 2), 16);
 
         /* key */ 
         //Array.Copy(Key, 0, contents, 5, Key.length);
