@@ -22,8 +22,8 @@ class InventoryResponseListRsiItems extends KmmBody {
         contents.push(this.InventoryType);
 
         /* number of items */
-        contents.push((this.RsiItems.length >> 8) & 0xFF);
-        contents.push((this.RsiItems.length & 0xFF));
+        contents.push((this.RsiItems.length >>> 8) & 0xFF);
+        contents.push(this.RsiItems.length & 0xFF);
 
         /* items */
         this.RsiItems.forEach(item => {

@@ -40,13 +40,13 @@ class InventoryCommandListActiveKeys extends KmmBody {
         contents[0] = InventoryType;
         
         /* inventory marker */
-        contents[1] = ((InventoryMarker >> 16) & 255);
-        contents[2] = ((InventoryMarker >> 8) & 255);
-        contents[3] = (InventoryMarker & 255);
+        contents[1] = (InventoryMarker >>> 16) & 0xFF;
+        contents[2] = (InventoryMarker >>> 8) & 0xFF;
+        contents[3] = InventoryMarker & 0xFF;
         
         /* max number of keys requested */
-        contents[4] = ((maxKeysRequested >> 8) & 255);
-        contents[5] = (maxKeysRequested & 255);
+        contents[4] = (maxKeysRequested >>> 8) & 0xFF;
+        contents[5] = maxKeysRequested & 0xFF;
         
         return contents;
     }

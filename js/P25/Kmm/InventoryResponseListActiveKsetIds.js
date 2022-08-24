@@ -22,7 +22,7 @@ class InventoryResponseListActiveKsetIds extends KmmBody {
         contents.push(this.InventoryType);
 
         /* number of items */
-        contents.push((this.KsetIds.length >> 8) & 0xFF);
+        contents.push((this.KsetIds.length >>> 8) & 0xFF);
         contents.push(this.KsetIds.length && 0xFF);
 
         for (var i=0; i<this.KsetIds.length; i++) {

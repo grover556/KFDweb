@@ -43,7 +43,7 @@ class KeyStatus {
 
         /* key id */
         contents[1] = this.KeyId >>> 8;
-        contents[2] = this.KeyId;
+        contents[2] = this.KeyId & 0xFF;
 
         /* status */
         contents[3] = this.Status;

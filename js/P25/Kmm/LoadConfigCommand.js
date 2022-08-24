@@ -36,11 +36,11 @@ class LoadConfigCommand extends KmmBody {
         /* kmf rsi */
         contents[0] = this.KmfRsi >>> 16;
         contents[1] = this.KmfRsi >>> 8;
-        contents[2] = this.KmfRsi;
+        contents[2] = this.KmfRsi & 0xFF;
 
         /* message number period */
-        contents[3] = this.MessageNumberPeriod >> 8;
-        contents[4] = this.MessageNumberPeriod;
+        contents[3] = this.MessageNumberPeriod >>> 8;
+        contents[4] = this.MessageNumberPeriod & 0xFF;
 
         return contents;
     }

@@ -30,11 +30,11 @@ class RsiItem {
         /* rsi */
         contents[0] = this.MessageNumber >>> 16;
         contents[1] = this.MessageNumber >>> 8;
-        contents[2] = this.MessageNumber;
+        contents[2] = this.MessageNumber & 0xFF;
 
         /* message number */
         contents[3] = this.MessageNumber >>> 8;
-        contents[4] = this.MessageNumber;
+        contents[4] = this.MessageNumber & 0xFF;
 
         return contents;
     }

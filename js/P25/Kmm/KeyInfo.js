@@ -51,15 +51,15 @@ class KeyInfo {
         contents[0] = this.KeySetId;
 
         /* sln */
-        contents[1] = this.SLN >> 8;
-        contents[2] = this.SLN;
+        contents[1] = this.SLN >>> 8;
+        contents[2] = this.SLN & 0xFF;
 
         /* algorithm id */
         contents[3] = this.AlgorithmId;
 
         /* key id */
-        contents[4] = this.KeyId >> 8;
-        contents[5] = this.KeyId;
+        contents[4] = this.KeyId >>> 8;
+        contents[5] = this.KeyId & 0xFF;
 
         return contents;
     }
