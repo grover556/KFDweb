@@ -10,10 +10,10 @@ class LoadConfigResponse extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    LoadConfigResponse() {
+    constructor() {
 
     }
-    get ToBytes() {
+    ToBytes() {
         throw "NotImplementedException";
     }
     Parse(contents) {

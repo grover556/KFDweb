@@ -9,7 +9,10 @@ class ChangeoverResponse extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         throw "NotImplementedException";
     }
     Parse(contents) {

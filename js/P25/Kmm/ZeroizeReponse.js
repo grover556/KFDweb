@@ -7,10 +7,10 @@ class ZeroizeResponse extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    ZeroizeResponse() {
+    constructor() {
 
     }
-    get ToBytes() {
+    ToBytes() {
         throw "NotImplementedException";
     }
     Parse(contents) {

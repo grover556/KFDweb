@@ -33,7 +33,10 @@ class Mfid90SessionControlVer1 extends KmmBody {
     SourceDeviceType;
     IsSessionTypeIncluded;
     SessionType;
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         let contents = [];
 
         contents.push(0x01); // version

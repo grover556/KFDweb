@@ -7,10 +7,10 @@ class ZeroizeCommand extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    ZeroizeCommand() {
+    constructor() {
 
     }
-    get ToBytes() {
+    ToBytes() {
         let contents = [0];
 
         return contents;

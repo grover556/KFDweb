@@ -28,17 +28,20 @@ class ChangeoverCommand extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         var contents = new Uint8Array(3);
         
         /* number of instructions */
         contents[0] = 0x01;
         
         /* superseded keyset */
-        contents[1] = KeysetIdSuperseded;
+        contents[1] = this.KeysetIdSuperseded;
         
         /* activated keyset */
-        contents[2] = KeysetIdActivated;
+        contents[2] = this.KeysetIdActivated;
         
         return contents;
     }

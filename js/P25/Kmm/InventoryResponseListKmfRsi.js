@@ -11,7 +11,10 @@ class InventoryResponseListKmfRsi extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         throw "NotImplementedException";
     }
     Parse(contents) {
@@ -20,7 +23,7 @@ class InventoryResponseListKmfRsi extends KmmBody {
         }
 
         /* inventory type */
-        if (contents[0] != InventoryType) {
+        if (contents[0] != this.InventoryType) {
             throw "inventory type mismatch";
         }
 

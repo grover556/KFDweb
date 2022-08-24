@@ -2,7 +2,7 @@
 
 class OperationStatus {
     OperationStatus = {
-        CommandWasPerformed:0x00,
+        CommandWasPerformed: 0x00,
         CommandWasNotPerformed: 0x01,
         ItemDoesNotExist: 0x02,
         InvalidMessageId: 0x03,
@@ -20,35 +20,35 @@ class OperationStatus {
     };
     ToStatusString(status) {
         switch (status) {
-            case OperationStatus.CommandWasPerformed:
+            case this.OperationStatus.CommandWasPerformed:
                 return "Command was performed";
-            case OperationStatus.CommandWasNotPerformed:
+            case this.OperationStatus.CommandWasNotPerformed:
                 return "Command not performed";
-            case OperationStatus.ItemDoesNotExist:
+            case this.OperationStatus.ItemDoesNotExist:
                 return "Item does not exist";
-            case OperationStatus.InvalidMessageId:
+            case this.OperationStatus.InvalidMessageId:
                 return "Invalid Message ID";
-            case OperationStatus.InvalidMac:
+            case this.OperationStatus.InvalidMac:
                 return "Invalid MAC";
-            case OperationStatus.OutOfMemory:
+            case this.OperationStatus.OutOfMemory:
                 return "Out of Memory";
-            case OperationStatus.CouldNotDecryptTheMessage:
+            case this.OperationStatus.CouldNotDecryptTheMessage:
                 return "Could not decrypt the message";
-            case OperationStatus.InvalidMessageNumber:
+            case this.OperationStatus.InvalidMessageNumber:
                 return "Invalid Message Number";
-            case OperationStatus.InvalidKeyId:
+            case this.OperationStatus.InvalidKeyId:
                 return "Invalid Key ID";
-            case OperationStatus.InvalidAlgorithmId:
+            case this.OperationStatus.InvalidAlgorithmId:
                 return "Invalid Algorithm ID";
-            case OperationStatus.InvalidMfid:
+            case this.OperationStatus.InvalidMfid:
                 return "Invalid MFID";
-            case OperationStatus.ModuleFailure:
+            case this.OperationStatus.ModuleFailure:
                 return "Module Failure";
-            case OperationStatus.MiAllZeros:
+            case this.OperationStatus.MiAllZeros:
                 return "MI all zeros";
-            case OperationStatus.Keyfail:
+            case this.OperationStatus.Keyfail:
                 return "Keyfail";
-            case OperationStatus.Unknown:
+            case this.OperationStatus.Unknown:
                 return "Unknown";
             default:
                 return "Reserved";
@@ -56,35 +56,35 @@ class OperationStatus {
     }
     ToReasonString(status) {
         switch (status) {
-            case OperationStatus.CommandWasPerformed:
+            case this.OperationStatus.CommandWasPerformed:
                 return "Command was executed successfully";
-            case OperationStatus.CommandWasNotPerformed:
+            case this.OperationStatus.CommandWasNotPerformed:
                 return "Command could not be performed due to an unspecified reason";
-            case OperationStatus.ItemDoesNotExist:
+            case this.OperationStatus.ItemDoesNotExist:
                 return "Key / Keyset needed to perform the operation does not exist";
-            case OperationStatus.InvalidMessageId:
+            case this.OperationStatus.InvalidMessageId:
                 return "Message ID is invalid/unsupported";
-            case OperationStatus.InvalidMac:
+            case this.OperationStatus.InvalidMac:
                 return "MAC is invalid";
-            case OperationStatus.OutOfMemory:
+            case this.OperationStatus.OutOfMemory:
                 return "Memory unavailable to process the command / message";
-            case OperationStatus.CouldNotDecryptTheMessage:
+            case this.OperationStatus.CouldNotDecryptTheMessage:
                 return "KEK does not exist";
-            case OperationStatus.InvalidMessageNumber:
+            case this.OperationStatus.InvalidMessageNumber:
                 return "Message Number is invalid";
-            case OperationStatus.InvalidKeyId:
+            case this.OperationStatus.InvalidKeyId:
                 return "Key ID is invalid or not present";
-            case OperationStatus.InvalidAlgorithmId:
+            case this.OperationStatus.InvalidAlgorithmId:
                 return "ALGID is invalid or not present";
-            case OperationStatus.InvalidMfid:
+            case this.OperationStatus.InvalidMfid:
                 return "MFID is invalid";
-            case OperationStatus.ModuleFailure:
+            case this.OperationStatus.ModuleFailure:
                 return "Encryption Hardware failure";
-            case OperationStatus.MiAllZeros:
+            case this.OperationStatus.MiAllZeros:
                 return "Received MI was all zeros";
-            case OperationStatus.Keyfail:
+            case this.OperationStatus.Keyfail:
                 return "Key identified by ALGID/Key ID is erased";
-            case OperationStatus.Unknown:
+            case this.OperationStatus.Unknown:
                 return "Unknown";
             default:
                 return "Reserved";

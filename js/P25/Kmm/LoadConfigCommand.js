@@ -27,12 +27,15 @@ class LoadConfigCommand extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         let contents = [5];
 
         /* kmf rsi */
-        contents[0] = this.KmfRsi >> 16;
-        contents[1] = this.KmfRsi >> 8;
+        contents[0] = this.KmfRsi >>> 16;
+        contents[1] = this.KmfRsi >>> 8;
         contents[2] = this.KmfRsi;
 
         /* message number period */

@@ -3,7 +3,7 @@
 class ChangeoverItem {
     KeysetIdSuperseded;
     KeysetIdActivated;
-    ChangeoverItem() {
+    constructor() {
 
     }
 }

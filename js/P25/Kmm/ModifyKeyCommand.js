@@ -28,7 +28,7 @@ class ModifyKeyCommand extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    ModifyKeyCommand() {
+    constructor() {
         this.KeyItems = [];
     }
     ToBytes() {

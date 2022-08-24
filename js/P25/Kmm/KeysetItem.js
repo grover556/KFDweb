@@ -24,7 +24,10 @@ class KeysetItem {
         }
         this.#_reservedField = val;
     }
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         throw "NotImplementedException";
     }
     Parse(contents) {

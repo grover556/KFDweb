@@ -31,14 +31,18 @@ class KeyStatus {
         }
         this.#_status = val;
     }
-    get ToBytes() {
-        let contents = new Uint8Array(4);
+    constructor() {
+        
+    }
+    ToBytes() {
+        //let contents = new Uint8Array(4);
+        let contents = [4];
 
         /* algorithm id */
         contents[0] = this.AlgorithmId;
 
         /* key id */
-        contents[1] = this.KeyId >> 8;
+        contents[1] = this.KeyId >>> 8;
         contents[2] = this.KeyId;
 
         /* status */

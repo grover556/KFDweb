@@ -34,13 +34,13 @@ class KmmFrame {
 
         /* message length */
         let messageLength = 7 + body.length;
-        frame[1] = ((messageLength >> 8) & 0xFF);
-        frame[2] = (messageLength & 0xFF);
+        frame[1] = (messageLength >> 8) & 0xFF;
+        frame[2] = messageLength & 0xFF;
 
         /* message format */
         //BitArray messageFormat = new BitArray(8, false);
-        let bitSeven = ((this.KmmBody.ResponseKind & 0x02) >> 1);
-        let bitSix = (this.KmmBody.ResponseKind & 0x01);
+        let bitSeven = (this.KmmBody.ResponseKind & 0x02) >> 1;
+        let bitSix = this.KmmBody.ResponseKind & 0x01;
         
         //let messageFormat = Number(bitSeven) + Number(bitSix) + "000000";
         let temp = [0,0,0,0,0,0,0,0];

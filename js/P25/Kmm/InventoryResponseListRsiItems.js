@@ -11,12 +11,15 @@ class InventoryResponseListRsiItems extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         //let contents = new Uint8Array();
         let contents = [];
 
         /* inventory type */
-        contents.push(InventoryType);
+        contents.push(this.InventoryType);
 
         /* number of items */
         contents.push((this.RsiItems.length >> 8) & 0xFF);
@@ -35,7 +38,7 @@ class InventoryResponseListRsiItems extends KmmBody {
         }
 
         /* inventory type */
-        if (contents[0] != InventoryType) {
+        if (contents[0] != this.InventoryType) {
             throw "inventory type mismatch";
         }
 

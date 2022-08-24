@@ -30,7 +30,10 @@ class InventoryCommandListActiveKeys extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         var contents = new Uint8Array(6);
         
         /* inventory type */

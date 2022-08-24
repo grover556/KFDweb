@@ -10,10 +10,10 @@ class RekeyAcknowledgment extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    RekeyAcknowledgment() {
+    constructor() {
         this.Keys = [];
     }
-    get ToBytes() {
+    ToBytes() {
         let contents = [];
 
         /* message id */
@@ -23,8 +23,9 @@ class RekeyAcknowledgment extends KmmBody {
         contents.push(this.NumberOfItems);
 
         /* items */
-        this.Keys.foreach(status => {
-            contents.push(status.ToBytes());
+        this.Keys.forEach((status) => {
+            //contents.push(status.ToBytes());
+            contents = contents.concat(statsu.ToBytes());
         });
 
         return contents();

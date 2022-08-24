@@ -39,7 +39,7 @@ class KeyItem {
     }
     ToBytes() {
         //let contents = new Uint8Array(5 + this.Key.length);
-        let contents = [];
+        let contents = [5];
 
         /* key format */
         //BitArray keyFormat = new BitArray(8, false);
@@ -59,13 +59,18 @@ class KeyItem {
         contents[0] = keyFormat;
 
         /* sln */
-        contents[1] = (this.SLN >> 8);
-        contents[2] = this.SLN;
+        contents[1] = this.SLN >>> 8;
+        contents[2] = this.SLN & 0xFF;
 
         /* key id */
-        contents[3] = (this.KeyId >> 8);
-        contents[4] = this.KeyId;
+        contents[3] = this.KeyId >>> 8;
+        contents[4] = this.KeyId & 0xFF;
 
+        contents = contents.concat(this.Key);
+
+        return contents;
+
+        /*
         // Having problems with bit shifting
         let temp1 = this.SLN.toString(16).padStart(4, "0");
         contents[1] = parseInt(temp1.substr(0, 2), 16);
@@ -74,6 +79,7 @@ class KeyItem {
         let temp2 = this.KeyId.toString(16).padStart(4, "0");
         contents[3] = parseInt(temp2.substr(0, 2), 16);
         contents[4] = parseInt(temp2.substr(2, 2), 16);
+        */
 
         /* key */ 
         //Array.Copy(Key, 0, contents, 5, Key.length);
@@ -88,12 +94,13 @@ class KeyItem {
             contents.push(parseInt(this.Key[i], 16));
         }
 */
+/*
         this.Key.forEach((val) => {
             //contents.push(parseInt(val, 16));
             contents.push(val);
         });
-
-        return contents;
+*/
+        //return contents;
     }
     Parse(contents, keyLength) {
         if (contents.length < 5) {

@@ -10,17 +10,17 @@ class NegativeAcknowledgment extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    NegativeAcknowledgment() {
+    constructor() {
 
     }
-    get ToBytes() {
+    ToBytes() {
         let contents = [];
         
         /* acknowledged message id */
         contents.push(this.AcknowledgedMessagetId);
 
         /* message number */
-        contents.push((this.MessageNumber >> 8) & 0xFF);
+        contents.push((this.MessageNumber >>> 8) & 0xFF);
         contents.push(this.MessageNumber & 0xFF);
 
         /* status */

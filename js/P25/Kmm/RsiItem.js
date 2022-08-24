@@ -21,19 +21,19 @@ class RsiItem {
         }
         this.#_messageNumber= val;
     }
-    RsiItem() {
+    constructor() {
 
     }
-    get ToBytes() {
+    ToBytes() {
         let contents = [5];
 
         /* rsi */
-        contents[0] = this.MessageNumber >> 16;
-        contents[1] = this.MessageNumber >> 8;
+        contents[0] = this.MessageNumber >>> 16;
+        contents[1] = this.MessageNumber >>> 8;
         contents[2] = this.MessageNumber;
 
         /* message number */
-        contents[3] = this.MessageNumber >> 8;
+        contents[3] = this.MessageNumber >>> 8;
         contents[4] = this.MessageNumber;
 
         return contents;

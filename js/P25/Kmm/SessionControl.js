@@ -22,11 +22,14 @@ class SessionControl extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    get ToBytes() {
-        var contents = new Uint8Array(3);
+    constructor() {
+        
+    }
+    ToBytes() {
+        var contents = [3];
         contents[0] = 0x00; //version
-        contents[1] = SessionControlOpcode;
-        contents[2] = SourceDeviceType;
+        contents[1] = this.SessionControlOpcode;
+        contents[2] = this.SourceDeviceType;
         return contents;
     }
     Parse(contents) {
@@ -36,7 +39,10 @@ class SessionControl extends KmmBody {
         if (contents.length != 3) {
             throw "ArgumentOutOfRangeException";
         }
-        SessionControlOpcode = ScOpcode.contents[1];
-        SourceDeviceType = ScSourceDeviceType.contents[2];
+        this.SessionControlOpcode = Object.keys(this.ScOpcode).find(key => this.ScOpcode[key] === contents[1]);
+        this.SourceDeviceType = Object.keys(this.ScSourceDeviceType).find(key => this.ScSourceDeviceType[key] === contents[2]);
+
+        //this.SessionControlOpcode = ScOpcode.contents[1];
+        //this.SourceDeviceType = ScSourceDeviceType.contents[2];
     }
 }

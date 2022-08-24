@@ -11,7 +11,10 @@ class ChangeRsiResponse extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    get ToBytes() {
+    constructor() {
+        
+    }
+    ToBytes() {
         throw "NotImplementedException";
     }
     Parse(contents) {
@@ -20,7 +23,7 @@ class ChangeRsiResponse extends KmmBody {
         }
         
         // Change sequence/instruction
-        ChangeSequence = contents[0];
+        this.ChangeSequence = contents[0];
         
         // Old RSI
         this.RsiOld |= contents[1] << 16;
