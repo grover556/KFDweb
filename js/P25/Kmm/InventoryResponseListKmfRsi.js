@@ -3,16 +3,13 @@
 class InventoryResponseListKmfRsi extends KmmBody {
     KmfRsi;
     get MessageId() {
-        return this.MessageId.InventoryResponse;
+        return MessageId.InventoryResponse;
     }
     get InventoryType() {
-        return this.InventoryType.ListKmfRsi;
+        return InventoryType.ListKmfRsi;
     }
     get ResponseKind() {
         return ResponseKind.None;
-    }
-    constructor() {
-        
     }
     ToBytes() {
         throw "NotImplementedException";

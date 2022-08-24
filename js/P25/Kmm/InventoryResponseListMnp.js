@@ -3,16 +3,13 @@
 class InventoryResponseListMnp extends KmmBody {
     MessageNumberPeriod;
     get MessageId() {
-        return this.MessageId.InventoryResponse;
+        return MessageId.InventoryResponse;
     }
     get InventoryType() {
-        return this.InventoryType.ListMnp;
+        return InventoryType.ListMnp;
     }
     get ResponseKind() {
         return ResponseKind.None;
-    }
-    constructor() {
-        
     }
     ToBytes() {
         throw "NotImplementedException";

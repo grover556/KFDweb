@@ -21,9 +21,6 @@ class RsiItem {
         }
         this.#_messageNumber= val;
     }
-    constructor() {
-
-    }
     ToBytes() {
         let contents = [5];
 

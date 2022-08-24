@@ -515,6 +515,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);// added await
         let rsp = await readWithTimeout(AP_TIMEOUT);
+        //console.log("sb rsp:", BCTS(rsp).join("-"));
         //let rsp = await this.GetByte(AP_TIMEOUT);
         //console.log("SendByte rsp", rsp[0].toString(16).toUpperCase().padStart(2,"0"));
         //rsp = UnpackResponse(rsp);
@@ -535,7 +536,7 @@ class AdapterProtocol {
         else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
     }
     async SendData(data) {
-        console.log("SendData:", BCTS(data).join("-"));
+        //console.log("SendData:", BCTS(data).join("-"));
         for (var i=0; i<data.length; i++) {
             await this.SendByte(data[i]);
         }

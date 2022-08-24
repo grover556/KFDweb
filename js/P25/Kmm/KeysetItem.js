@@ -24,9 +24,6 @@ class KeysetItem {
         }
         this.#_reservedField = val;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         throw "NotImplementedException";
     }

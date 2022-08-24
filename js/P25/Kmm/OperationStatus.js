@@ -1,6 +1,6 @@
 //OperationStatus
 
-class OperationStatus {
+class OperationStatusExtensions {
     OperationStatus = {
         CommandWasPerformed: 0x00,
         CommandWasNotPerformed: 0x01,

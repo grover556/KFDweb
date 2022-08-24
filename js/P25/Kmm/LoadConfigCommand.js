@@ -27,9 +27,6 @@ class LoadConfigCommand extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         let contents = [5];
 

@@ -41,9 +41,6 @@ class KeyInfo {
         }
         this.#_keyId = val;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         let contents = new Uint8Array(6);
 

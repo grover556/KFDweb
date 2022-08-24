@@ -172,6 +172,18 @@ $("#buttonLoadKeyToRadio").on("click", function() {
         alert("Error: " + validation.message);
     }
 });
+$("#buttonViewKeyInformation").on("click", function() {
+    ViewKeyInformation();
+});
+$("#buttonViewKeysetInformation").on("click", function() {
+    ViewKeysetInformation();
+});
+$("#buttonViewRsiInformation").on("click", function() {
+    ViewRsiInformation();
+});
+$("#buttonViewKmfInformation").on("click", function() {
+    ViewKmfInformation();
+});
 
 
 function CreateKeyFromFields(target) {
@@ -279,7 +291,7 @@ function CreateKeyFromFields(target) {
     return keyItem;
 }
 
-function SendKeysToRadio(keys) {
+async function SendKeysToRadio(keys) {
     console.log("SendKeysToRadio", keys);
     
     let keyItems = [];
@@ -300,6 +312,30 @@ function SendKeysToRadio(keys) {
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
     let results = mra.Keyload(keyItems);
+    console.log(results);
+}
+
+async function ViewKeyInformation() {
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let results = mra.ViewKeyInfo();
+    console.log(results);
+}
+
+async function ViewKeysetInformation() {
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let ksetInfo = await mra.ViewKeysetTaggingInfo();
+    
+}
+
+async function ViewKmfInformation() {
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let rsi = await mra.ViewKmfRsi();
+    $("#valueKmfRsi").text(rsi);
+    let mnp = await mra.ViewMnp();
+    $("#valueKmfMnp").text(mnp);
 }
 
 function ClearKeyInfo() {

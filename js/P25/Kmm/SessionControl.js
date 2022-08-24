@@ -22,9 +22,6 @@ class SessionControl extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         var contents = [3];
         contents[0] = 0x00; //version

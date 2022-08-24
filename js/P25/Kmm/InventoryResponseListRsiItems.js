@@ -11,9 +11,6 @@ class InventoryResponseListRsiItems extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         //let contents = new Uint8Array();
         let contents = [];

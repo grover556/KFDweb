@@ -126,10 +126,13 @@ class ThreeWireProtocol {
         // send transfer done opcode
         let cmd1 = [];
         cmd1.push(OPCODE_TRANSFER_DONE);
+        console.log("kfd: transfer done");
         await this.Protocol.SendData(cmd1);
 
         // receive transfer done opcode
+        console.log("mr: transfer done");
         let rsp1 = await this.Protocol.GetByte(TIMEOUT_STD);
+        console.log("mr -> kfd: ", BCTS(rsp1).join("-"));
         if (rsp1 != OPCODE_TRANSFER_DONE) {
             console.error("mr: unexpected opcode");
         }
@@ -137,10 +140,13 @@ class ThreeWireProtocol {
         // send disconnect opcode
         let cmd2 = [];
         cmd2.push(OPCODE_DISCONNECT);
+        console.log("kfd: disconnect");
         await this.Protocol.SendData(cmd2);
-
+        
         // receive disconnect ack opcode
+        console.log("mr: disconnect ack");
         let rsp2 = await this.Protocol.GetByte(TIMEOUT_STD);
+        console.log("mr -> kfd: ", BCTS(rsp2).join("-"));
         if (rsp2 != OPCODE_DISCONNECT_ACK) {
             console.error("mr: unexpected opcode");
         }

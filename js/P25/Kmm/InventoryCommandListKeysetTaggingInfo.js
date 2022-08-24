@@ -5,13 +5,11 @@ class InventoryCommandListKeysetTaggingInfo extends KmmBody {
         return MessageId.InventoryCommand;
     }
     get InventoryType() {
+        //return InventoryType.ListAllKeysetTaggingInfo;
         return InventoryType.ListKeysetTaggingInfo;
     }
     get ResponseKind() {
         return ResponseKind.Immediate;
-    }
-    constructor() {
-        
     }
     ToBytes() {
         var contents = new Uint8Array(1);

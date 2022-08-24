@@ -12,9 +12,6 @@ class InventoryResponseListActiveKsetIds extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         let contents = [];
 

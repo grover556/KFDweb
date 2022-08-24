@@ -135,7 +135,7 @@
             	<div id="configKfd" class="menu_divs" style="display:none;">
                 	<h3>Configure Key Fill Device</h3>
                 	<button id="buttonConnectKfd">Connect KFD</button>
-                	<button id="buttonDisconnectKfd">Disconnect KFD</button>
+                	<button id="buttonDisconnectKfd" disabled>Disconnect KFD</button>
 					<button id="buttonSendTest">Send Test Message</button>
                 	<p><h3>Connection method:</h3><span id="connectionMethod"></span></p>
                 	<p><h3>Connection status:</h3><span id="connectionStatus">Disconnected</span></p>
@@ -361,6 +361,8 @@
                 	<div class="ui-field-contain">
                     	<button id="buttonViewKmfInformation" class="ui-btn ui-btn-inline">View KMF Information</button>
                 	</div>
+					<h4>KMF RSI: <span id="valueKmfRsi"></span></h4>
+					<h4>MNP: <span id="valueKmfMnp"></span></h4>
             	</div>
             	<div id="loadKeyContainer" class="menu_divs" style="display:none;">
                 	<h3>Load Key Container</h3>

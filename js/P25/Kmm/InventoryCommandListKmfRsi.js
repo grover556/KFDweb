@@ -10,9 +10,6 @@ class InventoryCommandListKmfRsi extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         var contents = new Uint8Array(1);
         

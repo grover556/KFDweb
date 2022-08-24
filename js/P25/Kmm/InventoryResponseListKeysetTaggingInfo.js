@@ -11,9 +11,6 @@ class InventoryResponseListKeysetTaggingInfo extends KmmBody {
     get ResponseKind() {
         return ResponseKind.None;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         throw "NotImplementedException";
     }

@@ -3,9 +3,6 @@
 class KmmBody {
     //MessageId;
     //ResponseKind;
-    constructor() {
-        
-    }
     ToBytes() {
         
     }

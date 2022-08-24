@@ -31,9 +31,6 @@ class KeyStatus {
         }
         this.#_status = val;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         //let contents = new Uint8Array(4);
         let contents = [4];

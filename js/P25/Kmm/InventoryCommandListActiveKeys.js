@@ -7,7 +7,7 @@ class InventoryCommandListActiveKeys extends KmmBody {
         return this.#_inventoryMarker;
     }
     set InventoryMarker(val) {
-        if (value < 1 || value > 0xFFFFFF) {
+        if ((val < 0) || (val > 0xFFFFFF)) {
             throw "ArgumentOutOfRangeException";
         }
         this.#_inventoryMarker = val;
@@ -16,7 +16,7 @@ class InventoryCommandListActiveKeys extends KmmBody {
         return this.#_maxKeysRequested;
     }
     set MaxKeysRequested(val) {
-        if (value < 1 || value > 0xFFFF) {
+        if ((val < 0) || (val > 0xFFFF)) {
             throw "ArgumentOutOfRangeException";
         }
         this.#_maxKeysRequested = val;
@@ -30,23 +30,20 @@ class InventoryCommandListActiveKeys extends KmmBody {
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    constructor() {
-        
-    }
     ToBytes() {
         var contents = new Uint8Array(6);
         
         /* inventory type */
-        contents[0] = InventoryType;
-        
+        contents[0] = this.InventoryType;
+
         /* inventory marker */
-        contents[1] = (InventoryMarker >>> 16) & 0xFF;
-        contents[2] = (InventoryMarker >>> 8) & 0xFF;
-        contents[3] = InventoryMarker & 0xFF;
+        contents[1] = (this.InventoryMarker >>> 16) & 0xFF;
+        contents[2] = (this.InventoryMarker >>> 8) & 0xFF;
+        contents[3] = this.InventoryMarker & 0xFF;
         
         /* max number of keys requested */
-        contents[4] = (maxKeysRequested >>> 8) & 0xFF;
-        contents[5] = maxKeysRequested & 0xFF;
+        contents[4] = (this.maxKeysRequested >>> 8) & 0xFF;
+        contents[5] = this.maxKeysRequested & 0xFF;
         
         return contents;
     }

@@ -20,10 +20,9 @@ class KmmFrame {
     }
     ToBytes() {
         // for whatever reason, "get ToBytes()" breaks async/await functionality
-        console.log("here");
-        //let body = Array.from(this.KmmBody.ToBytes());
-        let body = this.KmmBody.ToBytes();
-        console.log("body", BCTS(body).join("-"));
+        let body = Array.from(this.KmmBody.ToBytes());
+        //let body = this.KmmBody.ToBytes();
+        //console.log("body", BCTS(body).join("-"));
         let length = 10 + body.length;
 
         //let frame = new Uint8Array(length);
@@ -62,7 +61,7 @@ class KmmFrame {
         /* message body */
         //Array.Copy(body, 0, frame, 10, body.length);
         frame = frame.concat(body);
-        console.log("frame", BCTS(frame).join("-"));
+        //console.log("frame", BCTS(frame).join("-"));
         return frame;
     }
     ToBytesWithPreamble(mfid) {
@@ -114,16 +113,19 @@ class KmmFrame {
                 let inventoryType = messageBody[0];
 
                 if (inventoryType == InventoryType.ListActiveKsetIds) {
+                    console.log("InventoryType = ListActiveKsetIds");
                     let kmmBody = new InventoryCommandListActiveKsetIds();
                     kmmBody.parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListRsiItems) {
+                    console.log("InventoryType = ListRsiItems");
                     let kmmBody = new InventoryCommandListRsiItems();
                     kmmBody.parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListActiveKeys) {
+                    console.log("InventoryType = ListActiveKeys");
                     let kmmBody = new InventoryCommandListActiveKeys();
                     kmmBody.parse(messageBody);
                     this.KmmBody = kmmBody;
@@ -139,38 +141,41 @@ class KmmFrame {
             }
         }
         else if (messageId == MessageId.InventoryResponse) {
+            console.log("MessageId = InventoryResponse");
             if (messageBody.length > 0) {
                 let inventoryType = messageBody[0];
                 if (inventoryType == InventoryType.ListActiveKsetIds) {
+                    console.log("InventoryType = ListActiveKsetIds");
                     let kmmBody = new InventoryResponseListActiveKsetIds();
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListActiveKeys) {
+                    console.log("InventoryType = ListActiveKeys");
                     let kmmBody = new InventoryResponseListActiveKeys();
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListRsiItems) {
-                    //cg
+                    console.log("InventoryType = ListRsiItems");
                     let kmmBody = new InventoryResponseListRsiItems();
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListMnp) {
-                    //cg
+                    console.log("InventoryType = ListMnp");
                     let kmmBody = new InventoryResponseListMnp();
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListKmfRsi) {
-                    //cg
+                    console.log("InventoryType = ListKmfRsi");
                     let kmmBody = new InventoryResponseListKmfRsi();
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListKeysetTaggingInfo) {
-                    //cg
+                    console.log("InventoryType = ListKeysetTaggingInfo");
                     let kmmBody = new InventoryResponseListKeysetTaggingInfo();
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
@@ -186,44 +191,49 @@ class KmmFrame {
             }
         }
         else if (messageId == MessageId.ModifyKeyCommand) {
+            console.log("MessageId = ModifyKeyCommand");
             let kmmBody = new ModifyKeyCommand();
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
         else if (messageId == MessageId.NegativeAcknowledgment) {
+            console.log("MessageId = NegativeAcknowledgment");
             let kmmBody = new NegativeAcknowledgment();
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
         else if (messageId == MessageId.RekeyAcknowledgment) {
+            console.log("MessageId = RekeyAcknowledgment");
             let kmmBody = new RekeyAcknowledgment();
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
         else if (messageId == MessageId.ZeroizeResponse) {
+            console.log("MessageId = ZeroizeResponse");
             let kmmBody = new ZeroizeResponse();
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
         else if (messageId == MessageId.LoadConfigResponse) {
-            //cg
+            console.log("MessageId = LoadConfigResponse");
             let kmmBody = new LoadConfigResponse();
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
         else if (messageId == MessageId.ChangeRsiResponse) {
-            //cg
+            console.log("MessageId = ChangeRsiResponse");
             let kmmBody = new ChangeRsiResponse();
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
         else if (messageId == MessageId.ChangeoverResponse) {
-            //cg
+            console.log("MessageId = ChangeoverResponse");
             let kmmBody = new ChangeoverResponse();
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
         else if (messageId == MessageId.SessionControl) {
+            console.log("MessageId = SessionControl");
             if (messageBody.length > 0) {
                 let version = messageBody[0];
 

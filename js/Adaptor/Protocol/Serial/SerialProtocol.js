@@ -7,10 +7,12 @@ let device = null;
 //let port = null;
 let poly = null;
 const serialPortSettings = {
-    baudRate: 115200,
+    //baudRate: 115200,
+    baudRate: 9600,
     parity: "none",
     dataBits: 8,
-    stopBits: 1
+    stopBits: 1,
+    flowControl: "hardware"
 };
 //let reader;
 //let writer;
@@ -49,6 +51,7 @@ async function connectSerial() {
             //$("#iconConnectionStatus").addClass("connection-status-connected");
             $("#iconConnectionStatus").css("background-color", "#aaffaa");
             $("#buttonConnectKfd").prop("disabled", true);
+            $("#buttonDisconnectKfd").prop("disabled", false);
             console.log(event);
         });
         port.addEventListener("disconnect", (event) => {
@@ -59,6 +62,7 @@ async function connectSerial() {
             //port.close();
             $("#iconConnectionStatus").css("background-color", "#ffaaaa");
             $("#buttonConnectKfd").prop("disabled", false);
+            $("#buttonDisconnectKfd").prop("disabled", true);
             $("#connectionStatus").text("Disconnected");
             $("#deviceProperties").html("");
             console.log(event);
@@ -68,6 +72,7 @@ async function connectSerial() {
         connected = true;
         $("#iconConnectionStatus").css("background-color", "#aaffaa");
         $("#buttonConnectKfd").prop("disabled", true);
+        $("#buttonDisconnectKfd").prop("disabled", false);
         $("#connectionStatus").text("Connected");
 
         
@@ -221,15 +226,13 @@ async function readWithTimeout(timeout) {
     //console.log("readWithTimeout", timeout);
     const reader = port.readable.getReader();
     const timer = setTimeout(() => {
-        console.log("timeout");
         reader.releaseLock();
+        console.error("timeout exceeded");
         throw "timeout exceeded";
     }, timeout);
-    const result = await reader.read();
-    //console.log(result);
+    const result = await reader.read();// Uncaught (in promise) after sending 61-17-00-C1-61
     clearTimeout(timer);
     reader.releaseLock();
-    //return result.value;
     let rsp = UnpackResponse(result.value);
     return rsp;
 }
@@ -247,7 +250,7 @@ async function SendSerial(data) {
 
     frameData.push(SOM_EOM);
 
-    data.forEach(b => {
+    data.forEach((b) => {
         if (b == ESC) {
             frameData.push(ESC);
             frameData.push(ESC_PLACEHOLDER);
@@ -260,7 +263,21 @@ async function SendSerial(data) {
             frameData.push(b);
         }
     });
-
+/*
+    for (var i=0; i<data.length; i++) {
+        if (data[i] == ESC) {
+            frameData.push(ESC);
+            frameData.push(ESC_PLACEHOLDER);
+        }
+        else if (data[i] == SOM_EOM) {
+            frameData.push(ESC);
+            frameData.push(SOM_EOM_PLACEHOLDER_);
+        }
+        else {
+            frameData.push(data[i]);
+        }
+    }
+*/
     frameData.push(SOM_EOM);
 
     let outData = new Uint8Array(frameData);
@@ -478,8 +495,9 @@ async function mySend(myData2) {
 */
 
 function UnpackResponse(rsp) {
+    //console.log(rsp);
     rsp = Array.from(rsp);
-
+    //console.log("rsp", BCTS(rsp).join("-"));
     if ((rsp[0] != SOM_EOM) || (rsp[rsp.length - 1] != SOM_EOM)) {
         // invalid packet
         console.log("invalid packet structure: ", BCTS(rsp).join("-"));
