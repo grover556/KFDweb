@@ -47,6 +47,9 @@ $(document).ready(function() {
     }
 });
 
+$("#linkLicensingInformation").on("click", function() {
+    $("#popupLicensingInformation").popup("open");
+});
 
 $("#buttonImportFile").on("click", function() {
     $("#popupImportEkc").popup("open");
@@ -292,6 +295,7 @@ function CreateKeyFromFields(target) {
 }
 
 async function SendKeysToRadio(keys) {
+    ShowLoading();
     console.log("SendKeysToRadio", keys);
     
     let keyItems = [];
@@ -313,29 +317,35 @@ async function SendKeysToRadio(keys) {
     let mra = new ManualRekeyApplication(ap, false);
     let results = mra.Keyload(keyItems);
     console.log(results);
+    HideLoading();
 }
 
 async function ViewKeyInformation() {
+    ShowLoading();
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
     let results = mra.ViewKeyInfo();
     console.log(results);
+    HideLoading();
 }
 
 async function ViewKeysetInformation() {
+    ShowLoading();
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
     let ksetInfo = await mra.ViewKeysetTaggingInfo();
-    
+    HideLoading();
 }
 
 async function ViewKmfInformation() {
+    ShowLoading();
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
     let rsi = await mra.ViewKmfRsi();
     $("#valueKmfRsi").text(rsi);
     let mnp = await mra.ViewMnp();
     $("#valueKmfMnp").text(mnp);
+    HideLoading();
 }
 
 function ClearKeyInfo() {
@@ -580,11 +590,17 @@ $("#buttonSendTest").on("click", async function() {
     //console.log(testResults);
 });
 
-async function DownloadEkc(keyContainer, password, filename) {
+function ShowLoading() {
     $.mobile.loading("show", { text: "Processing...", textVisible: true});
-    let outerContainerCompressed = await CreateEkc(keyContainer, password);
+}
+function HideLoading() {
     $.mobile.loading("hide");
-    
+}
+
+async function DownloadEkc(keyContainer, password, filename) {
+    ShowLoading();
+    let outerContainerCompressed = await CreateEkc(keyContainer, password);
+    HideLoading();
     let link = document.createElement("a");
     if (filename == "") filename = Date.now();
     link.download = filename + ".ekc";

@@ -14,7 +14,7 @@
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
-    	<title>KFDtool Web</title>
+    	<title>KFDweb</title>
     	<link rel="shortcut icon" href="favicon.ico">
 		<link rel="stylesheet" href="css/layout.css" />
     	<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
@@ -120,7 +120,7 @@
                 </ul>
             </div>
             <div data-role="header" data-position="fixed">
-                <h2>KFDtool Web</h2>
+                <h2>KFDweb</h2>
                 <a href="#panelMenu" data-icon="bullets" class="ui-btn-left">Menu</a>
                 <a href="#" data-icon="bars" class="ui-btn-right" style="display:none;">Actions</a>
                 <a href="#" class="ui-btn ui-shadow ui-corner-all ui-icon-bars ui-btn-icon-notext ui-btn-right" id="iconBars" style="display:none;">Bars</a>
@@ -129,8 +129,10 @@
             </div>
         	<div role="main" class="ui-content">
             	<div id="homeDiv" class="menu_divs">
-                	<h1>KFDtool Web</h1>
+                	<h1>KFDweb</h1>
+					<h3>Open Source P25 Key Fill Device, based on the KFDtool project</h3><p>Currently compatible will all functionality of the KFDtool and supported devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
                 	<p><h3 id="secureContextStatus"></h3><span id="secureContextDetails"></span></p>
+					<h5><a id="linkLicensingInformation" href="#">Licensing Information</a></h5>
                 </div>
             	<div id="configKfd" class="menu_divs" style="display:none;">
                 	<h3>Configure Key Fill Device</h3>
@@ -424,12 +426,25 @@
                     	</fieldset>
                 	</div>
             	</div>
+				<div id="popupLicensingInformation" data-role="popup" data-overlay-theme="a" class="ui-content" data-position-to="window">
+					<div style="padding:10px 20px;">
+						<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+						<h3>Licensing Information</h3>
+						<p>Portions of this KFDweb software may utilize the following copyrighted material, the use of which is hereby acknowledged.</p>
+						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright (c) 2021-2022 Collin Grove</h4><div class="ui-body"><a href="https://github.com/grover556/KFDweb/blob/main/LICENSE">KFDweb</a><p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></div>
+						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright 2019-2022 KFDtool, LLC</h4><div class="ui-body"><a href="https://github.com/KFDtool/KFDtool/blob/master/LICENSE.txt">KFDtool</a><p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></div>
+						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright 2019-2020 Daniel Dugger, Copyright 2021 Nat Moore</h4><div class="ui-body"><a href="https://github.com/omahacommsys/KFDtool/blob/master/LICENSE.txt">KFD-AVR</a><p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></div>
+						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright (C) 2014-2017 by Vitaly Puzrin and Andrei Tuputcyn</h4><div class="ui-body"><a href="https://github.com/nodeca/pako/blob/master/LICENSE">pako</a><p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></div>
+						<h4 class="ui-bar ui-bar-a" target="_blank">(c) 2009-2013 by Jeff Mott. All rights reserved.</h4><div class="ui-body"><a href="https://code.google.com/archive/p/crypto-js/wikis/License.wiki">CryptoJS</a><p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:<ul><li>Redistributions of source code must retain the above copyright notice, this list of conditions, and the following disclaimer.</li><li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions, and the following disclaimer in the documentation or other materials provided with the distribution.</li><li>Neither the name CryptoJS nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.</li></ul><br>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS," AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p></div>
+						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright 2018 Google LLC</h4><div class="ui-body"><a href="https://github.com/google/web-serial-polyfill/blob/main/LICENSE">Serial API Polyfill</a><p>Licensed under the Apache License, Version 2.0 (the "License");<ul><li>You may not use this file except in compliance with the License.</li><li>You may obtain a copy of the License at:</li></ul><br><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p><p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p></div>
+					</div>
+            	</div>
             	<div data-role="popup" id="popupMenuKeyOptions_sort_DEP">
                 	
             	</div>
             	
         	</div><!-- /content -->
         </div><!-- /page -->
-        <script src="js/webserial.js?v=12"></script>
+        <script src="js/webserial.js"></script>
     </body>
 </html>
