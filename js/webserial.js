@@ -74,30 +74,28 @@ $("#buttonOpenEkc").on("click", function() {
     //loadFile();
     clearPopupEkc();
 });
-$("a.key-delete").on("click", function() {
-    console.log($(this));
-    //console.log($(this).parent().data("keyset"));
-    //console.log($(this).parent().data("sln"));
-    let th = $(this).parent().parent();
-    let keyset = th.data("keyset");
-    let sln = th.data("sln");
-    console.log(th, keyset, sln);
+$("#table_keyinfo tbody").on("click", "a.key-delete", function() {
+    let tr = $(this).parent().parent();
+    let keyset = tr.data("keysetid");
+    let sln = tr.data("sln");
+    //console.log("Delete key: KSID=" + keyset + ", SLN=" + sln);
     if (window.confirm("Warning: this will erase the key (Keyset ID: " + keyset + ", SLN/CKR: " + sln + ") from the radio. Do you wish to continue?")) {
-        
+        let keyItems = [];
+        let item = new CmdKeyItem();
+        item.KeysetId = keyset;
+        item.Sln = sln;
+        if (sln >=0 && sln <= 61439) item.IsKek = false;
+        else if (sln >= 61440 && sln <= 65535) item.IsKek = true;
+        keyItems.push(item);
+        EraseKeysFromRadio(keyItems);
     }
 });
-$("a.keyset-activate").on("click", function() {
-    console.log(".keyset-activate clicked");
-    console.log($(this));
-    //console.log($(this).parent());
-    //console.log($(this).parent().data("sln"));
-    let th = $(this).parent().parent();
-    let keyset_activate = th.data("keyset");
-    //let keyset_active = th.data("active");
-    let th2 = $("table#table_keysets tr[data-active='true']")[0];
-    let keyset_deactivate = parseInt(th2.attributes.getNamedItem("data-keysetid").value);
-    console.log(keyset_activate, keyset_deactivate);
-
+$("#table_keysets tbody").on("click", "a.keyset-activate", function() {
+    let tr = $(this).parent().parent();
+    let keyset_activate = tr.data("keysetid");
+    let tr2 = $("table#table_keysets tr[data-active='true']")[0];
+    let keyset_deactivate = parseInt(tr2.attributes.getNamedItem("data-keysetid").value);
+    //console.log("Activate " + keyset_activate + ", deactivate " + keyset_deactivate);
     if (keyset_deactivate == 255) {
         alert("Error: Cannot deactivate KEK keyset");
         return;
@@ -106,8 +104,19 @@ $("a.keyset-activate").on("click", function() {
         Changeover(keyset_deactivate, keyset_activate);
     }
 });
-$("a.rsi-change").on("click", function() {
-    console.log($(this));
+$("#table_rsiItems tbody").on("click", "a.rsi-change", function() {
+    //console.log($(this).parent().parent()[0].dataset);
+    // This should trigger mra.???
+    let tr = $(this).parent().parent();
+    let rsi = parseInt(tr.data("rsiid"));
+    console.log(rsi);
+});
+$("#table_kmfRsi tbody").on("click", "a.kmf-rsi-change", function() {
+    //console.log($(this).parent().parent()[0].dataset);
+    // This should trigger mra.LoadConfig(rsi, mn);
+    let tr = $(this).parent().parent();
+    let rsi = parseInt(tr.data("rsiid"));
+    console.log(rsi);
 });
 $(".menuItem").on("click", function() {
     var menuName = $(this).attr("id").replace("menu_", "");
@@ -192,7 +201,7 @@ $("#buttonViewRsiInformation").on("click", function() {
 $("#buttonViewKmfInformation").on("click", function() {
     ViewKmfInformation();
 });
-$("#buttonEraseKeysFromRadio").on("click", function() {
+$("#buttonEraseAllKeysFromRadio").on("click", function() {
     if (window.confirm("Warning: this will erase all keys from the radio. This action CANNOT be undone. Do you wish to continue?")) {
         EraseAllKeysFromRadio();
     }
@@ -484,7 +493,7 @@ async function ViewKeysetInformation() {
             }
             
             //<tr data-keysetid="1" data-active="true"><th>Yes</th><th>1</th><th>SET 01</th><th>TEK</th><th>2022-08-01 07:00</th><th></th></tr>
-            let row = '<tr data-keysetid="' + keyset.KeysetId + '" data-keysetname="' + keyset.KeysetName + '" data-keysettype="' + keyset.KeysetType + '" data-keysetactivedatetime="' + ksadt + '" data-active="' + (activeFlag || keyset.KeysetId == 255) + '"><th>' + ((activeFlag || keyset.KeysetId == 255) ? "Yes" : "No") + "</th><th>" + keyset.KeysetId + "</th><th>" + keyset.KeysetName + "</th><th>" + keyset.KeysetType + "</th><th>" + activationDateTime + "</th><th>" + activateFlag + "</th></tr>";
+            let row = '<tr data-keysetid="' + keyset.KeysetId + '" data-keysetname="' + keyset.KeysetName + '" data-keysettype="' + keyset.KeysetType + '" data-keysetactivedatetime="' + ksadt + '" data-active="' + (activeFlag || keyset.KeysetId == 255) + '"><th class="th-active-flag">' + ((activeFlag || keyset.KeysetId == 255) ? "Yes" : "No") + '</th><th>' + keyset.KeysetId + '</th><th>' + keyset.KeysetName + '</th><th>' + keyset.KeysetType + '</th><th>' + activationDateTime + '</th><th class="th-action-flag">' + activateFlag + '</th></tr>';
             $("#table_keysets").append(row);
             $("#table_keysets").table("refresh");
         });
@@ -511,7 +520,7 @@ async function ViewKmfInformation() {
         EnableKfdButtons();
     }
     if ((rsi !== undefined) && (mnp !== undefined)) {
-        let row = '<tr data-rsiid="' + rsi + ' data-messagenumber="' + mnp + '"><th>KMF</th><th>' + rsi + "</th><th>" + mnp + "</th><th><a class='rsi-change' href='#'>Change</a></th></tr>";
+        let row = '<tr data-rsiid="' + rsi + '" data-messagenumber="' + mnp + '"><th>KMF</th><th>' + rsi + "</th><th>" + mnp + "</th><th><a class='kmf-rsi-change' href='#'>Change</a></th></tr>";
         $("#table_kmfRsi").append(row);
         $("#table_kmfRsi").table("refresh");
     }
@@ -545,9 +554,41 @@ async function ViewRsiInformation() {
             if ((rsi.RSI > 0) && (rsi.RSI < 9999999)) rsiType = "Individual";
             else if ((rsi.RSI > 9999999) && (rsi.RSI < 16777216)) rsiType = "Group"
             //<tr data-keysetid="1" data-active="true"><th>Yes</th><th>1</th><th>SET 01</th><th>TEK</th><th>2022-08-01 07:00</th><th></th></tr>
-            let row = '<tr data-rsiid="' + rsi.RSI + ' data-messagenumber="' + rsi.MN + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change' href='#'>Change</a></th></tr>";
+            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + rsi.MN + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change' href='#'>Change</a></th></tr>";
             $("#table_rsiItems").append(row);
             $("#table_rsiItems").table("refresh");
+        });
+    }
+}
+
+async function EraseKeysFromRadio(keyItems) {
+    console.log(keyItems);
+    if (!connected) return;
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let result;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        result = await mra.EraseKeys(keyItems);
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (result !== undefined) {
+        console.log(result);
+        result.Keys.forEach((key) => {
+            if (key.Status != 0) {
+                console.log(OperationStatusExtensions.ToReasonString(key.Status));
+            }
+        });
+        // Remove keys from list
+        keyItems.forEach((key) => {
+            $("#table_keyinfo tr[data-keysetid='" + key.KeysetId + "'][data-sln='" + key.Sln + "']").remove();
         });
     }
 }
@@ -639,7 +680,25 @@ async function GetRadioCapabilities() {
         EnableKfdButtons();
     }
     if (result !== undefined) {
-        console.log(result);
+        $("#table_supportedAlgorithms tbody").empty();
+        $("#table_supportedMessages tbody").empty();
+        $("#table_supportedServices tbody").empty();
+        result.AlgorithmIds.forEach((algId) => {
+            let row = "<tr><th>" + LookupAlgorithmId(algId) + "</th></tr>";
+            $("#table_supportedAlgorithms").append(row);
+        });
+        result.MessageIds.forEach((mId) => {
+            let row = "<tr><th>" + LookupMessageId(mId) + "</th></tr>";
+            $("#table_supportedMessages").append(row);
+        });
+        result.OptionalServices.forEach((osId) => {
+            let row = "<tr><th>" + LookupOptionalServiceId(osId) + "</th></tr>";
+            $("#table_supportedServices").append(row);
+        });
+        
+        $("#table_supportedAlgorithms").table("refresh");
+        $("#table_supportedMessages").table("refresh");
+        $("#table_supportedServices").table("refresh");
     }
 }
 
@@ -661,7 +720,15 @@ async function Changeover(ksidSuperseded, ksidActivated) {
         EnableKfdButtons();
     }
     if (result !== undefined) {
-        console.log(result);
+        //console.log(result);
+        //result.KeysetIdActivated;
+        //result.KeysetIdSuperseded;
+        //$("li[data-key-id='" + key_id +"']").remove();
+        //let activateFlag = '<a class="keyset-activate" href="#">Activate</a>';
+        //$("#table_keysets tbody tr[data-keysetid='" + result.KeysetIdActivated + "'] th.th-action-flag").innerText = "";
+        //$("#table_keysets tbody tr[data-keysetid=''] th");
+
+        $("#table_keysets tbody tr[data-keysetid=" + result.KeysetIdSuperseded + "] th.th-action-flag").append($("#table_keysets tbody tr[data-keysetid=" + result.KeysetIdActivated + "] th.th-action-flag a")[0]);
     }
 }
 
@@ -1077,28 +1144,6 @@ function ReadFileAsync(file) {
     });
 }
 
-function LookupAlgId(algId) {
-    switch(algId) {
-        case 0: return "ACCORDION";
-        case 1: return "BATON_ODD";
-        case 2: return "FIREFLY";
-        case 3: return "MAYFLY";
-        case 4: return "SAVILLE";
-        case 5: return "PADSTONE";
-        case 65: return "BATON_EVEN";
-        case 128: return "CLEAR";
-        case 129: return "DESOFB";
-        case 131: return "TDES";
-        case 132: return "AES256";
-        case 133: return "AES128";
-        case 159: return "DESXL";
-        case 160: return "DVIXL";
-        case 161: return "DVPXL";
-        case 170: return "ADP";
-        default: return "UNKNOWN";
-    }
-}
-
 function CheckKeyValidation(key) {
     //console.log(key);
     let returnVal = {
@@ -1140,18 +1185,18 @@ function PopulateKeys() {
         }
         
         // Add to listview
-        let keyListItem = '<li data-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></a></li>';
+        let keyListItem = '<li data-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></a></li>';
         $("#keyContainerKeyList").append(keyListItem);
         
         // Add to group checkbox
         //<label for="checkbox-1a"><p>key 1</p><p>AES-256, TEK, 3, 0002</p></label>
         //<input type="checkbox" name="checkbox-1a" id="checkbox-1a">
         
-        //let groupItem = '<div class="ui-checkbox"><label for="checkbox-' + key.Id + '" class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off"><p data-key-id=' + key.Id + '>' + key.Name + '</p><p>' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></label>';
+        //let groupItem = '<div class="ui-checkbox"><label for="checkbox-' + key.Id + '" class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off"><p data-key-id=' + key.Id + '>' + key.Name + '</p><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></label>';
         //groupItem += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
         //$("#checkboxControls").append(groupItem);
         
-        let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
+        let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
         groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
         $("#addGroupKeyList").append(groupCheckbox);
     });
@@ -1190,11 +1235,11 @@ function AddKey(key) {
         if (key.KeyTypeTek) keyType = "TEK";
         else keyType = "KEK";
     }
-    let keyListItem = '<li data-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></a></li>';
+    let keyListItem = '<li data-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></a></li>';
     $("#keyContainerKeyList").append(keyListItem);
-    //let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span>' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
+    //let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
     //groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
-    let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
+    let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
     groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
     $("#addGroupKeyList").append(groupCheckbox);
     $("#keyContainerKeyList").listview("refresh");

@@ -18,7 +18,7 @@ class OperationStatusExtensions {
         Keyfail: 0x0D,
         Unknown: 0xFF
     };
-    ToStatusString(status) {
+    static ToStatusString(status) {
         switch (status) {
             case this.OperationStatus.CommandWasPerformed:
                 return "Command was performed";
@@ -54,7 +54,7 @@ class OperationStatusExtensions {
                 return "Reserved";
         }
     }
-    ToReasonString(status) {
+    static ToReasonString(status) {
         switch (status) {
             case this.OperationStatus.CommandWasPerformed:
                 return "Command was executed successfully";

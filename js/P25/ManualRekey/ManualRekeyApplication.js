@@ -71,11 +71,8 @@ class ManualRekeyApplication {
             else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
                 let kmm = (NegativeAcknowledgment)(rspKmmBody1);
 
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
@@ -115,11 +112,9 @@ class ManualRekeyApplication {
             else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
                 //let kmm = (NegativeAcknowledgment)(rspKmmBody1);
                 let kmm = rspKmmBody1;
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
@@ -169,11 +164,9 @@ class ManualRekeyApplication {
             else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
                 //let kmm = (NegativeAcknowledgment)(rspKmmBody1);
                 let kmm = rspKmmBody1;
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
@@ -239,11 +232,8 @@ class ManualRekeyApplication {
                         console.log("status: " + status.Status);
 
                         if (status.Status != 0) {
-                            let ose = new OperationStatusExtensions();
-                            let statusDescr = ose.ToStatusString(kmm.Status);
-                            let statusReason = ose.ToReasonString(kmm.Status);
-                            //let statusDescr = OperationStatusExtensions.ToStatusString(status.Status);
-                            //let statusReason = OperationStatusExtensions.ToReasonString(status.Status);
+                            let statusDescr = OperationStatusExtensions.ToStatusString(status.Status);
+                            let statusReason = OperationStatusExtensions.ToReasonString(status.Status);
                             throw "received unexpected key status" + "algorithm id: " + status.AlgorithmId + "key id: " + status.KeyId + "status: " + status.Status + "status description: " + statusDescr + "status reason: " + statusReason;
                         }
                     }
@@ -252,11 +242,8 @@ class ManualRekeyApplication {
                     //let kmm = (NegativeAcknowledgment)(rspKmmBody2);
                     let kmm = rspKmmBody2;
 
-                    let ose = new OperationStatusExtensions();
-                    let statusDescr = ose.ToStatusString(kmm.Status);
-                    let statusReason = ose.ToReasonString(kmm.Status);
-                    //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                    //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                    let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                    let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                     throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
                 }
                 else {
@@ -272,11 +259,15 @@ class ManualRekeyApplication {
         return keyStatuses;
     }
     async EraseKeys(keyItems) {
-        let keyGroups = KeyPartitioner.PartitionKeys(keyItems);
-
+        //let keyGroups = KeyPartitioner.PartitionKeys(keyItems);
+        let keyGroups = [keyItems];// for single key erase, for now
+        //console.log(keyGroups);
+        let result;
         await this.Begin();
 
         try {
+            // Since the user is selecting a key from the table, no need to get Active Keyset ID
+            /*
             let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
 
             let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
@@ -304,78 +295,72 @@ class ManualRekeyApplication {
             else if (rspKmmBody1 == NegativeAcknowledgment) {
                 let kmm = rspKmmBody1;
 
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
                 throw "unexpected kmm";
             }
-
+            */
             for (var i=0; i< keyGroups.length; i++) {
                 let modifyKeyCommand = new ModifyKeyCommand();
 
+                // Again, no need for logic since Keyset ID is selected
+                /*
                 // TODO support more than one crypto group
-                if (keyGroup[0].UseActiveKeyset && !keyGroup[0].IsKek) {
+                if (keyGroups[i][0].UseActiveKeyset && !keyGroups[i][0].IsKek) {
                     modifyKeyCommand.KeysetId = activeKeysetId;
                 }
-                else if (keyGroup[0].UseActiveKeyset && keyGroup[0].IsKek) {
+                else if (keyGroups[i][0].UseActiveKeyset && keyGroups[i][0].IsKek) {
                     modifyKeyCommand.KeysetId = 0xFF; // to match KVL3000+ R3.53.03 behavior
                 }
                 else {
-                    modifyKeyCommand.KeysetId = keyGroup[0].KeysetId;
+                    modifyKeyCommand.KeysetId = keyGroups[i][0].KeysetId;
                 }
-
+                */
+                modifyKeyCommand.KeysetId = keyGroups[i][0].KeysetId;
                 modifyKeyCommand.AlgorithmId = 0x81; // to match KVL3000+ R3.53.03 behavior
 
                 for (var j=0; j< keyGroups[i].length; j++) {
-                    console.log(key.toString());
-
                     let keyItem = new KeyItem();
                     keyItem.SLN = keyGroups[i][j].Sln;
                     keyItem.KeyId = 65535; // to match KVL3000+ R3.53.03 behavior
                     keyItem.Key = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]; // to match KVL3000+ R3.53.03 behavior
                     keyItem.KEK = keyGroups[i][j].IsKek;
                     keyItem.Erase = true;
-
+                    
                     modifyKeyCommand.KeyItems.push(keyItem);
                 }
                 let rspKmmBody2 = await this.TxRxKmm(modifyKeyCommand);
 
-                if (rspKmmBody2 == RekeyAcknowledgment) {
+                if (rspKmmBody2 instanceof RekeyAcknowledgment) {
                     let kmm = rspKmmBody2;
+                    result = rspKmmBody2;
+                    //console.log("number of key status: " + kmm.Keys.length);
 
-                    console.log("number of key status: " + kmm.Keys.length);
-
+                    /*
                     for (var i=0; i<kmm.Keys.length; i++) {
                         let status = kmm.Keys[i];
-
+                        
                         console.log("* key status index " + i + " *");
                         console.log("algorithm id: " + status.AlgorithmId);
                         console.log("key id: " + status.KeyId);
                         console.log("status: " + status.Status);
-
+                        
                         if (status.Status != 0) {
-                            let ose = new OperationStatusExtensions();
-                            let statusDescr = ose.ToStatusString(kmm.Status);
-                            let statusReason = ose.ToReasonString(kmm.Status);
-                            //let statusDescr = OperationStatusExtensions.ToStatusString(status.Status);
-                            //let statusReason = OperationStatusExtensions.ToReasonString(status.Status);
+                            let statusDescr = OperationStatusExtensions.ToStatusString(status.Status);
+                            let statusReason = OperationStatusExtensions.ToReasonString(status.Status);
                             throw "received unexpected key status" + "algorithm id: " + status.AlgorithmId + "key id: " + status.KeyId + "status: " + status.Status + "status description: " + statusDescr + "status reason: " + statusReason;
                         }
                     }
+                    */
                 }
-                else if (rspKmmBody2 == NegativeAcknowledgment) {
+                else if (rspKmmBody2 instanceof NegativeAcknowledgment) {
                     let kmm = rspKmmBody2;
     
-                    let ose = new OperationStatusExtensions();
-                    let statusDescr = ose.ToStatusString(kmm.Status);
-                    let statusReason = ose.ToReasonString(kmm.Status);
-                    //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                    //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                    let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                    let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                     throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
                 }
                 else {
@@ -388,6 +373,7 @@ class ManualRekeyApplication {
             throw "";
         }
         await this.End();
+        return result;
     }
     async EraseAllKeys() {
         let result = "";
@@ -405,11 +391,8 @@ class ManualRekeyApplication {
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
     
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
@@ -475,11 +458,8 @@ class ManualRekeyApplication {
                 else if (responseKmmBody instanceof NegativeAcknowledgment) {
                     let kmm = responseKmmBody;
         
-                    let ose = new OperationStatusExtensions();
-                    let statusDescr = ose.ToStatusString(kmm.Status);
-                    let statusReason = ose.ToReasonString(kmm.Status);
-                    //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                    //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                    let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                    let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                     throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
                 }
                 else {
@@ -513,11 +493,8 @@ class ManualRekeyApplication {
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
     
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 console.warn("received negative acknowledgment status: " + statusDescr + ", " + statusReason);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
@@ -551,11 +528,8 @@ class ManualRekeyApplication {
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
     
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 console.warn("received negative acknowledgment status: " + statusDescr + ", " + statusReason);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
@@ -590,11 +564,8 @@ class ManualRekeyApplication {
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
     
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
@@ -630,11 +601,8 @@ console.log(responseKmmBody);
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
     
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
@@ -692,11 +660,8 @@ console.log(responseKmmBody);
                 else if (responseKmmBody instanceof NegativeAcknowledgment) {
                     let kmm = responseKmmBody;
         
-                    let ose = new OperationStatusExtensions();
-                    let statusDescr = ose.ToStatusString(kmm.Status);
-                    let statusReason = ose.ToReasonString(kmm.Status);
-                    //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                    //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                    let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                    let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                     throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
                 }
                 else {
@@ -738,11 +703,8 @@ console.log(responseKmmBody);
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
 
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 console.warn("received negative acknowledgment status: " + statusDescr + ", " + statusReason);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
@@ -778,11 +740,8 @@ console.log(responseKmmBody);
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
 
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
@@ -809,12 +768,9 @@ console.log(responseKmmBody);
             if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
 
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
-                //throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
                 throw "unexpected kmm";
@@ -843,11 +799,8 @@ console.log(responseKmmBody);
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
 
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {
@@ -886,11 +839,8 @@ console.log(responseKmmBody);
             else if (responseKmmBody instanceof NegativeAcknowledgment) {
                 let kmm = responseKmmBody;
 
-                let ose = new OperationStatusExtensions();
-                let statusDescr = ose.ToStatusString(kmm.Status);
-                let statusReason = ose.ToReasonString(kmm.Status);
-                //let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
-                //let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else {

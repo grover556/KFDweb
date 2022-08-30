@@ -38,3 +38,22 @@ function BCTS(decArr) {
     }
     return hexArr;
 }
+
+function LookupAlgorithmId(algId) {
+    if (!Object.values(AlgorithmId).includes(algId)) {
+        return "Unknown " + algId.toString(16).toUpperCase().padStart(2, "0");
+    }
+    return Object.keys(AlgorithmId).find(key => AlgorithmId[key] === algId);
+}
+function LookupMessageId(mId) {
+    if (!Object.values(MessageId).includes(mId)) {
+        return "Unknown " + mId.toString(16).toUpperCase().padStart(2, "0");
+    }
+    return Object.keys(MessageId).find(key => MessageId[key] === mId);
+}
+function LookupOptionalServiceId(osId) {
+    if (!Object.values(OptionalServiceId).includes(osId)) {
+        return "Unknown " + osId.toString(16).toUpperCase().padStart(2, "0");
+    }
+    return Object.keys(OptionalServiceId).find(key => OptionalServiceId[key] === osId);
+}

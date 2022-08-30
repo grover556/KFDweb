@@ -102,8 +102,7 @@
                 <ul id="menuList" data-role="listview" data-inset="false" data-shadow="false">
                     <li data-icon="home"><a id="menu_homeDiv" href="#" class="menuItem ui-btn ui-btn-icon-right ui-icon-home">Home</a></li>
                     <li class="disconnected"><a class="menuItem" id="menu_configKfd" href="#">Configure Key Fill Device</a></li>
-                    <li><a class="menuItem" id="menu_manageKeys" href="#">Manage Keys</a></li>
-                    <li><a class="menuItem" id="menu_manageGroups" href="#">Manage Groups</a></li>
+                    
                     <li><a class="menuItem" id="menu_loadKeySingle" href="#">Load Single Key</a></li>
                     <li><a class="menuItem" id="menu_loadKeyMultiple" href="#">Load Multiple Keys</a></li>
                     <li style="display:none;"><a class="menuItem" id="menu_eraseKeySingle" href="#">Erase Single Key</a></li>
@@ -116,7 +115,6 @@
                                 <li><a class="menuItem" id="menu_viewKeysetInfo" href="#">Keyset Information</a></li>
                                 <li><a class="menuItem" id="menu_viewRsiItems" href="#">RSI Items</a></li>
                                 <li><a class="menuItem" id="menu_viewKmfInfo" href="#">KMF Information</a></li>
-								<li><a class="menuItem" id="menu_setClockInfo" href="#">Set Clock</a></li>
                             </ul>
                         </div>
                     </li>
@@ -125,11 +123,27 @@
                             <h2>Key Container</h2>
                             <ul data-role="listview">
                                 <li><a class="menuItem" id="menu_loadKeyContainer" href="#">Load Key Container</a></li>
+								<li><a class="menuItem" id="menu_manageKeys" href="#">Manage Keys</a></li>
+                    			<li><a class="menuItem" id="menu_manageGroups" href="#">Manage Groups</a></li>
                                 <li><a class="menuItem" id="menu_exportKeyContainer" href="#">Export Key Container</a></li>
                                 <li><a class="menuItem" id="menu_resetKeyContainer" href="#">Reset Key Container</a></li>
                             </ul>
                         </div>
                     </li>
+					<li>
+						<div data-role="collapsible" data-inset="false" data-iconpos="left">
+							<h2>OTAR Features</h2>
+							<ul data-role="listview">
+								<li><a class="menuItem" id="menu_otarCapabilities" href="#">Get Capabilities</a></li>
+								<li><a class="menuItem" id="menu_otarKeyAssignment" href="#">Key Assignment</a></li>
+								<li><a class="menuItem" id="menu_otarDeleteKeyset" href="#">Delete Keyset</a></li>
+								<li><a class="menuItem" id="menu_otarLoadConfig" href="#">Load Configuration</a></li>
+								<li><a class="menuItem" id="menu_otarWarmstart" href="#">Warm Start</a></li>
+								<li><a class="menuItem" id="menu_otarSetDateTime" href="#">Set Date/Time</a></li>
+								<li><a class="menuItem" id="menu_otarTotar" href="#">Tactical OTAR</a></li>
+							</ul>
+						</div>
+					</li>
                 </ul>
             </div>
             <div data-role="header" data-position="fixed">
@@ -278,7 +292,7 @@
                 	<div class="ui-field-contain">
                     	<button id="buttonViewKeyInformation" class="ui-btn ui-btn-inline button-kfd">View Key Information</button>
                 	</div>
-					<table data-role="table" id="table_keyinfo" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
+					<table data-role="table" id="table_keyinfo" class="table-stripe ui-responsive" data-filter="true" data-filter-placeholder="Filter keys..." data-column-btn-text="Columns...">
 						<thead>
 							<tr>
 								<th>Keyset ID</th>
@@ -290,14 +304,14 @@
 						</thead>
 						<tbody></tbody>
 					</table>
-					<button id="buttonEraseKeysFromRadio" class="ui-btn ui-btn-inline button-kfd">Erase All Keys From Radio</button>
+					<button id="buttonEraseAllKeysFromRadio" class="ui-btn ui-btn-inline button-kfd">Erase All Keys From Radio</button>
             	</div>
             	<div id="viewKeysetInfo" class="menu_divs" style="display:none;">
                 	<h3>View Keyset Information</h3>
                 	<div class="ui-field-contain">
                     	<button id="buttonViewKeysetInformation" class="ui-btn ui-btn-inline button-kfd">View Keyset Information</button>
                 	</div>
-					<table data-role="table" id="table_keysets" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
+					<table data-role="table" id="table_keysets" class="table-stripe ui-responsive" data-filter="true" data-filter-placeholder="Filter keysets..." data-column-btn-text="Columns...">
 						<thead>
 							<tr>
 								<th>Active</th>
@@ -317,7 +331,7 @@
                     	<button id="buttonViewRsiInformation" class="ui-btn ui-btn-inline button-kfd">View RSI Information</button>
 						<button id="buttonAddRsi" class="ui-btn ui-btn-inline button-kfd">Add New RSI</button>
                 	</div>
-					<table data-role="table" id="table_rsiItems" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
+					<table data-role="table" id="table_rsiItems" class="table-stripe ui-responsive" data-filter="true" data-filter-placeholder="Filter RSIs..." data-column-btn-text="Columns...">
 						<thead>
 							<tr>
 								<th>RSI Type</th>
@@ -346,14 +360,49 @@
 						<tbody></tbody>
 					</table>
             	</div>
-				<div id="setClockInfo" class="menu_divs" style="display:none;">
-                	<h3>Set Clock</h3>
-					<h5 style="color:red;">PerformKmmTransfer(inKmm): unexpected kmm opcode, expected 194 got 195</h5>
-                	<div class="ui-field-contain">
-                    	<button id="buttonSetClock" class="ui-btn ui-btn-inline button-kfd">Set Clock</button>
-                	</div>
+				<div id="otarCapabilities" class="menu_divs" style="display:none;">
 					<div class="ui-field-contain">
                     	<button id="buttonGetCapabilities" class="ui-btn ui-btn-inline button-kfd">Get Capabilities</button>
+                	</div>
+					<h3>SU Capabilities</h3>
+					<div class="ui-grid-b ui-responsive">
+						<div class="ui-block-a" style="padding:10px,10px;">
+							<table data-role="table" id="table_supportedAlgorithms" class="table-stripe ui-responsive" style="border-collapse:separate;padding:0px 5px;">
+								<thead>
+									<tr>
+										<th>Algorithms</th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+						</div>
+						<div class="ui-block-b">
+							<table data-role="table" id="table_supportedMessages" class="table-stripe ui-responsive" style="border-collapse:separate;padding:0px 5px;">
+								<thead>
+									<tr>
+										<th>Messages</th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+						</div>
+						<div class="ui-block-c">
+							<table data-role="table" id="table_supportedServices" class="table-stripe ui-responsive" style="border-collapse:separate;padding:0px 5px;">
+								<thead>
+									<tr>
+										<th>Services</th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+						</div>
+					</div>
+            	</div>
+				<div id="otarSetDateTime" class="menu_divs" style="display:none;">
+                	<h3>Set Date/Time</h3>
+					<h5 style="color:red;">PerformKmmTransfer(inKmm): unexpected kmm opcode, expected 194 got 195</h5>
+                	<div class="ui-field-contain">
+                    	<button id="buttonSetClock" class="ui-btn ui-btn-inline button-kfd">Set Date/Time</button>
                 	</div>
             	</div>
             	<div id="loadKeyContainer" class="menu_divs" style="display:none;">

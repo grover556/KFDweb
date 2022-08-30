@@ -5,53 +5,53 @@ class CmdKeyItem {
     #_sln;
     #_algorithmId;
     #_keyId;
-    #_key;
+    #_key = [];
     UseActiveKeyset;
     get KeysetId() {
         return this.#_keysetId;
     }
-    set KeysetId(val) {
-        if (val < 0 || val > 0xFF) {
+    set KeysetId(value) {
+        if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_keysetId = val;
+        this.#_keysetId = value;
     }
     get Sln() {
         return this.#_sln;
     }
-    set Sln(val) {
-        if (val < 0 || val > 0xFFFF) {
+    set Sln(value) {
+        if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_sln = val;
+        this.#_sln = value;
     }
     IsKek;
     get KeyId() {
         return this.#_keyId;
     }
-    set KeyId(val) {
-        if (val < 0 || val > 0xFFFF) {
+    set KeyId(value) {
+        if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_keyId = val;
+        this.#_keyId = value;
     }
     get AlgorithmId() {
         return this.#_algorithmId;
     }
-    set AlgorithmId(val) {
-        if (val < 0 || val > 0xFF) {
+    set AlgorithmId(value) {
+        if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_algorithmId = val;
+        this.#_algorithmId = value;
     }
     get Key() {
         return this.#_key;
     }
-    set Key(val) {
-        if (val == null) {
+    set Key(value) {
+        if (value == null) {
             throw "ArgumentNullException";
         }
-        this.#_key = val;
+        this.#_key = value;
     }
     constructor(useActiveKeyset, keysetId, sln, isKek, keyId, algorithmId, key) {
         if (useActiveKeyset === undefined) {
