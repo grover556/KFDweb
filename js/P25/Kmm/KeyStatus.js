@@ -7,33 +7,33 @@ class KeyStatus {
     get AlgorithmId() {
         return this.#_algorithmId;
     }
-    set AlgorithmId(val) {
+    set AlgorithmId(value) {
         if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_algorithmId = val;
+        this.#_algorithmId = value;
     }
     get KeyId() {
         return this.#_keyId;
     }
-    set KeyId(val) {
+    set KeyId(value) {
         if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_keyId = val;
+        this.#_keyId = value;
     }
     get Status() {
         return this.#_status;
     }
-    set Status(val) {
+    set Status(value) {
         if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_status = val;
+        this.#_status = value;
     }
     ToBytes() {
-        //let contents = new Uint8Array(4);
-        let contents = [4];
+        let contents = new Array(4);
+        //let contents = [4];
 
         /* algorithm id */
         contents[0] = this.AlgorithmId;

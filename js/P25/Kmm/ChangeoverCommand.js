@@ -7,20 +7,20 @@ class ChangeoverCommand extends KmmBody {
     get KeysetIdSuperseded() {
         return this.#_keysetIdSuperseded;
     }
-    set KeysetIdSuperseded(val) {
+    set KeysetIdSuperseded(value) {
         if (value < 1 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        _keysetIdSuperseded = val;
+        this.#_keysetIdSuperseded = value;
     }
     get KeysetIdActivated() {
         return this.#_keysetIdActivated;
     }
-    set KeysetIdActivated(val) {
+    set KeysetIdActivated(value) {
         if (value < 1 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        _keysetIdActivated = val;
+        this.#_keysetIdActivated = value;
     }
     get MessageId() {
         return MessageId.ChangeoverCommand;

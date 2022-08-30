@@ -6,20 +6,20 @@ class RsiItem {
     get RSI() {
         return this.#_rsi;
     }
-    set RSI(val) {
+    set RSI(value) {
         if (value < 0 || value > 0xFFFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_rsi= val;
+        this.#_rsi= value;
     }
     get MessageNumber() {
         return this.#_messageNumber;
     }
-    set MessageNumber(val) {
+    set MessageNumber(value) {
         if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_messageNumber= val;
+        this.#_messageNumber= value;
     }
     ToBytes() {
         let contents = [5];
@@ -36,7 +36,7 @@ class RsiItem {
         return contents;
     }
     Parse(contents) {
-        if (contents.Length != 5) {
+        if (contents.length != 5) {
             throw "ArgumentOutOfRangeException";
         }
 
@@ -48,5 +48,6 @@ class RsiItem {
         /* message number */
         this.MessageNumber |= contents[3] << 8;
         this.MessageNumber |= contents[4];
+
     }
 }

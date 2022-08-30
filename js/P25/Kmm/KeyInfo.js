@@ -8,41 +8,41 @@ class KeyInfo {
     get KeySetId() {
         return this.#_keySetId;
     }
-    set KeySetId(val) {
+    set KeySetId(value) {
         if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_keySetId = val;
+        this.#_keySetId = value;
     }
     get SLN() {
         return this.#_sln;
     }
-    set SLN(val) {
+    set SLN(value) {
         if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_sln = val;
+        this.#_sln = value;
     }
     get AlgorithmId() {
         return this.#_algorithmId;
     }
-    set AlgorithmId(val) {
+    set AlgorithmId(value) {
         if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_algorithmId = val;
+        this.#_algorithmId = value;
     }
     get KeyId() {
         return this.#_keyId;
     }
-    set KeyId(val) {
+    set KeyId(value) {
         if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_keyId = val;
+        this.#_keyId = value;
     }
     ToBytes() {
-        let contents = new Uint8Array(6);
+        let contents = [6];
 
         /* keyset id */
         contents[0] = this.KeySetId;

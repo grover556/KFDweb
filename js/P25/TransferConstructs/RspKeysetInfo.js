@@ -1,6 +1,6 @@
-//KeysetItem
+//RspKeysetInfo
 
-class KeysetItem {
+class RspKeysetInfo {
     #_keysetId;
     KeysetName;
     KeysetType;
@@ -23,11 +23,5 @@ class KeysetItem {
             throw "ArgumentOutOfRangeException";
         }
         this.#_reservedField = value;
-    }
-    ToBytes() {
-        throw "NotImplementedException";
-    }
-    Parse(contents) {
-        throw "NotImplementedException";
     }
 }

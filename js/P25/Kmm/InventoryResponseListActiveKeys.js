@@ -3,7 +3,7 @@
 class InventoryResponseListActiveKeys extends KmmBody {
     InventoryMarker;
     NumberOfItems;
-    Keys;
+    Keys = [];
     get MessageId() {
         return MessageId.InventoryResponse;
     }
@@ -38,16 +38,16 @@ class InventoryResponseListActiveKeys extends KmmBody {
         if ((this.NumberOfItems == 0) && (contents.length == 6)) {
             return;
         }
-        else if (((this.NumberOfItems * 6) % (contents.Length - 6)) == 0) {
+        else if (((this.NumberOfItems * 6) % (contents.length - 6)) == 0) {
             for (var i=0; i<this.NumberOfItems; i++) {
-                var info = new Uint8Array(6);
+                let info = [6];
                 info[0] = contents[6 + (i * 6) + 0];
                 info[1] = contents[6 + (i * 6) + 1];
                 info[2] = contents[6 + (i * 6) + 2];
                 info[3] = contents[6 + (i * 6) + 3];
                 info[4] = contents[6 + (i * 6) + 4];
                 info[5] = contents[6 + (i * 6) + 5];
-                var info2 = new KeyInfo();
+                let info2 = new KeyInfo();
                 info2.Parse(info);
                 this.Keys.push(info2);
             }

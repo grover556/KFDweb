@@ -3,38 +3,35 @@
 class ModifyKeyCommand extends KmmBody {
     #_keysetId;
     #_algorithmId;
+    KeyItems = [];
     get KeysetId() {
         return this.#_keysetId;
     }
-    set KeysetId(val) {
-        if (val < 0 || val > 0xFF) {
+    set KeysetId(value) {
+        if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_keysetId = val;
+        this.#_keysetId = value;
     }
     get AlgorithmId() {
         return this.#_algorithmId;
     }
-    set AlgorithmId(val) {
-        if (val < 0 || val > 0xFF) {
+    set AlgorithmId(value) {
+        if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_algorithmId = val;
+        this.#_algorithmId = value;
     }
-    KeyItems = [];
     get MessageId() {
         return MessageId.ModifyKeyCommand;
     }
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
-    constructor() {
-        this.KeyItems = [];
-    }
     ToBytes() {
         let keys = [];
         console.log(this.KeyItems);
-        this.KeyItems.forEach(key => {
+        this.KeyItems.forEach((key) => {
             //keys.AddRange(key.ToBytes());
             console.log("key", BCTS(key.ToBytes()).join("-"));
             keys = keys.concat(key.ToBytes());

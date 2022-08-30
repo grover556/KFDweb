@@ -33,10 +33,16 @@
 		<script src="js/P25/Kmm/ResponseKind.js"></script>
 		<script src="js/P25/Kmm/InventoryType.js"></script>
 		<script src="js/P25/Kmm/KmmBody.js"></script>
+		<script src="js/P25/Kmm/CapabilitiesCommand.js"></script>
+		<script src="js/P25/Kmm/CapabilitiesResponse.js"></script>
 		<script src="js/P25/Kmm/ChangeoverCommand.js"></script>
 		<script src="js/P25/Kmm/ChangeoverResponse.js"></script>
 		<script src="js/P25/Kmm/ChangeRsiCommand.js"></script>
 		<script src="js/P25/Kmm/ChangeRsiResponse.js"></script>
+		<script src="js/P25/Kmm/DeleteKeyCommand.js"></script>
+		<script src="js/P25/Kmm/DeleteKeyResponse.js"></script>
+		<script src="js/P25/Kmm/DeleteKeysetCommand.js"></script>
+		<script src="js/P25/Kmm/DeleteKeysetResponse.js"></script>
 		<script src="js/P25/Kmm/InventoryCommandListActiveKeys.js"></script>
 		<script src="js/P25/Kmm/InventoryCommandListActiveKsetIds.js"></script>
 		<script src="js/P25/Kmm/InventoryCommandListKeysetTaggingInfo.js"></script>
@@ -52,6 +58,7 @@
 		<script src="js/P25/Kmm/KeyInfo.js"></script>
 		<script src="js/P25/Kmm/KeyItem.js"></script>
 		<script src="js/P25/Kmm/KeysetItem.js"></script>
+		<script src="js/P25/Kmm/KeysetStatus.js"></script>
 		<script src="js/P25/Kmm/KeyStatus.js"></script>
 		<script src="js/P25/Kmm/KmmFrame.js"></script>
 		<script src="js/P25/Kmm/LoadConfigCommand.js"></script>
@@ -63,6 +70,7 @@
 		<script src="js/P25/Kmm/RekeyAcknowledgment.js"></script>
 		<script src="js/P25/Kmm/RsiItem.js"></script>
 		<script src="js/P25/Kmm/SessionControl.js"></script>
+		<script src="js/P25/Kmm/SetDateTimeCommand.js"></script>
 		<script src="js/P25/Kmm/ZeroizeCommand.js"></script>
 		<script src="js/P25/Kmm/ZeroizeReponse.js"></script>
 
@@ -74,6 +82,10 @@
 		<script src="js/P25/ThreeWire/ThreeWireProtocol.js"></script>
 
 		<script src="js/P25/TransferConstructs/CmdKeyItem.js"></script>
+		<script src="js/P25/TransferConstructs/RspChangeoverInfo.js"></script>
+		<script src="js/P25/TransferConstructs/RspKeyInfo.js"></script>
+		<script src="js/P25/TransferConstructs/RspKeysetInfo.js"></script>
+		<script src="js/P25/TransferConstructs/RspRsiInfo.js"></script>
 		
 		<script src="js/P25/Validator/FieldValidator.js"></script>
 		
@@ -104,6 +116,7 @@
                                 <li><a class="menuItem" id="menu_viewKeysetInfo" href="#">Keyset Information</a></li>
                                 <li><a class="menuItem" id="menu_viewRsiItems" href="#">RSI Items</a></li>
                                 <li><a class="menuItem" id="menu_viewKmfInfo" href="#">KMF Information</a></li>
+								<li><a class="menuItem" id="menu_setClockInfo" href="#">Set Clock</a></li>
                             </ul>
                         </div>
                     </li>
@@ -131,7 +144,7 @@
             	<div id="homeDiv" class="menu_divs">
                 	<h1>KFDweb</h1>
 					<h5 style="color:red;">This PRE-RELEASE software is still in development and should not be used for production</h5>
-					<h3>Open Source P25 Key Fill Device, based on the KFDtool project</h3><p>Currently compatible will all functionality of the KFDtool and supported devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
+					<h3>Open Source P25 Key Fill Device, based on the <a href="https://github.com/KFDtool/KFDtool" target="_blank">KFDtool</a> project</h3><p>Currently compatible will all functionality of the KFDtool and supported devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
                 	<p><h3 id="secureContextStatus"></h3><span id="secureContextDetails"></span></p>
 					<h5><a id="linkLicensingInformation" href="#">Licensing Information</a></h5>
                 </div>
@@ -139,7 +152,7 @@
                 	<h3>Configure Key Fill Device</h3>
                 	<button id="buttonConnectKfd">Connect KFD</button>
                 	<button id="buttonDisconnectKfd" disabled>Disconnect KFD</button>
-					<button id="buttonSendTest">Send Test Message</button>
+					<button id="buttonCheckConnection" class="button-kfd">Check MR Connection</button>
                 	<p><h3>Connection method:</h3><span id="connectionMethod"></span></p>
                 	<p><h3>Connection status:</h3><span id="connectionStatus">Disconnected</span></p>
                 	<p><h3>Device properties:</h3><span id="deviceProperties"></span></p>
@@ -233,7 +246,7 @@
                     	</select>
                 	</div>
                 	<div class="ui-field-contain">
-                    	<button id="buttonLoadKeyToRadio" class="ui-btn ui-btn-inline">Load Key to Radio</button>
+                    	<button id="buttonLoadKeyToRadio" class="ui-btn ui-btn-inline button-kfd">Load Key to Radio</button>
                     	<button id="buttonLoadKeyToContainer" class="ui-btn ui-btn-inline">Load Key to Container</button>
                 	</div>
             	</div>
@@ -257,20 +270,13 @@
                     	<input class="hexdec-input" type="text" name="eraseKeySingle_SlnCkr" id="eraseKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="65535">
                 	</div>
                 	<div class="ui-field-contain">
-                    	<button id="buttonEraseKeyFromRadio" class="ui-btn ui-btn-inline">Erase From Radio</button>
-                	</div>
-            	</div>
-            	<div id="eraseKeyAll" class="menu_divs" style="display:none;">
-                	<h3>Erase All Keys</h3>
-                	<div class="ui-field-contain">
-                    	<button id="buttonEraseKeysFromRadio_DEPRECATED" class="ui-btn ui-btn-inline">Erase All Keys From Radio</button>
+                    	<button id="buttonEraseKeyFromRadio" class="ui-btn ui-btn-inline button-kfd">Erase From Radio</button>
                 	</div>
             	</div>
             	<div id="viewKeyInfo" class="menu_divs" style="display:none;">
                 	<h3>View Key Information</h3>
-					<h5 style="color:red;">TEST DATA - no features are functional</h5>
                 	<div class="ui-field-contain">
-                    	<button id="buttonViewKeyInformation" class="ui-btn ui-btn-inline">View Key Information</button>
+                    	<button id="buttonViewKeyInformation" class="ui-btn ui-btn-inline button-kfd">View Key Information</button>
                 	</div>
 					<table data-role="table" id="table_keyinfo" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
 						<thead>
@@ -282,37 +288,14 @@
 								<th>Action</th>
 							</tr>
 						</thead>
-						<tbody>
-							<tr data-keyset="1" data-sln="999">
-								<th>1</th>
-								<th>999</th>
-								<th>999</th>
-								<th>AES-256</th>
-								<th><a class="key-delete" href="#">Delete</a></th>
-							</tr>
-							<tr data-keyset="2" data-sln="999">
-								<th>2</th>
-								<th>999</th>
-								<th>999</th>
-								<th>AES-256</th>
-								<th><a class="key-delete" href="#">Delete</a></th>
-							</tr>
-							<tr data-keyset="255" data-sln="61957">
-								<th>255</th>
-								<th>61957</th>
-								<th>61957</th>
-								<th>AES-256</th>
-								<th><a class="key-delete" href="#">Delete</a></th>
-							</tr>
-						</tbody>
+						<tbody></tbody>
 					</table>
-					<button id="buttonEraseKeysFromRadio" class="ui-btn ui-btn-inline">Erase All Keys From Radio</button>
+					<button id="buttonEraseKeysFromRadio" class="ui-btn ui-btn-inline button-kfd">Erase All Keys From Radio</button>
             	</div>
             	<div id="viewKeysetInfo" class="menu_divs" style="display:none;">
                 	<h3>View Keyset Information</h3>
-					<h5 style="color:red;">TEST DATA - no features are functional</h5>
                 	<div class="ui-field-contain">
-                    	<button id="buttonViewKeysetInformation" class="ui-btn ui-btn-inline">View Keyset Information</button>
+                    	<button id="buttonViewKeysetInformation" class="ui-btn ui-btn-inline button-kfd">View Keyset Information</button>
                 	</div>
 					<table data-role="table" id="table_keysets" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
 						<thead>
@@ -325,47 +308,53 @@
 								<th>Action</th>
 							</tr>
 						</thead>
-						<tbody>
-							<tr data-keyset="1" data-active="true">
-								<th>Yes</th>
-								<th>1</th>
-								<th>SET 01</th>
-								<th>TEK</th>
-								<th>2022-08-01 07:00</th>
-								<th></th>
-							</tr>
-							<tr data-keyset="2" data-active="false">
-								<th>No</th>
-								<th>2</th>
-								<th>SET 02</th>
-								<th>TEK</th>
-								<th>2022-09-01 07:00</th>
-								<th><a class="keyset-activate" href="#">Activate</a></th>
-							</tr>
-							<tr data-keyset="255" data-active="true">
-								<th>Yes</th>
-								<th>255</th>
-								<th></th>
-								<th>KEK</th>
-								<th>2022-08-01 07:00</th>
-								<th></th>
-							</tr>
-						</tbody>
+						<tbody></tbody>
 					</table>
             	</div>
             	<div id="viewRsiItems" class="menu_divs" style="display:none;">
                 	<h3>View RSI Items</h3>
                 	<div class="ui-field-contain">
-                    	<button id="buttonViewRsiInformation" class="ui-btn ui-btn-inline">View RSI Information</button>
+                    	<button id="buttonViewRsiInformation" class="ui-btn ui-btn-inline button-kfd">View RSI Information</button>
+						<button id="buttonAddRsi" class="ui-btn ui-btn-inline button-kfd">Add New RSI</button>
                 	</div>
+					<table data-role="table" id="table_rsiItems" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
+						<thead>
+							<tr>
+								<th>RSI Type</th>
+								<th>RSI ID</th>
+								<th>Message Number</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
             	</div>
             	<div id="viewKmfInfo" class="menu_divs" style="display:none;">
                 	<h3>View KMF Information</h3>
                 	<div class="ui-field-contain">
-                    	<button id="buttonViewKmfInformation" class="ui-btn ui-btn-inline">View KMF Information</button>
+                    	<button id="buttonViewKmfInformation" class="ui-btn ui-btn-inline button-kfd">View KMF Information</button>
                 	</div>
-					<h4>KMF RSI: <span id="valueKmfRsi"></span></h4>
-					<h4>MNP: <span id="valueKmfMnp"></span></h4>
+					<table data-role="table" id="table_kmfRsi" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
+						<thead>
+							<tr>
+								<th>RSI Type</th>
+								<th>RSI ID</th>
+								<th>Message Number</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+            	</div>
+				<div id="setClockInfo" class="menu_divs" style="display:none;">
+                	<h3>Set Clock</h3>
+					<h5 style="color:red;">PerformKmmTransfer(inKmm): unexpected kmm opcode, expected 194 got 195</h5>
+                	<div class="ui-field-contain">
+                    	<button id="buttonSetClock" class="ui-btn ui-btn-inline button-kfd">Set Clock</button>
+                	</div>
+					<div class="ui-field-contain">
+                    	<button id="buttonGetCapabilities" class="ui-btn ui-btn-inline button-kfd">Get Capabilities</button>
+                	</div>
             	</div>
             	<div id="loadKeyContainer" class="menu_divs" style="display:none;">
                 	<h3>Load Key Container</h3>

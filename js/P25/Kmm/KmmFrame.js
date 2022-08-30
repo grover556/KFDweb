@@ -177,6 +177,7 @@ class KmmFrame {
                 else if (inventoryType == InventoryType.ListKeysetTaggingInfo) {
                     console.log("InventoryType = ListKeysetTaggingInfo");
                     let kmmBody = new InventoryResponseListKeysetTaggingInfo();
+                    console.log(kmmBody);
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
@@ -229,6 +230,18 @@ class KmmFrame {
         else if (messageId == MessageId.ChangeoverResponse) {
             console.log("MessageId = ChangeoverResponse");
             let kmmBody = new ChangeoverResponse();
+            kmmBody.Parse(messageBody);
+            this.KmmBody = kmmBody;
+        }
+        else if (messageId == MessageId.CapabilitiesResponse) {
+            console.log("MessageId = CapabilitiesResponse");
+            let kmmBody = new CapabilitiesResponse();
+            kmmBody.Parse(messageBody);
+            this.KmmBody = kmmBody;
+        }
+        else if (messageId == MessageId.DeleteKeyResponse) {
+            console.log("MessageId = DeleteKeyResponse");
+            let kmmBody = new DeleteKeyResponse();
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }

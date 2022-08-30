@@ -7,29 +7,29 @@ class KeyItem {
     get SLN() {
         return this.#_sln;
     }
-    set SLN(val) {
-        if (val < 0 || val > 0xFFFF) {
+    set SLN(value) {
+        if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_sln = val;
+        this.#_sln = value;
     }
     get KeyId() {
         return this.#_keyId;
     }
-    set KeyId(val) {
-        if (val < 0 || val > 0xFFFF) {
+    set KeyId(value) {
+        if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_keyId = val;
+        this.#_keyId = value;
     }
     get Key() {
         return this.#_key;
     }
-    set Key(val) {
-        if (val == null) {
+    set Key(value) {
+        if (value == null) {
             throw "ArgumentNullException";
         }
-        this.#_key = val;
+        this.#_key = value;
     }
     KEK;
     Erase;

@@ -1,12 +1,12 @@
 //InventoryResponseListKeysetTaggingInfo
 
 class InventoryResponseListKeysetTaggingInfo extends KmmBody {
-    KeysetItems;
+    KeysetItems = [];
     get MessageId() {
-        return this.MessageId.InventoryResponse;
+        return MessageId.InventoryResponse;
     }
     get InventoryType() {
-        return this.InventoryType.ListKeysetTaggingInfo;
+        return InventoryType.ListKeysetTaggingInfo;
     }
     get ResponseKind() {
         return ResponseKind.None;
@@ -38,12 +38,11 @@ class InventoryResponseListKeysetTaggingInfo extends KmmBody {
             // Loop through each item
             for (var i=0; i<NumberOfItems; i++) {
                 var item = new KeysetItem();
-
                 /* keyset format */
                 var ksetType;
                 if ((contents[pos] & (1 << 7)) != 0) { ksetType = "KEK"; }
                 else { ksetType = "TEK"; }
-                item.KeySetType = ksetType;
+                item.KeysetType = ksetType;
 
                 // detect presenece of 3 octet optional reserved field
                 let reserved = (contents[pos] & (1 << 6)) != 0;
@@ -64,13 +63,14 @@ class InventoryResponseListKeysetTaggingInfo extends KmmBody {
                 pos++;
 
                 if (reserved) {
+console.log("processing keyset reserved");
                     item.ReservedField |= contents[i + pos + 1] << 16;
                     item.ReservedField |= contents[i + pos + 2] << 8;
                     item.ReservedField |= contents[i + pos + 3];
                     pos += 3;
                 }
-
                 if (datetime) {
+console.log("processing keyset datetime");
                     let mon, day, year, hour, min, sec;
                     //mmmm ddddd yyyyyyy
                     //0b 0000111 100001111 == 0x0F0F
@@ -91,14 +91,24 @@ class InventoryResponseListKeysetTaggingInfo extends KmmBody {
                     pos += 5;
                 }
 
-                let keysetNameBytes = new Uint8Array(ksetNameSize);
+                //let keysetNameBytes = new Uint8Array(ksetNameSize);
+                let keysetNameBytes = [ksetNameSize];
+
                 //Array.Copy(contents, pos, keysetNameBytes, 0, ksetNameSize);
                 for (var j=0; j<ksetNameSize; j++) {
                     keysetNameBytes[j] = contents[pos + j];
                 }
-                item.KeysetName = String.fromCharCode(keysetNameBytes);
+                // Remove trailing 0s from array
+                while (keysetNameBytes.length) {
+                    if (keysetNameBytes[keysetNameBytes.length - 1] == 0) {
+                        keysetNameBytes.pop();
+                    }
+                    else {
+                        break;
+                    }
+                }
+                item.KeysetName = String.fromCharCode(...keysetNameBytes).trim();
                 pos += ksetNameSize;
-
                 this.KeysetItems.push(item);
             }
         }

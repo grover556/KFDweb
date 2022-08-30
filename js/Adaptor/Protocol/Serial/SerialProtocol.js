@@ -7,20 +7,24 @@ let device = null;
 //let port = null;
 let poly = null;
 const serialPortSettings = {
-    //baudRate: 115200,
-    baudRate: 9600,
+    baudRate: 115200,
+    //baudRate: 9600,
     parity: "none",
     dataBits: 8,
     stopBits: 1,
-    flowControl: "hardware"
+    flowControl: "none"
+    //flowControl: "hardware"
 };
-//let reader;
+let reader;
 //let writer;
 let exports = {};
 let connected = false;
 const filter = { usbVendorId: 0x2047 };
 
-//let frameBuffer = [];
+let frameBuffer = [];
+let packetBuffer = [];
+
+let newData = false;
 
 //const decoder = new TransformStream();
 let inputStream;
@@ -34,9 +38,13 @@ let polyWriter = {};
 
 let connectionMethod;
 
+let foundStart = false;
+let haveStart = false;
+let haveEnd = false;
 
 //https://hpssjellis.github.io/web-serial-polyfill/desktop-serial05.html
 let port;
+let keepReading = true;
 //let writer;
 async function connectSerial() {
     console.log("connectSerial()");
@@ -47,15 +55,18 @@ async function connectSerial() {
         
         port.addEventListener("connect", (event) => {
             // Device has been connected
+/*
             //$("#iconConnectionStatus").removeClass("connection-status-disconnected");
             //$("#iconConnectionStatus").addClass("connection-status-connected");
             $("#iconConnectionStatus").css("background-color", "#aaffaa");
             $("#buttonConnectKfd").prop("disabled", true);
             $("#buttonDisconnectKfd").prop("disabled", false);
+*/
             console.log(event);
         });
         port.addEventListener("disconnect", (event) => {
             // Device has been disconnected
+/*
             //$("#iconConnectionStatus").removeClass("connection-status-connected");
             //$("#iconConnectionStatus").addClass("connection-status-disconnected");
             connected = false;
@@ -65,17 +76,31 @@ async function connectSerial() {
             $("#buttonDisconnectKfd").prop("disabled", true);
             $("#connectionStatus").text("Disconnected");
             $("#deviceProperties").html("");
+*/
+            console.log(port);
             console.log(event);
+            
+            try {
+                //reader.cancel();
+                port.close();
+            }
+            catch (error) {
+                console.error(error);
+            }
+            DisconnectDevice();
+            
         });
 
         await port.open(serialPortSettings);
         connected = true;
-        $("#iconConnectionStatus").css("background-color", "#aaffaa");
-        $("#buttonConnectKfd").prop("disabled", true);
-        $("#buttonDisconnectKfd").prop("disabled", false);
-        $("#connectionStatus").text("Connected");
 
+        //writer = await port.writable.getWriter();
+        //reader = await port.readable.getReader();
+
+        //readUntilClosed();
+        //const closedPromise = readUntilClosed();
         
+/*
         // THIS BLOCK WORKS IN THE SIMPLE IMPLEMENTATION
         const decoder = new TransformStream();
         //port.readable.pipeTo(decoder.writable);
@@ -83,7 +108,8 @@ async function connectSerial() {
         //const inputStream = decoder.readable;
         inputStream = decoder.readable;
         //const reader = inputStream.getReader();
-        
+*/
+
 
         // const encoder = new TextEncoderStream();
         //outputDone = encoder.readable.pipeTo(port.writable);
@@ -221,18 +247,38 @@ async function connectSerial() {
     }
 }
 
+async function DisconnectDevice() {
+    //reader.cancel();
+    console.log("disconnecting device");
+    await port.close();
+    connected = false;
+    ShowDeviceDisconnected();
+}
+
 async function readWithTimeout(timeout) {
     //https://wicg.github.io/serial/
-    //console.log("readWithTimeout", timeout);
-    const reader = port.readable.getReader();
+    console.log("readWithTimeout", timeout);
+    //const reader = port.readable.getReader();
+    reader = port.readable.getReader();
+    let timedOut = false;
     const timer = setTimeout(() => {
+        timedOut = true;
+        console.log("timed out");
+        console.log("releasing log 1");
         reader.releaseLock();
-        console.error("timeout exceeded");
-        throw "timeout exceeded";
+        console.log("released log 1");
+        console.error("readWithTimeout", "timeout exceeded");
+        //throw "timeout exceeded";
+        //return [];
     }, timeout);
     const result = await reader.read();// Uncaught (in promise) after sending 61-17-00-C1-61
+    console.log("clearing timeout");
     clearTimeout(timer);
-    reader.releaseLock();
+    if (!timedOut) {
+        //console.log("releasing log 2");
+        reader.releaseLock();
+        //console.log("released log 2");
+    }
     let rsp = UnpackResponse(result.value);
     return rsp;
 }
@@ -294,22 +340,32 @@ async function SendSerial(data) {
         return [];
     }
     else {
+        //console.log("here1");
         const writer = port.writable.getWriter();
+        //console.log("here2");
         writer.write(outData);//REMOVED await
+        //console.log("here3");
         writer.releaseLock();
     }
 }
 
 async function readUntilClosed() {
-    while (port.readable) {
+    while (port.readable && keepReading) {
         reader = port.readable.getReader();
         try {
             while (true) {
                 const {value, done} = await reader.read();
                 if (done) {
+                    // reader has been canceled
+                    //reader.releaseLock();
                     break;
                 }
-                console.log(value);
+                //console.log("readUntilClosed", BCTS(value).join("-"));
+                await OnDataReceived(Array.from(value));
+                //frameBuffer = frameBuffer.concat(Array.from(value));
+                //console.log("frameBuffer BCTS", BCTS(frameBuffer).join("-"));
+                //let rsp = UnpackResponse(value);
+                //return rsp;
             }
         }
         catch (error) {
@@ -319,7 +375,8 @@ async function readUntilClosed() {
             reader.releaseLock();
         }
     }
-    await port.close();
+    //await port.close();
+    await DisconnectDevice();
 }
 
 async function Send(data) {
@@ -537,4 +594,128 @@ function UnpackResponse(rsp) {
     }
     console.log("packet:", BCTS(rsp).join("-"));
     return rsp;
+}
+
+async function ReadBytesFromBuffer(timeout, numBytes) {
+    let control = true;
+    let rsp = [];
+    console.log("frameBuffer", BCTS(frameBuffer).join("-"));
+    console.log("frameBuffer length", frameBuffer.length);
+    rsp = frameBuffer;
+    frameBuffer = [];
+    return rsp;
+
+
+    let timer = setTimeout(() => {
+        control = false;
+        console.error("timeout exceeded");
+        return [];
+    }, timeout);
+    let i=0;
+    console.log("newData", newData);
+    while (!newData) {
+        i++;
+        if (i>5000) break;
+        console.log(frameBuffer.length);
+        if (frameBuffer.length >= 5) {
+            if (numBytes == -1) numBytes == frameBuffer.length;
+            clearTimeout(timer);
+            let res = frameBuffer.splice(0, numBytes);
+            rsp = UnpackResponse(res);
+            break;
+        }
+    }
+    console.log("newData", newData);
+    return rsp;
+}
+
+async function OnDataReceived(data) {
+    //console.log("ondatareceived", BCTS(data).join("-"));
+    if (data === undefined) {
+        return;
+    }
+    else if (data.length == 0) {
+        return;
+    }
+    let byteCounter = 0;
+    data.forEach((b) => {
+        if (b == SOM_EOM) {
+            foundStart = true;
+            if (frameBuffer.length > 0) {
+                for (var i=0; i<frameBuffer.length; i++) {
+                    if (frameBuffer[i] == ESC) {
+                        // this won't work if more than one are removed??
+                        frameBuffer = frameBuffer.splice(i + 1);
+                        if (i == frameBuffer.length) {
+                            console.error("escape character at end");
+                        }
+                        if (frameBuffer[i] == ESC_PLACEHOLDER) {
+                            frameBuffer[i] = ESC;
+                        }
+                        else if (frameBuffer[[i] == SOM_EOM_PLACEHOLDER]) {
+                            frameBuffer[i] = SOM_EOM;
+                        }
+                        else {
+                            console.error("invalid character after escape character");
+                        }
+                    }
+                }
+                let packet = [];
+
+                packet = packet.concat(frameBuffer);
+                packetBuffer.push(packet);
+                console.log("packet:", BCTS(packet).join("-"));
+                frameBuffer = [];
+                //console.log("packet buffer length", packetBuffer.length);
+            }
+            else {
+                haveStart = true;
+            }
+        }
+        else {
+            
+            if (foundStart) {
+                frameBuffer.push(b);
+            }
+            
+           //frameBuffer.push(b);
+        }
+        byteCounter++;
+    });
+
+    if (packetBuffer.length > 0) {
+        packetReady = true;
+    }
+}
+
+function Read(timeout) {
+    // NOT DONE YET
+    if (packetBuffer.length == 0) {
+        if (timeout > 0) {
+            if (!packetReady) {
+                console.error("timeout waiting for data");
+            }
+        }
+        else if (timeout == 0) {
+
+        }
+        else {
+            console.error("timeout can not be negative");
+        }
+    }
+    let data = [];
+    let packet = ReadPacketFromPacketBuffer();
+    data = data.concat(packet);
+    packetReady = false;
+    return data;
+}
+
+function ReadPacketFromPacketBuffer() {
+    if (packetBuffer.length == 0) {
+        console.warn("no packet in packet buffer");
+        return [];
+    }
+    let packet = packetBuffer[0];
+    packetBuffer = packetBuffer.splice(1);
+    return packet;
 }

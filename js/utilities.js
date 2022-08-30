@@ -32,6 +32,7 @@ function hex2dec(hex) {
 
 function BCTS(decArr) {
     let hexArr = [];
+    if (decArr === undefined) return [];
     for (let i=0; i<decArr.length; i++) {
         hexArr.push(decArr[i].toString(16).toUpperCase().padStart(2, "0"));
     }

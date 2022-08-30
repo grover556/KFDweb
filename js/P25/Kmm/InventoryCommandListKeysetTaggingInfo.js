@@ -12,7 +12,7 @@ class InventoryCommandListKeysetTaggingInfo extends KmmBody {
         return ResponseKind.Immediate;
     }
     ToBytes() {
-        var contents = new Uint8Array(1);
+        var contents = [1];
         
         /* inventory type */
         contents[0] = this.InventoryType;

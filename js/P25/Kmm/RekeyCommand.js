@@ -1,16 +1,16 @@
-// CapabilitiesCommand
+// RekeyCommand
 
-class CapabilitiesCommand extends KmmBody {
+class RekeyCommand extends KmmBody {
     get MessageId() {
-        return MessageId.CapabilitiesCommand;
+        return MessageId.RekeyCommand;
     }
     get ResponseKind() {
         return ResponseKind.Immediate;
     }
     ToBytes() {
-        return [];
+        
     }
     Parse(contents) {
-
+        throw "NotImplementedException";
     }
 }

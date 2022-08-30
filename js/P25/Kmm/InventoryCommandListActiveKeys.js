@@ -42,8 +42,8 @@ class InventoryCommandListActiveKeys extends KmmBody {
         contents[3] = this.InventoryMarker & 0xFF;
         
         /* max number of keys requested */
-        contents[4] = (this.maxKeysRequested >>> 8) & 0xFF;
-        contents[5] = this.maxKeysRequested & 0xFF;
+        contents[4] = (this.MaxKeysRequested >>> 8) & 0xFF;
+        contents[5] = this.MaxKeysRequested & 0xFF;
         
         return contents;
     }

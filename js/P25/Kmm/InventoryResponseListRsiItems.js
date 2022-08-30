@@ -1,12 +1,12 @@
 //InventoryResponseListRsiItems
 
 class InventoryResponseListRsiItems extends KmmBody {
-    RsiItems;
+    RsiItems = [];
     get MessageId() {
-        return this.MessageId.InventoryResponse;
+        return MessageId.InventoryResponse;
     }
     get InventoryType() {
-        return this.InventoryType.ListRsiItems;
+        return InventoryType.ListRsiItems;
     }
     get ResponseKind() {
         return ResponseKind.None;
@@ -23,7 +23,7 @@ class InventoryResponseListRsiItems extends KmmBody {
         contents.push(this.RsiItems.length & 0xFF);
 
         /* items */
-        this.RsiItems.forEach(item => {
+        this.RsiItems.forEach((item) => {
             contents = contents.concat(item.ToBytes());
         });
 
@@ -50,12 +50,22 @@ class InventoryResponseListRsiItems extends KmmBody {
         }
         else if (((NumberOfItems * 5) % (contents.length - 3)) == 0) {
             for (var i=0; i<NumberOfItems; i++) {
+                /*
                 //let info = new Uint8Array(5);
                 let start = 3 + (i * 5);
                 let end = 3 + (i * 5) + 5;
                 //Array.Copy(contents, 3 + (i * 5), info, 0, 5);
                 let info = contents.slice(start, end);
+                */
+                let info = [5];
+                info[0] = contents[3 + (i * 5) + 0];
+                info[1] = contents[3 + (i * 5) + 1];
+                info[2] = contents[3 + (i * 5) + 2];
+                info[3] = contents[3 + (i * 5) + 3];
+                info[4] = contents[3 + (i * 5) + 4];
+                console.log("info", BCTS(info).join("-"));
                 let info2 = new RsiItem();
+                console.log("info2", info2);
                 info2.Parse(info);
                 this.RsiItems.push(info2);
             }

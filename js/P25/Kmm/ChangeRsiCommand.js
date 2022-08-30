@@ -8,50 +8,44 @@ class ChangeRsiCommand extends KmmBody {
     get RsiOld() {
         return this.#_rsiOld;
     }
-    set RsiOld(val) {
+    set RsiOld(value) {
         if (value < 0 || value > 0xFFFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        _rsiOld = val;
+        this.#_rsiOld = value;
     }
     get RsiNew() {
         return this.#_rsiNew;
     }
-    set RsiNew(val) {
+    set RsiNew(value) {
         if (value < 0 || value > 0xFFFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        _rsiNew = val;
+        this.#_rsiNew = value;
     }
     get MessageNumber() {
         return this.#_messageNumber;
     }
-    set MessageNumber(val) {
+    set MessageNumber(value) {
         if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        _messageNumber = val;
+        this.#_messageNumber = value;
     }
     get ChangeSequence() {
         return this.#_changeSequence;
     }
-    set ChangeSequence(val) {
+    set ChangeSequence(value) {
         if (value < 0 || value > 0xFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_changeSequence = val;
+        this.#_changeSequence = value;
     }
     get MessageId() {
         return MessageId.ChangeRsiCommand;
     }
     get ResponseKind() {
         return ResponseKind.Immediate;
-    }
-    constructor(changeSequence, rsiOld, rsiNew, messageNumber) {
-        this.#_changeSequence = changeSequence;
-        this.#_rsiOld = rsiOld;
-        this.#_rsiNew = rsiNew;
-        this.#_messageNumber = messageNumber;
     }
     ToBytes() {
         var contents = new Uint8Array(9);

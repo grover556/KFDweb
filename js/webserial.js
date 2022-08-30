@@ -45,6 +45,7 @@ $(document).ready(function() {
     else {
         $("#connectionMethod").text("Web USB Polyfill");
     }
+    DisableKfdButtons();
 });
 
 $("#linkLicensingInformation").on("click", function() {
@@ -73,39 +74,40 @@ $("#buttonOpenEkc").on("click", function() {
     //loadFile();
     clearPopupEkc();
 });
-$("#buttonEraseKeysFromRadio").on("click", function() {
-    if (window.confirm("Warning: this will erase all keys from the radio. Do you wish to continue?")) {
-        
-    }
-});
-$(".key-delete").on("click", function() {
+$("a.key-delete").on("click", function() {
+    console.log($(this));
     //console.log($(this).parent().data("keyset"));
     //console.log($(this).parent().data("sln"));
     let th = $(this).parent().parent();
     let keyset = th.data("keyset");
     let sln = th.data("sln");
     console.log(th, keyset, sln);
-    if (window.confirm("WARNING: this will erase the key (Keyset ID: " + keyset + ", SLN/CKR: " + sln + ") from the radio. Do you wish to continue?")) {
+    if (window.confirm("Warning: this will erase the key (Keyset ID: " + keyset + ", SLN/CKR: " + sln + ") from the radio. Do you wish to continue?")) {
         
     }
 });
-$(".keyset-activate").on("click", function() {
-    //console.log($(this).parent().data("keyset"));
+$("a.keyset-activate").on("click", function() {
+    console.log(".keyset-activate clicked");
+    console.log($(this));
+    //console.log($(this).parent());
     //console.log($(this).parent().data("sln"));
     let th = $(this).parent().parent();
     let keyset_activate = th.data("keyset");
     //let keyset_active = th.data("active");
     let th2 = $("table#table_keysets tr[data-active='true']")[0];
-    let keyset_deactivate = th2.attributes.getNamedItem("data-keyset").value;
+    let keyset_deactivate = parseInt(th2.attributes.getNamedItem("data-keysetid").value);
+    console.log(keyset_activate, keyset_deactivate);
+
     if (keyset_deactivate == 255) {
         alert("Error: Cannot deactivate KEK keyset");
         return;
     }
-    //let keyset_deactivate = th2.data("keyset");
-    //console.log(th2, keyset_activate, keyset_deactivate);
-    if (window.confirm("WARNING: this will deactivate Keyset " + keyset_deactivate + ", and activate Keyset " + keyset_activate + " on the radio. Do you wish to continue?")) {
-        
+    if (window.confirm("Warning: this will deactivate Keyset " + keyset_deactivate + ", and activate Keyset " + keyset_activate + " on the radio. Do you wish to continue?")) {
+        Changeover(keyset_deactivate, keyset_activate);
     }
+});
+$("a.rsi-change").on("click", function() {
+    console.log($(this));
 });
 $(".menuItem").on("click", function() {
     var menuName = $(this).attr("id").replace("menu_", "");
@@ -175,6 +177,9 @@ $("#buttonLoadKeyToRadio").on("click", function() {
         alert("Error: " + validation.message);
     }
 });
+$("#buttonCheckConnection").on("click", async function() {
+    CheckMrConnection();
+});
 $("#buttonViewKeyInformation").on("click", function() {
     ViewKeyInformation();
 });
@@ -187,7 +192,27 @@ $("#buttonViewRsiInformation").on("click", function() {
 $("#buttonViewKmfInformation").on("click", function() {
     ViewKmfInformation();
 });
+$("#buttonEraseKeysFromRadio").on("click", function() {
+    if (window.confirm("Warning: this will erase all keys from the radio. This action CANNOT be undone. Do you wish to continue?")) {
+        EraseAllKeysFromRadio();
+    }
+});
+$("#buttonSetClock").on("click", function() {
+    SetRadioClock();
+});
+$("#buttonGetCapabilities").on("click", function() {
+    GetRadioCapabilities();
+});
+$("#buttonAddRsi").on("click", function() {
+    //ChangeRsiValues("GROUP", 0, 10000000, 0);// Add group RSI
+    //ChangeRsiValues("INDIVIDUAL", 0, 9999998, 0);// Add individual RSI
+    //ChangeRsiValues("KMF", 0, 9999990, 0);// Add group RSI
+    //ChangeRsiValues("GROUP", 10000000, 0, 0); // Delete group RSI
+    //ChangeRsiValues("INDIVIDUAL", 9999998, 0, 0);// Delete individual RSI
+    //ChangeRsiValues("KMF", 9999990, 0, 0);// Delete KMF RSI
 
+    //ChangeRsiValues("KMF", 9999990, 9999991, 65534);// TEST
+});
 
 function CreateKeyFromFields(target) {
     // Disabled for use of inputBase, and replaced below on assigning keyItem fields
@@ -295,7 +320,7 @@ function CreateKeyFromFields(target) {
 }
 
 async function SendKeysToRadio(keys) {
-    ShowLoading();
+    if (!connected) return;
     console.log("SendKeysToRadio", keys);
     
     let keyItems = [];
@@ -315,37 +340,391 @@ async function SendKeysToRadio(keys) {
 
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
-    let results = mra.Keyload(keyItems);
-    console.log(results);
-    HideLoading();
+    let results;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        results = await mra.Keyload(keyItems);
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (results !== undefined) {
+        console.log(results);
+    }
 }
 
 async function ViewKeyInformation() {
-    ShowLoading();
+    if (!connected) return;
+    $("#table_keyinfo tbody").empty();
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
-    let results = mra.ViewKeyInfo();
-    console.log(results);
-    HideLoading();
+    let keys;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        keys = await mra.ViewKeyInfo();
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (keys !== undefined) {
+        //$("#table_keyinfo tbody").empty();
+        keys.forEach((keyItem) => {
+            let algId = Object.keys(AlgorithmId).find(key => AlgorithmId[key] === keyItem.AlgorithmId);
+            let row = '<tr data-keysetid="' + keyItem.KeysetId + '" data-sln="' + keyItem.Sln + '" data-keyid="' + keyItem.KeyId + '" data-algorithm="' + algId + '"><th>' + keyItem.KeysetId + "</th><th>" + keyItem.Sln + "</th><th>" + keyItem.KeyId + "</th><th>" + algId + "</th><th><a class='key-delete' href='#'>Delete</a></th></tr>";
+            $("#table_keyinfo").append(row);
+            $("#table_keyinfo").table("refresh");
+        });
+    }
+}
+
+$("table thead tr th").on("click", function() {
+    let tableId = $(this).parent().parent().parent()[0].id;
+    let fieldName = $(this)[0].textContent.replace(" ", "").toLowerCase();
+    if (fieldName != "action") {
+        sortTable(tableId, fieldName);
+    }
+});
+
+function sortTable(table, field) {
+    //$("#table_keyinfo tbody tr").sort(sort_sln).appendTo("#table_keyinfo tbody");
+    console.log("sorting " + table + " by " + field);
+    if (field == "sln") {
+        $("#" + table + " tbody tr").sort(sln).appendTo("#" + table + " tbody");
+    }
+    else if (field == "keysetid") {
+        $("#" + table + " tbody tr").sort(keysetid).appendTo("#" + table + " tbody");
+    }
+    else if (field == "keyid") {
+        $("#" + table + " tbody tr").sort(keyid).appendTo("#" + table + " tbody");
+    }
+    else if (field == "algorithm") {
+        $("#" + table + " tbody tr").sort(algorithm).appendTo("#" + table + " tbody");
+    }
+    else if (field == "keysetname") {
+        $("#" + table + " tbody tr").sort(keysetname).appendTo("#" + table + " tbody");
+    }
+    else if (field == "keysettype") {
+        $("#" + table + " tbody tr").sort(keysettype).appendTo("#" + table + " tbody");
+    }
+    else if (field == "activedatetime") {
+        $("#" + table + " tbody tr").sort(activedatetime).appendTo("#" + table + " tbody");
+    }
+    else if (field == "rsiid") {
+        $("#" + table + " tbody tr").sort(rsiid).appendTo("#" + table + " tbody");
+    }
+    else if (field == "messagenumber") {
+        $("#" + table + " tbody tr").sort(messagenumber).appendTo("#" + table + " tbody");
+    }
+
+    // < is ascending, > is descending
+    function sln(a, b) { return ($(b).data("sln")) < ($(a).data("sln")) ? 1 : -1; }
+    function keysetid(a, b) { return ($(b).data("keysetid")) < ($(a).data("keysetid")) ? 1 : -1; }
+    function keyid(a, b) { return ($(b).data("keyid")) < ($(a).data("keyid")) ? 1 : -1; }
+    function algorithm(a, b) { return ($(b).data("algorithm")) < ($(a).data("algorithm")) ? 1 : -1; }
+    function keysetname(a, b) { return ($(b).data("keysetname")) < ($(a).data("keysetname")) ? 1 : -1; }
+    function keysettype(a, b) { return ($(b).data("keysettype")) < ($(a).data("keysettype")) ? 1 : -1; }
+    function activedatetime(a, b) { return ($(b).data("keysetactivedatetime")) < ($(a).data("keysetactivedatetime")) ? 1 : -1; }
+    function rsiid(a, b) { return ($(b).data("rsiid")) < ($(a).data("rsiid")) ? 1 : -1; }
+    function messagenumber(a, b) { return ($(b).data("messagenumber")) < ($(a).data("messagenumber")) ? 1 : -1; }
+
+    $("#tableIncidents").table("refresh");
 }
 
 async function ViewKeysetInformation() {
-    ShowLoading();
+    if (!connected) return;
+    $("#table_keysets tbody").empty();
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
-    let ksetInfo = await mra.ViewKeysetTaggingInfo();
-    HideLoading();
+    let activeKeysetId;
+    let results;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        activeKeysetId = await mra.ListActiveKsetIds();
+        results = await mra.ViewKeysetTaggingInfo();
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if ((activeKeysetId !== undefined) && (results !== undefined)) {
+        //$("#table_keysets tbody").empty();
+        results.forEach((keyset) => {
+            let activeFlag = false;
+            let activateFlag = "";
+            let activationDateTime = "";
+            let ksadt = "";
+
+            if (keyset.KeysetId == activeKeysetId) {
+                activeFlag = true;
+            }
+
+            if ((!activeFlag) && keyset.KeysetId != 255) {
+                activateFlag = '<a class="keyset-activate" href="#">Activate</a>';
+            }
+
+            if (keyset.ActivationDateTime !== undefined) {
+                activationDateTime = keyset.ActivationDateTime.toISOString();
+                ksadt = activationDateTime;
+                activationDateTime = activationDateTime.replace("T", " ");
+                activationDateTime = activationDateTime.replace("Z", "");
+            }
+            
+            //<tr data-keysetid="1" data-active="true"><th>Yes</th><th>1</th><th>SET 01</th><th>TEK</th><th>2022-08-01 07:00</th><th></th></tr>
+            let row = '<tr data-keysetid="' + keyset.KeysetId + '" data-keysetname="' + keyset.KeysetName + '" data-keysettype="' + keyset.KeysetType + '" data-keysetactivedatetime="' + ksadt + '" data-active="' + (activeFlag || keyset.KeysetId == 255) + '"><th>' + ((activeFlag || keyset.KeysetId == 255) ? "Yes" : "No") + "</th><th>" + keyset.KeysetId + "</th><th>" + keyset.KeysetName + "</th><th>" + keyset.KeysetType + "</th><th>" + activationDateTime + "</th><th>" + activateFlag + "</th></tr>";
+            $("#table_keysets").append(row);
+            $("#table_keysets").table("refresh");
+        });
+    }
 }
 
 async function ViewKmfInformation() {
-    ShowLoading();
+    if (!connected) return;
+    $("#table_kmfRsi tbody").empty();
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
-    let rsi = await mra.ViewKmfRsi();
-    $("#valueKmfRsi").text(rsi);
-    let mnp = await mra.ViewMnp();
-    $("#valueKmfMnp").text(mnp);
-    HideLoading();
+    let rsi, mnp;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        rsi = await mra.ViewKmfRsi();
+        mnp = await mra.ViewMnp();
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if ((rsi !== undefined) && (mnp !== undefined)) {
+        let row = '<tr data-rsiid="' + rsi + ' data-messagenumber="' + mnp + '"><th>KMF</th><th>' + rsi + "</th><th>" + mnp + "</th><th><a class='rsi-change' href='#'>Change</a></th></tr>";
+        $("#table_kmfRsi").append(row);
+        $("#table_kmfRsi").table("refresh");
+    }
+}
+
+async function ViewRsiInformation() {
+    if (!connected) return;
+    $("#table_rsiItems tbody").empty();
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let rsiItems;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        rsiItems = await mra.ViewRsiItems();
+        
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (rsiItems !== undefined) {
+        console.log(rsiItems);//rsiItems[0].MN, .RSI, .Status
+        //$("#valueKmfRsi").text(rsi);
+        //$("#table_rsiItems tbody").empty();
+        rsiItems.forEach((rsi) => {
+            let rsiType = "Unknown";
+            if ((rsi.RSI > 0) && (rsi.RSI < 9999999)) rsiType = "Individual";
+            else if ((rsi.RSI > 9999999) && (rsi.RSI < 16777216)) rsiType = "Group"
+            //<tr data-keysetid="1" data-active="true"><th>Yes</th><th>1</th><th>SET 01</th><th>TEK</th><th>2022-08-01 07:00</th><th></th></tr>
+            let row = '<tr data-rsiid="' + rsi.RSI + ' data-messagenumber="' + rsi.MN + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change' href='#'>Change</a></th></tr>";
+            $("#table_rsiItems").append(row);
+            $("#table_rsiItems").table("refresh");
+        });
+    }
+}
+
+async function EraseAllKeysFromRadio() {
+    if (!connected) return;
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let result;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        result = await mra.EraseAllKeys();
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (result !== undefined) {
+        alert("Radio has been zeroized");
+        $("#table_keysets tbody").empty();
+    }
+}
+
+async function CheckMrConnection() {
+    if (!connected) return;
+    let twp = new ThreeWireProtocol();
+    let mrConnected;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        await twp.CheckTargetMrConnection();
+        mrConnected = true;
+    }
+    catch (error) {
+        //console.error(error);
+        mrConnected = false;
+        alert("There was a problem connecting to the MR");
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (mrConnected) {
+        
+    }
+}
+
+async function SetRadioClock() {
+    if (!connected) return;
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let result;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        result = await mra.SetDateTime();
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (result !== undefined) {
+        
+    }
+}
+
+async function GetRadioCapabilities() {
+    if (!connected) return;
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let result;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        result = await mra.GetCapabilities();
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (result !== undefined) {
+        console.log(result);
+    }
+}
+
+async function Changeover(ksidSuperseded, ksidActivated) {
+    if (!connected) return;
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let result;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        result = await mra.ActivateKeyset(ksidSuperseded, ksidActivated);
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (result !== undefined) {
+        console.log(result);
+    }
+}
+
+async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
+    if (!connected) return;
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let result;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        result = await mra.ChangeRsi(rsiOld, rsiNew, mnp);
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (result !== undefined) {
+        if (result.Status == 0) {
+            console.log("success");
+            if (rsiType == "KMF") {
+                ViewKmfInformation();
+            }
+            else {
+                ViewRsiInformation();
+            }
+        }
+        else if (result.Status == 1) {
+            alert("Error: command not performed");
+        }
+        else if (result.Status == 2) {
+            alert("Error: attempted to add/change/delete an RSI that is not in the SU");
+        }
+        else if (result.Status == 5) {
+            alert("Error: attempted to add more RSIs than the maximum allowed");
+        }
+    }
+}
+
+async function DeleteKeysFromRadio(keyInfos) {
+    //keyInfos = [{"algorithmId": 170, "keyId": 999}, {...}];
+    if (!connected) return;
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+    let result;
+    try {
+        ShowLoading();
+        DisableKfdButtons();
+        result = await mra.DeleteKeys(keyInfos);
+    }
+    catch (error) {
+        console.error(error);
+    }
+    finally {
+        HideLoading();
+        EnableKfdButtons();
+    }
+    if (result !== undefined) {
+        console.log(result.KeyStatus);
+    }
 }
 
 function ClearKeyInfo() {
@@ -549,7 +928,7 @@ $("#loadKeySingle_activeKeysetSlider").on("change", function() {
 
 $("#buttonConnectKfd").on("click", function() {
     //console.log("buttonConnectKfd clicked");
-    ConnectToDevice();
+    ConnectDevice();
 });
 $("#buttonGetDevices").on("click", function() {
     //console.log("buttonGetDevices clicked");
@@ -557,37 +936,8 @@ $("#buttonGetDevices").on("click", function() {
 });
 
 $("#buttonDisconnectKfd").on("click", function() {
-    console.log("buttonDisconnectKfd clicked");
-});
-
-$("#buttonSendTest").on("click", async function() {
-    console.log("buttonSendTest clicked");
-    //let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
-    //let rspKmmBody1 = TxRxKmm(cmdKmmBody1);
-    //console.log(rspKmmBody1);
-    //console.log(cmdKmmBody1);
-    //console.log(cmdKmmBody1.ToBytes());
-    
-    let ap = new AdapterProtocol();
-    let mra = new ManualRekeyApplication(ap, false);
-    let testResults = mra.TestMessage();
-
-/*
-    let testResults;
-    testResults = await ap.SendKeySignature();
-    
-    testResults = await ap.SendData(OPCODE_READY_REQ);
-    testResults = await ap.SendData(
-        [
-            0xc2,0x00,0x11,0x00,0xff,0xff,0xff,
-            0x0d,0x00,0x08,0x80,0xff,0xff,0xff,
-            0xff,0xff,0xff,0x02,0x3b,0x80
-        ]
-    );
-    testResults = await ap.SendData(OPCODE_TRANSFER_DONE);
-    testResults = await ap.SendData(OPCODE_DISCONNECT);
-*/
-    //console.log(testResults);
+    //console.log("buttonDisconnectKfd clicked");
+    DisconnectDevice();
 });
 
 function ShowLoading() {
@@ -615,7 +965,7 @@ function clearPopupEkc() {
     $("#inputFile").val("");
 }
 
-async function ConnectToDevice() {
+async function ConnectDevice() {
     if (connected) {
         alert("KFD device already connected");
         return;
@@ -626,19 +976,50 @@ async function ConnectToDevice() {
         console.log("Web Serial API supported");
         $("#connectionMethod").text("Web Serial API");
         connectionMethod = "ws";
-        await connectSerial();
-        //readUntilClosed();
+        const connection = await connectSerial();
+        const reading = readUntilClosed();
         //await connectPolyfill();
-        if (connected) ReadDeviceSettings();
+        if (connected) {
+            ShowDeviceConnected();
+            await ReadDeviceSettings();
+        }
     }
     else {
         // Use Polyfill API
         console.log("Web Serial API not supported, switching to Polyfill");
         $("#connectionMethod").text("Web USB Polyfill");
         connectionMethod = "poly";
-        await connectPolyfill();
-        if (connected) await ReadDeviceSettings();
+        const connection = await connectPolyfill();
+        //const reading = readUntilClosed();
+        if (connected) {
+            ShowDeviceConnected();
+            await ReadDeviceSettings();
+        }
     }
+}
+
+function ShowDeviceConnected() {
+    $("#iconConnectionStatus").css("background-color", "#aaffaa");
+    $("#buttonConnectKfd").prop("disabled", true);
+    $("#buttonDisconnectKfd").prop("disabled", false);
+    $(".button-kfd").attr("disabled", false);
+    $("#connectionStatus").text("Connected");
+}
+
+function ShowDeviceDisconnected() {
+    $("#iconConnectionStatus").css("background-color", "#ffaaaa");
+    $("#buttonConnectKfd").prop("disabled", false);
+    $("#buttonDisconnectKfd").prop("disabled", true);
+    $(".button-kfd").attr("disabled", true);
+    $("#connectionStatus").text("Disconnected");
+    $("#deviceProperties").html("");
+}
+
+function EnableKfdButtons() {
+    $(".button-kfd").attr("disabled", false);
+}
+function DisableKfdButtons() {
+    $(".button-kfd").attr("disabled", true);
 }
 
 async function ReadDeviceSettings() {
@@ -669,6 +1050,8 @@ async function ReadDeviceSettings() {
     device.serial = serialString.join("");
     ////$("#deviceProperties").html(device.serial);
     
+
+
     //console.log("device", device);
     
     $("#deviceProperties").html(
@@ -829,7 +1212,7 @@ function AddGroup(groupItem) {
     $("#keyContainerGroupList").listview("refresh");
 }
 
-function DeleteKey(key_id) {
+function DeleteKeyFromContainer(key_id) {
     // Remove key from _keyContainer as well as listviews and comboboxes and key groups
     _keyContainer.keys = _keyContainer.keys.filter(function(obj) {
         return obj.Id !== id;

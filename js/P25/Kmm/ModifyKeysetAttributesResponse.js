@@ -1,20 +1,20 @@
-// DeleteKeysetResponse
+// ModifyKeysetAttributesResponse
 
-class DeleteKeysetResponse extends KmmBody {
+class ModifyKeysetAttributesResponse extends KmmBody {
     KeysetStatus = [];
     get MessageId() {
-        return MessageId.DeleteKeysetResponse;
+        return MessageId.ModifyKeysetAttributesResponse;
     }
     get ResponseKind() {
         return ResponseKind.None;
     }
     ToBytes() {
-
+        
     }
     Parse(contents) {
-        let statusCount = contents[0];
+        let keysetCount = contents[0];
 
-        for (var i=0; i< statusCount; i++) {
+        for (var i=0; i< keysetCount; i++) {
             let status = new KeysetStatus();
             status.KeysetId = contents[(i * 2) + 1];
             status.Status = contents[(i * 2) + 2];

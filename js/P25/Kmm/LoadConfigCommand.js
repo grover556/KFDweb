@@ -6,20 +6,20 @@ class LoadConfigCommand extends KmmBody {
     get KmfRsi() {
         return this.#_kmfRsi;
     }
-    set KmfRsi(val) {
+    set KmfRsi(value) {
         if (value < 0 || value > 0xFFFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_kmfRsi = val;
+        this.#_kmfRsi = value;
     }
     get MessageNumberPeriod() {
         return this.#_mnp;
     }
-    set MessageNumberPeriod(val) {
+    set MessageNumberPeriod(value) {
         if (value < 0 || value > 0xFFFF) {
             throw "ArgumentOutOfRangeException";
         }
-        this.#_mnp = val;
+        this.#_mnp = value;
     }
     get MessageId() {
         return MessageId.LoadConfigCommand;
