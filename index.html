@@ -158,7 +158,7 @@
             	<div id="homeDiv" class="menu_divs">
                 	<h1>KFDweb</h1>
 					<h5 style="color:red;">This PRE-RELEASE software is still in development and should not be used for production</h5>
-					<h3>Open Source P25 Key Fill Device, based on the <a href="https://github.com/KFDtool/KFDtool" target="_blank">KFDtool</a> project</h3><p>Currently compatible will all functionality of the KFDtool and supported devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
+					<h3>Open Source P25 Key Fill Device GUI, based on the <a href="https://github.com/KFDtool/KFDtool" target="_blank">KFDtool</a> project</h3><p>Currently compatible will all functionality of the KFDtool and supported devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
                 	<p><h3 id="secureContextStatus"></h3><span id="secureContextDetails"></span></p>
 					<h5><a id="linkLicensingInformation" href="#">Licensing Information</a></h5>
                 </div>
@@ -446,10 +446,10 @@
             	</div>
             	<div data-role="popup" id="popupMenuKeyOptions">
                 	<div id="popupMenuKeyOptions_list">
-                    	<ul data-role="listview" data-inset="true" style="min-width:210px;">
-                        	<li><a href="#">Add new key</a></li>
-                        	<li><a href="#">Add multiple keys</a></li>
-                        	<li><a href="#popupMenuKeyOptions_sort" data-rel="dialog" data-transition="slide">Sort</a></li>
+                    	<ul data-role="listview" data-inset="true" style="min-width:210px;" data-container-key-id="">
+                        	<li><a id="action_loadKeyToRadio" href="#">Load Key to Radio</a></li>
+                        	<li><a id="action_deleteKeyFromContainer" href="#">Delete Key from Container</a></li>
+                        	<li><a href="#popupMenuKeyOptions_sort" data-rel="dialog" data-transition="slide" style="display:none;">Sort</a></li>
                     	</ul>
                 	</div>
                 	<div id="popupMenuKeyOptions_sort" style="display:none;">

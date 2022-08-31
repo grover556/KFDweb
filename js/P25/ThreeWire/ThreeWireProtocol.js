@@ -136,6 +136,7 @@ class ThreeWireProtocol {
 
         // receive transfer done opcode
         console.log("mr: transfer done");
+        
         //await new Promise(resolve => setTimeout(resolve, 50));
         let rsp1 = await this.Protocol.GetByte(TIMEOUT_STD, true);
         //console.log("mr -> kfd: ", rsp1);
@@ -151,12 +152,13 @@ class ThreeWireProtocol {
         
         // receive disconnect ack opcode
         console.log("mr: disconnect ack");
+        
         //await new Promise(resolve => setTimeout(resolve, 50));
         let rsp2 = await this.Protocol.GetByte(TIMEOUT_STD, true);
         if (rsp2 === undefined) {
-            console.log("undefined");
+            console.error("undefined");
             //await new Promise(resolve => setTimeout(resolve, 50));
-            rsp2 = await this.Protocol.GetByte(TIMEOUT_STD, true);
+            //rsp2 = await this.Protocol.GetByte(TIMEOUT_STD, false);
         }
         console.log("mr -> kfd: ", BCTS(rsp2).join("-"));
         if (rsp2 != OPCODE_DISCONNECT_ACK) {
@@ -180,6 +182,8 @@ class ThreeWireProtocol {
         await this.SendKmm(inKmm);
         console.log("TWP.PerformKmmTransfer KmmSent");
         let rx;
+        // Give time for the MR to respond
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // receive kmm opcode
         try {

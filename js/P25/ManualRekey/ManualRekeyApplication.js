@@ -234,7 +234,8 @@ class ManualRekeyApplication {
                         if (status.Status != 0) {
                             let statusDescr = OperationStatusExtensions.ToStatusString(status.Status);
                             let statusReason = OperationStatusExtensions.ToReasonString(status.Status);
-                            throw "received unexpected key status" + "algorithm id: " + status.AlgorithmId + "key id: " + status.KeyId + "status: " + status.Status + "status description: " + statusDescr + "status reason: " + statusReason;
+                            console.error("received unexpected key status " + "algorithm id: " + status.AlgorithmId + " key id: " + status.KeyId + " status: " + status.Status + " status description: " + statusDescr + " status reason: " + statusReason);
+                            //throw "received unexpected key status" + "algorithm id: " + status.AlgorithmId + "key id: " + status.KeyId + "status: " + status.Status + "status description: " + statusDescr + "status reason: " + statusReason;
                         }
                     }
                 }

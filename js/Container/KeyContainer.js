@@ -427,7 +427,7 @@ function ImportKeys(innerContainer) {
                     keyItem.AlgorithmId = parseInt(value.textContent);
                     break;
                 case "Key":
-                    keyItem.Key = value.textContent;
+                    keyItem.Key = value.textContent.split(",").map((str) => parseInt(str));
                     break;
                 default:
                     console.error("KeyItem node name '" + value.nodeName + "' not expected");

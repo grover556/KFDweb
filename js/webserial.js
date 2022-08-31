@@ -141,7 +141,7 @@ $("#table_keyinfo tbody").on("click", "a.key-delete", function() {
 $("#table_keysets tbody").on("click", "a.keyset-activate", function() {
     let tr = $(this).parent().parent();
     let keyset_activate = tr.data("keysetid");
-    let tr2 = $("table#table_keysets tr[data-active='true']")[0];
+    let tr2 = $("#table_keysets tr[data-active='true']")[0];
     let keyset_deactivate = parseInt(tr2.attributes.getNamedItem("data-keysetid").value);
     //console.log("Activate " + keyset_activate + ", deactivate " + keyset_deactivate);
     if (keyset_deactivate == 255) {
@@ -225,12 +225,12 @@ $("#buttonLoadKeyToContainer").on("click", function() {
 
     let validation = KeyloadValidate(keyItem.KeysetId, keyItem.Sln, keyItem.KeyTypeKek, keyItem.KeyId, keyItem.AlgorithmId, keyItem.Key);
     if (validation.status == "Success") {
-        AddKey(keyItem);
+        AddKeyToContainer(keyItem);
         ClearKeyInfo();
     }
     else if (validation.status == "Warning") {
         if (window.confirm("Warning: " + validation.message + " - do you wish to continue anyways?")) {
-            AddKey(keyItem);
+            AddKeyToContainer(keyItem);
             ClearKeyInfo();
         }
     }
@@ -302,6 +302,28 @@ $("#buttonAddRsi").on("click", function() {
     $("#popupAddEditRsi").popup("open");
     $("#addEditRsi_rsi").focus();
 });
+$("#action_loadKeyToRadio").on("click", function() {
+    let ckid = $("#popupMenuKeyOptions_list ul").data("container-key-id");
+    let key = _keyContainer.keys.filter(function(obj) { return obj.Id === ckid; });
+    if (key.length != 1) {
+        alert("There was an error retrieving the key from the container");
+        return;
+    }
+    SendKeysToRadio(key);
+    $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", "");
+    $("#popupMenuKeyOptions").popup("close");
+});
+$("#action_deleteKeyFromContainer").on("click", function() {
+    let ckid = $("#popupMenuKeyOptions_list ul").data("container-key-id");
+    DeleteKeyFromContainer(ckid);
+    $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", "");
+    $("#popupMenuKeyOptions").popup("close");
+});
+
+function CreateKeyFromContainer(ckid) {
+    // Create a key from a container key_id
+
+}
 
 function CreateKeyFromFields(target) {
     // Disabled for use of inputBase, and replaced below on assigning keyItem fields
@@ -409,9 +431,9 @@ function CreateKeyFromFields(target) {
 }
 
 async function SendKeysToRadio(keys) {
-    if (!connected) return;
     console.log("SendKeysToRadio", keys);
-    
+    if (!connected) return;
+
     let keyItems = [];
     keys.forEach((k) => {
         let key = new KeyItem();
@@ -425,7 +447,6 @@ async function SendKeysToRadio(keys) {
         //console.log(key);
         //console.log(key.ToBytes());
     });
-    //console.log(keyItems);
 
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
@@ -444,6 +465,8 @@ async function SendKeysToRadio(keys) {
     }
     if (results !== undefined) {
         console.log(results);
+        // Check each status to verify result[i].Status == 0
+
     }
 }
 
@@ -808,12 +831,14 @@ async function Changeover(ksidSuperseded, ksidActivated) {
         //console.log(result);
         //result.KeysetIdActivated;
         //result.KeysetIdSuperseded;
-        //$("li[data-key-id='" + key_id +"']").remove();
+        //$("li[data-container-key-id='" + key_id +"']").remove();
         //let activateFlag = '<a class="keyset-activate" href="#">Activate</a>';
         //$("#table_keysets tbody tr[data-keysetid='" + result.KeysetIdActivated + "'] th.th-action-flag").innerText = "";
         //$("#table_keysets tbody tr[data-keysetid=''] th");
 
         $("#table_keysets tbody tr[data-keysetid=" + result.KeysetIdSuperseded + "] th.th-action-flag").append($("#table_keysets tbody tr[data-keysetid=" + result.KeysetIdActivated + "] th.th-action-flag a")[0]);
+        $("#table_keysets tbody tr[data-keysetid='" + ksidSuperseded + "']").attr("data-active", false);
+        $("#table_keysets tbody tr[data-keysetid='" + ksidActivated + "']").attr("data-active", true);
     }
 }
 
@@ -841,8 +866,8 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
                 // Change the RSI and MNP in the table
                 $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "'] th")[1].text(rsiNew);
                 $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "'] th")[2].text(mnp);
-                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").data("mnp", mnp);
-                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").data("rsiid", rsiNew);
+                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").attr("data-mnp", mnp);
+                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").attr("data-rsiid", rsiNew);
             }
             else if ((rsiType == "Individual") || (rsiType == "Group")) {
                 // Add/remove/change the table rows
@@ -854,8 +879,8 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
                     // Change the RSI and MNP
                     $("#table_rsiItems tr[data-rsiid='" + rsiOld + "'] th")[1].text(rsiNew);
                     $("#table_rsiItems tr[data-rsiid='" + rsiOld + "'] th")[2].text(mnp);
-                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").data("mnp", mnp);
-                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").data("rsiid", rsiNew);
+                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").attr("data-mnp", mnp);
+                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").attr("data-rsiid", rsiNew);
                 }
             }
         }
@@ -909,12 +934,18 @@ function ClearKeyInfo() {
     $("#loadKeySingle_key").val("");
 }
 $("#keyContainerKeyList").on("click", "li", function() {
-    //console.log($(this).data("key-id"));
-    
+    //console.log($(this).data("container-key-id"));
+    //console.log($("#popupMenuKeyOptions_list ul").data("container-key-id"));
+    let ckid = $(this).data("container-key-id");
+    $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", ckid);
+    $("#popupMenuKeyOptions").popup("open");
 });
 $("#keyContainerGroupList").on("click", "li", function() {
-    //console.log($(this).data("group-id"));
-    
+    //console.log($(this).data("container-group-id"));
+    //console.log($("#popupMenuGroupOptions_list ul").data("container-group-id"));
+    let cgid = $(this).data("container-group-id");
+    $("#popupMenuGroupOptions_list ul").attr("data-container-group-id", cgid);
+    $("#popupMenuGroupOptions").popup("open");
 });
 $("#createEkc").on("click", function() {
     if ($("#exportKeyContainer_password").val() != $("#exportKeyContainer_passwordVerify").val()) {
@@ -1347,18 +1378,18 @@ function PopulateKeys() {
         }
         
         // Add to listview
-        let keyListItem = '<li data-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></a></li>';
+        let keyListItem = '<li data-container-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</p></a></li>';
         $("#keyContainerKeyList").append(keyListItem);
         
         // Add to group checkbox
         //<label for="checkbox-1a"><p>key 1</p><p>AES-256, TEK, 3, 0002</p></label>
         //<input type="checkbox" name="checkbox-1a" id="checkbox-1a">
         
-        //let groupItem = '<div class="ui-checkbox"><label for="checkbox-' + key.Id + '" class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off"><p data-key-id=' + key.Id + '>' + key.Name + '</p><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></label>';
+        //let groupItem = '<div class="ui-checkbox"><label for="checkbox-' + key.Id + '" class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off"><p data-container-key-id=' + key.Id + '>' + key.Name + '</p><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></label>';
         //groupItem += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
         //$("#checkboxControls").append(groupItem);
         
-        let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
+        let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-container-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</span></label>';
         groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
         $("#addGroupKeyList").append(groupCheckbox);
     });
@@ -1374,13 +1405,13 @@ function PopulateGroups() {
     _keyContainer.groups.forEach(group => {
         //<li><a href="#"><h2>group 1</h2><p>5 keys</p></a></li>
         //console.log(group);
-        let groupListItem = '<li data-group-id=' + group.Id + '><a href="#"><h2>' + group.Name + '</h2><p>' + group.Keys.length + ' keys</p></a></li>';
+        let groupListItem = '<li data-container-group-id=' + group.Id + '><a href="#"><h2>' + group.Name + '</h2><p>' + group.Keys.length + ' keys</p></a></li>';
         $("#keyContainerGroupList").append(groupListItem);
         $("#keyContainerGroupList").listview("refresh");
     });
 }
 
-function AddKey(key) {
+function AddKeyToContainer(key) {
     //console.log(key);
     // Add key to _keyContainer as well as listviews and comboboxes
     key.Id = _keyContainer.nextKeyNumber;
@@ -1397,11 +1428,11 @@ function AddKey(key) {
         if (key.KeyTypeTek) keyType = "TEK";
         else keyType = "KEK";
     }
-    let keyListItem = '<li data-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></a></li>';
+    let keyListItem = '<li data-container-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</p></a></li>';
     $("#keyContainerKeyList").append(keyListItem);
-    //let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
+    //let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-container-key-id=' + key.Id + '>' + key.Name + '</span><br><span>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
     //groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
-    let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
+    let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-container-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</span></label>';
     groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
     $("#addGroupKeyList").append(groupCheckbox);
     $("#keyContainerKeyList").listview("refresh");
@@ -1414,7 +1445,7 @@ function AddGroup(groupItem) {
     _keyContainer.groups.push(groupItem);
     _keyContainer.nextGroupNumber++;
     
-    let groupItemText = '<li data-group-id=' + group.Id + '><a href="#"><h2>' + group.Name + '</h2><p>' + group.Keys.length + ' keys</p></a></li>';
+    let groupItemText = '<li data-container-group-id=' + group.Id + '><a href="#"><h2>' + group.Name + '</h2><p>' + group.Keys.length + ' keys</p></a></li>';
     $("#keyContainerGroupList").append(groupItem);
     $("#keyContainerGroupList").listview("refresh");
 }
@@ -1422,19 +1453,19 @@ function AddGroup(groupItem) {
 function DeleteKeyFromContainer(key_id) {
     // Remove key from _keyContainer as well as listviews and comboboxes and key groups
     _keyContainer.keys = _keyContainer.keys.filter(function(obj) {
-        return obj.Id !== id;
+        return obj.Id !== key_id;
     });
-    $("li[data-key-id='" + key_id +"']").remove();
+    $("li[data-container-key-id='" + key_id +"']").remove();
     $("div[data-checkbox-id='" + key_id +"']").remove();
     RemoveKeyFromAllGroups(key_id);
 }
 
-function DeleteGroup(group_id) {
+function DeleteGroupFromContainer(group_id) {
     // Remove group from _keyContainer as well as listviews
     _keyContainer.groups = _keyContainer.groups.filter(function(obj) {
         return obj.Id !== id;
     });
-    $("li[data-group-id='" + group_id +"']").remove();
+    $("li[data-container-group-id='" + group_id +"']").remove();
 }
 
 function ResetKeyContainer() {
