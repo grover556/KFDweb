@@ -26,6 +26,6 @@
     font-size: 12px;
     font-style: normal;
 }
-#popupLicensingInformation {
-    /* max-width: 75%; */
+#popupLicensingInformation-popup {
+    padding: 32px;
 }

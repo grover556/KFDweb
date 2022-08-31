@@ -131,7 +131,7 @@
                         </div>
                     </li>
 					<li>
-						<div data-role="collapsible" data-inset="false" data-iconpos="left">
+						<div data-role="collapsible" data-inset="false" data-iconpos="left" style="display:none;">
 							<h2>OTAR Features</h2>
 							<ul data-role="listview">
 								<li><a class="menuItem" id="menu_otarCapabilities" href="#">Get Capabilities</a></li>
@@ -478,6 +478,26 @@
 						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright 2018 Google LLC</h4><div class="ui-body"><a href="https://github.com/google/web-serial-polyfill/blob/main/LICENSE">Serial API Polyfill</a><p>Licensed under the Apache License, Version 2.0 (the "License");<ul><li>You may not use this file except in compliance with the License.</li><li>You may obtain a copy of the License at:</li></ul><br><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p><p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p></div>
 					</div>
             	</div>
+				<div data-role="popup" id="popupAddEditRsi" data-dismissible="false">
+					<form>
+						<div style="padding:10px 20px;">
+							<select id="addEditRsi_HexDec" data-role="slider" data-mini="true">
+								<option value="dec">Dec</option>
+								<option value="hex">Hex</option>
+							</select>
+							<input type="hidden" id="addEditRsi_typeOld" value="">
+							<input type="hidden" id="addEditRsi_action" value="">
+							<input type="hidden" id="addEditRsi_rsiOld" value="">
+							<label for="un" class="ui-hidden-accessible">RSI</label>
+							<input type="text" id="addEditRsi_rsi" class="hexdec-input" value="" placeholder="RSI" data-min-value="1" data-max-value="16777215">
+							<label for="pw" class="ui-hidden-accessible">Message Number</label>
+							<input type="text" id="addEditRsi_mnp" class="hexdec-input" value="" placeholder="Message Number" data-min-value="0" data-max-value="65535">
+							<span id="addEditRsi_rsiType"></span>
+							<button id="addEditRsiCancel" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-delete">Cancel</button>
+							<button id="addEditRsiConfirm" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-check">Confirm</button>
+						</div>
+					</form>
+				</div>
             	<div data-role="popup" id="popupMenuKeyOptions_sort_DEP">
                 	
             	</div>

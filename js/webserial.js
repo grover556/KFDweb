@@ -51,13 +51,61 @@ $(document).ready(function() {
 $("#linkLicensingInformation").on("click", function() {
     $("#popupLicensingInformation").popup("open");
 });
-
 $("#buttonImportFile").on("click", function() {
     $("#popupImportEkc").popup("open");
 });
+$("#addEditRsiCancel").on("click", function() {
+    $("#popupAddEditRsi").popup("close");
+    ClearPopupAddEditRsi();
+});
+$("#addEditRsiConfirm").on("click", function() {
+    // Validate the data, then close, clear and proceed
+    // refer to page 60 on TIA OTAR, Change-RSI-Command permutations
+    let isValid = $("#addEditRsi_rsiType").hasClass("invalid");
+    let rsiType = $("#addEditRsi_typeOld").val();
+    //let rsiAction = $("#addEditRsi_action").val();//add,remove,change
+    let rsiOld = parseInt($("#addEditRsi_rsiOld").val());
+    let rsiNew = parseInt($("#addEditRsi_rsi").val(), inputBase);
+    let mnp = parseInt($("#addEditRsi_mnp").val(), inputBase);
+/*
+    if ((rsiNew == 9999999) || (rsiNew > 16777215)) {
+        alert("Please fix invalid fields before submitting");
+        return;
+    }
+*/
+    if (rsiType == "KMF") {
+        // Change KMF RSI
+        if ((rsiNew < 1) || (rsiNew > 9999999)) {
+            // Invalid KMF RSI
+            alert("Valid range for KMF RSI is 1 to 9,999,999 (0x000001 to 0x98967F");
+            return;
+        }
+        ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp);
+    }
+    else if (rsiType == "Individual") {
+        // Add/change/remove individual RSI
+        if ((rsiNew < 1) || (rsiNew > 9999998)) {
+            // Invalid RSI
+            alert("Valid range for Individual RSI is 1 to 9,999,998 (0x000001 to 0x98967E");
+            return;
+        }
+        ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp);
+    }
+    else if (rsiType == "Group") {
+        // Add/change/remove group RSI
+        if ((rsiNew < 10000000) || (rsiNew > 16777215)) {
+            // Invalid RSI
+            alert("Valid range for Group RSI is 10,000,000 to 16,777,215 (0x989680 to 0xFFFFFF)");
+            return;
+        }
+        ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp);
+    }
+    $("#popupAddEditRsi").popup("close");
+    ClearPopupAddEditRsi();
+});
 $("#buttonCancelEkc").on("click", function() {
     $("#popupImportEkc").popup("close");
-    clearPopupEkc();
+    ClearPopupEkc();
 });
 $("#buttonOpenEkc").on("click", function() {
     if ($("#passwordEkc").val() == "") {
@@ -72,7 +120,7 @@ $("#buttonOpenEkc").on("click", function() {
     //importFile($("#passwordEkc").val());
     OpenEkc(fileInputElement.files[0], $("#passwordEkc").val());
     //loadFile();
-    clearPopupEkc();
+    ClearPopupEkc();
 });
 $("#table_keyinfo tbody").on("click", "a.key-delete", function() {
     let tr = $(this).parent().parent();
@@ -108,15 +156,41 @@ $("#table_rsiItems tbody").on("click", "a.rsi-change", function() {
     //console.log($(this).parent().parent()[0].dataset);
     // This should trigger mra.???
     let tr = $(this).parent().parent();
-    let rsi = parseInt(tr.data("rsiid"));
-    console.log(rsi);
+    let rsiOld = parseInt(tr.data("rsiid"));
+    let mnpOld = parseInt(tr.data("mnp"));
+    let rsiType = "Group";
+    if (rsiOld < 9999999) {
+        rsiType = "Individual";
+    }
+    $("#addEditRsi_typeOld").val(rsiType);
+    $("#addEditRsi_action").val("change");
+    $("#addEditRsi_rsiOld").val(rsiOld);
+    $("#addEditRsi_rsi").val(rsiOld);
+    $("#addEditRsi_mnp").val(mnpOld);
+    $("#popupAddEditRsi").popup("open");
+    $("#addEditRsi_rsi").focus();
+});
+$("#table_rsiItems tbody").on("click", "a.rsi-delete", function() {
+    let rsiOld = parseInt(tr.data("rsiid"));
+    let rsiOldType = tr.data("rsitype");
+    if (window.confirm("Warning: are you sure you want to delete " + rsiOldType + " RSI " + rsiOld + "?")) {
+        ChangeRsiValues(rsiOldType, rsiOld, 0, 0);
+    }
 });
 $("#table_kmfRsi tbody").on("click", "a.kmf-rsi-change", function() {
     //console.log($(this).parent().parent()[0].dataset);
     // This should trigger mra.LoadConfig(rsi, mn);
     let tr = $(this).parent().parent();
-    let rsi = parseInt(tr.data("rsiid"));
-    console.log(rsi);
+    let rsiOld = parseInt(tr.data("rsiid"));
+    let mnpOld = parseInt(tr.data("mnp"));
+
+    $("#addEditRsi_typeOld").val("KMF");
+    $("#addEditRsi_action").val("change");
+    $("#addEditRsi_rsiOld").val(rsiOld);
+    $("#addEditRsi_rsi").val(rsiOld);
+    $("#addEditRsi_mnp").val(mnpOld);
+    $("#popupAddEditRsi").popup("open");
+    $("#addEditRsi_rsi").focus();
 });
 $(".menuItem").on("click", function() {
     var menuName = $(this).attr("id").replace("menu_", "");
@@ -221,6 +295,12 @@ $("#buttonAddRsi").on("click", function() {
     //ChangeRsiValues("KMF", 9999990, 0, 0);// Delete KMF RSI
 
     //ChangeRsiValues("KMF", 9999990, 9999991, 65534);// TEST
+
+    $("#addEditRsi_typeOld").val("");
+    $("#addEditRsi_action").val("add");
+    $("#addEditRsi_rsiOld").val("0");
+    $("#popupAddEditRsi").popup("open");
+    $("#addEditRsi_rsi").focus();
 });
 
 function CreateKeyFromFields(target) {
@@ -551,10 +631,15 @@ async function ViewRsiInformation() {
         //$("#table_rsiItems tbody").empty();
         rsiItems.forEach((rsi) => {
             let rsiType = "Unknown";
-            if ((rsi.RSI > 0) && (rsi.RSI < 9999999)) rsiType = "Individual";
-            else if ((rsi.RSI > 9999999) && (rsi.RSI < 16777216)) rsiType = "Group"
+            let rsiTypeCode = "unk";
+            if ((rsi.RSI > 0) && (rsi.RSI < 9999999)) {
+                rsiType = "Individual";
+            }
+            else if ((rsi.RSI > 9999999) && (rsi.RSI < 16777216)) {
+                rsiType = "Group";
+            }
             //<tr data-keysetid="1" data-active="true"><th>Yes</th><th>1</th><th>SET 01</th><th>TEK</th><th>2022-08-01 07:00</th><th></th></tr>
-            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + rsi.MN + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change' href='#'>Change</a></th></tr>";
+            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + rsi.MN + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change' href='#'>Change</a><a class='rsi-delete' href='#'>Delete</a></th></tr>";
             $("#table_rsiItems").append(row);
             $("#table_rsiItems").table("refresh");
         });
@@ -753,10 +838,25 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
         if (result.Status == 0) {
             console.log("success");
             if (rsiType == "KMF") {
-                ViewKmfInformation();
+                // Change the RSI and MNP in the table
+                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "'] th")[1].text(rsiNew);
+                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "'] th")[2].text(mnp);
+                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").data("mnp", mnp);
+                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").data("rsiid", rsiNew);
             }
-            else {
-                ViewRsiInformation();
+            else if ((rsiType == "Individual") || (rsiType == "Group")) {
+                // Add/remove/change the table rows
+                if (rsiNew == 0) {
+                    // Delete the RSI
+                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").remove();
+                }
+                else {
+                    // Change the RSI and MNP
+                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "'] th")[1].text(rsiNew);
+                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "'] th")[2].text(mnp);
+                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").data("mnp", mnp);
+                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").data("rsiid", rsiNew);
+                }
             }
         }
         else if (result.Status == 1) {
@@ -920,6 +1020,45 @@ $(".hexdec-input").on("keyup", function() {
         }
     }
 });
+$("#addEditRsi_rsi").on("keyup", function() {
+    // Validate and show RSI type in <span>
+    let rsiType = $("#addEditRsi_typeOld").val();
+    let rsiVal = parseInt($("#addEditRsi_rsi").val(), inputBase);
+    if (rsiType == "KMF") {
+        if ((rsiVal < 1 || (rsiVal > 9999999))) {
+            $("#addEditRsi_rsiType").text("Invalid KMF RSI");
+            $("#addEditRsi_rsiType").addClass("invalid");
+        }
+        else {
+            $("#addEditRsi_rsiType").text("KMF RSI");
+            $("#addEditRsi_rsiType").removeClass("invalid");
+        }
+    }
+    else if (rsiType == "Individual") {
+        if ((rsiVal < 1) && (rsiVal > 9999998)) {
+            $("#addEditRsi_rsiType").text("Invalid Individual RSI");
+            $("#addEditRsi_rsiType").addClass("invalid");
+        }
+        else {
+            $("#addEditRsi_rsiType").text("Individual RSI");
+            $("#addEditRsi_rsiType").removeClass("invalid");
+        }
+    }
+    else if (rsiType == "Group") {
+        if ((rsiVal < 10000000) || (rsiVal > 16777215)) {
+            $("#addEditRsi_rsiType").text("Invalid Group RSI");
+            $("#addEditRsi_rsiType").addClass("invalid");
+        }
+        else {
+            $("#addEditRsi_rsiType").text("Group RSI");
+            $("#addEditRsi_rsiType").removeClass("invalid");
+        }
+    }
+    else {
+        $("#addEditRsi_rsiType").text("Invalid RSI");
+        $("#addEditRsi_rsiType").addClass("invalid");
+    }
+});
 
 $("#loadKeySingle_key").on("focusin", function(evt) {
     // Show the key when the user clicks inside the key entry input
@@ -976,9 +1115,22 @@ $("#loadKeySingle_HexDec").on("change", function() {
     //console.log($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow"));
     if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "hex") {
         SwitchHexDec("hex");
+        $("#addEditRsi_HexDec").val("hex").slider("refresh");
     }
     else if ($("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow") == "dec") {
         SwitchHexDec("dec");
+        $("#addEditRsi_HexDec").val("dec").slider("refresh");
+    }
+});
+$("#addEditRsi_HexDec").on("change", function() {
+    ////addEditRsi_HexDec
+    if ($("#popupAddEditRsi [aria-labelledby='addEditRsi_HexDec-label']").attr("aria-valuenow") == "hex") {
+        SwitchHexDec("hex");
+        $("#loadKeySingle_HexDec").val("hex").slider("refresh");
+    }
+    else if ($("#popupAddEditRsi [aria-labelledby='addEditRsi_HexDec-label']").attr("aria-valuenow") == "dec") {
+        SwitchHexDec("dec");
+        $("#loadKeySingle_HexDec").val("dec").slider("refresh");
     }
 });
 $("#loadKeySingle_activeKeysetSlider").on("change", function() {
@@ -1027,9 +1179,19 @@ async function DownloadEkc(keyContainer, password, filename) {
     URL.revokeObjectURL(link.href);
 }
 
-function clearPopupEkc() {
+function ClearPopupEkc() {
     $("#passwordEkc").val("");
     $("#inputFile").val("");
+}
+
+function ClearPopupAddEditRsi() {
+    $("#addEditRsi_typeOld").val("");
+    $("#addEditRsi_action").val("");
+    $("#addEditRsi_rsiOld").val("");
+    $("#addEditRsi_rsi").val("");
+    $("#addEditRsi_mnp").val("");
+    $("#addEditRsi_rsiType").text("");
+    $("#addEditRsi_rsiType").removeClass("invalid");
 }
 
 async function ConnectDevice() {
