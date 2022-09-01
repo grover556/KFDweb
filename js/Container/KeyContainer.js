@@ -127,6 +127,11 @@ async function CreateInnerContainer(keyContainer) {
         let keyItem = ic.createElement("KeyItem");
         let ele, eleVal;
         
+        key.KeyString = [];
+        key.Key.forEach((b) => {
+            key.KeyString.push(b.toString(16).padStart(2, "0").toUpperCase());
+        });
+
         ele = ic.createElement("Id");
         eleVal = ic.createTextNode(key.Id);
         ele.appendChild(eleVal);
@@ -168,9 +173,11 @@ async function CreateInnerContainer(keyContainer) {
         ele.appendChild(eleVal);
         keyItem.appendChild(ele);
         ele = ic.createElement("Key");
-        eleVal = ic.createTextNode(key.Key);
+        //eleVal = ic.createTextNode(key.Key);
+        eleVal = ic.createTextNode(key.KeyString.join(""));
         ele.appendChild(eleVal);
         keyItem.appendChild(ele);
+        delete key.KeyString;
         
         keys.appendChild(keyItem);
     });
@@ -427,7 +434,8 @@ function ImportKeys(innerContainer) {
                     keyItem.AlgorithmId = parseInt(value.textContent);
                     break;
                 case "Key":
-                    keyItem.Key = value.textContent.split(",").map((str) => parseInt(str));
+                    //keyItem.Key = Array.from(value.textContent).map((str) => parseInt(str, 16));
+                    keyItem.Key = value.textContent.match(/\w{1,2}/g).map((str) => parseInt(str, 16));
                     break;
                 default:
                     console.error("KeyItem node name '" + value.nodeName + "' not expected");

@@ -56,7 +56,7 @@ async function Decompress(compressedData) {
     }
     else {
         //console.log("DecompressionStream not supported, using pako");
-        console.log(new Uint8Array(compressedData));
+        //console.log(new Uint8Array(compressedData));
         try {
             inflated = pako.inflate(compressedData);//returns Uint8Array
             return inflated;

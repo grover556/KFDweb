@@ -434,7 +434,7 @@ async function readUntilClosed() {
                     //reader.releaseLock();
                     break;
                 }
-                console.log("readUntilClosed", BCTS(value).join("-"));
+                //console.log("readUntilClosed", BCTS(value).join("-"));
                 await OnDataReceived(Array.from(value));
                 //frameBuffer = frameBuffer.concat(Array.from(value));
                 //console.log("frameBuffer BCTS", BCTS(frameBuffer).join("-"));

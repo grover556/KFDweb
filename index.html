@@ -171,7 +171,7 @@
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">KFD-AVR Serial Protocol</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">ReadDeviceSettings(KFDtool)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">ReadDeviceSettings(KFD-AVR)</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Key Partitioner</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Key Partitioner</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Radio</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Single Key return fields to default (keylen, KSID)</button>
@@ -241,7 +241,7 @@
                     	<label for="loadKeySingle_SlnCkr">SLN/CKR:</label>
                     	<input class="hexdec-input" type="text" name="loadKeySingle_SlnCkr" id="loadKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="65535">
                 	</div>
-                	<div class="ui-field-contain">
+                	<div class="ui-field-contain" style="display:none;">
                 	<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
                     	<legend>Key Type:</legend>
                     	<label for="radioKeyType_auto">Auto</label>
@@ -287,7 +287,7 @@
                     	<input class="hex-input key-input" type="password" name="loadKeySingle_key" id="loadKeySingle_key" pattern="[a-fA-F\d]+" placeholder="" value="" maxlength="64">
                 	</div>
                 	<div class="ui-field-contain">
-                    	<button id="buttonGenerateRandomKey" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Generate key</button>
+                    	<button id="buttonGenerateRandomKey" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Generate key</button>
                         <select id="loadKeySingle_toggleKeyVis" data-role="slider" data-mini="true">
                         	<option value="hide">Hide</option>
                         	<option value="show">Show</option>
@@ -295,7 +295,7 @@
                 	</div>
                 	<div class="ui-field-contain">
                     	<button id="buttonLoadKeyToRadio" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Load Key to Radio</button>
-                    	<button id="buttonLoadKeyToContainer" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Load Key to Container</button>
+                    	<button id="buttonLoadKeyToContainer" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Load Key to Container</button>
                 	</div>
             	</div>
             	<div id="loadKeyMultiple" class="menu_divs" style="display:none;">
@@ -470,7 +470,7 @@
             	</div>
             	<div id="manageKeys" class="menu_divs" style="display:none;">
                 	<h3>Manage Keys</h3>
-                	<a id="buttonManageKeyActions" href="#" class="ui-btn ui-corner-all ui-shadow ui-mini ui-btn-inline ui-icon-gear ui-btn-icon-left">Actions...</a>
+                	<a id="buttonManageKeyActions" href="#" class="ui-btn ui-corner-all ui-shadow ui-mini ui-btn-inline ui-icon-gear ui-btn-icon-left" style="display:none;">Actions...</a>
                 	<ul id="keyContainerKeyList" data-role="listview" data-filter="true" data-filter-placeholder="Filter keys..." data-inset="false"></ul>
             	</div>
             	<div id="manageGroups" class="menu_divs" style="display:none;">
