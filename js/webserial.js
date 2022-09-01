@@ -1191,10 +1191,15 @@ $("#buttonDisconnectKfd").on("click", function() {
 });
 
 function ShowLoading() {
+    //https://stackoverflow.com/questions/6597388/jquery-mobile-disable-all-button-when-loading-overlay-is-showed
+    //$("body").addClass("ui-disabled");
+    $("#pageDiv").addClass("ui-disabled");
     $.mobile.loading("show", { text: "Processing...", textVisible: true});
 }
 function HideLoading() {
     $.mobile.loading("hide");
+    //$("body").addClass("ui-disabled");
+    $("#pageDiv").removeClass("ui-disabled");
 }
 
 async function DownloadEkc(keyContainer, password, filename) {
@@ -1284,11 +1289,15 @@ function DisableKfdButtons() {
 
 async function ReadDeviceSettings() {
     let device = {};
-    
-    device.type = "KFDtool P25 KFD";
+    if (serialModelId == "KFD100") {
 
-    let ap = new AdapterProtocol();
+    }
+    else if (serialModelId == "KFD-AVR") {
+        
+    }
     
+    let ap = new AdapterProtocol();
+
     let apVersion = await ap.ReadAdapterProtocolVersion();//NOTHING
     device.adapterProtocolVersion = apVersion.join(".");
     
@@ -1297,26 +1306,25 @@ async function ReadDeviceSettings() {
     
     let uniqueId = await ap.ReadUniqueId();
     device.uniqueId = uniqueId.join("");
-    
+
     let modelId = await ap.ReadModelId();
-    ////device.modelId = modelId.join();
-    device.modelId = modelId;
-    
+    let mId = "NOT SET";
+    if (modelId == 0x01) mId = "KFD100";
+    else if (modelId == 0x02) mId = "KFD-AVR";
+    else mId = "UNKNOWN";
+    device.modelId = mId;
+
     let hwVersion = await ap.ReadHardwareRevision();
     device.hardwareVersion = hwVersion.join(".");
 
     let serial = await ap.ReadSerialNumber();
     let serialString = serial.map(hex => String.fromCharCode(hex));
     device.serial = serialString.join("");
-    ////$("#deviceProperties").html(device.serial);
     
-
-
     //console.log("device", device);
     
     $("#deviceProperties").html(
-        "Device type: " + device.type + "<br>" +
-        "Model: " + "KFD" + device.modelId + "00" + "<br>" +
+        "Model: " + device.modelId + "<br>" +
         "Revision: " + device.hardwareVersion + "<br>" +
         "Firmware: " + device.firmwareVersion + "<br>" +
         "Protocol: " + device.adapterProtocolVersion + "<br>" +

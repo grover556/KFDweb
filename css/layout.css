@@ -29,3 +29,12 @@
 #popupLicensingInformation-popup {
     padding: 32px;
 }
+.ui-icon-check {
+    background-color: rgba(0,255,0,0.3) !important;
+}
+.ui-icon-forbidden {
+    background-color: rgba(255,0,0,0.3) !important;
+}
+.ui-icon-alert {
+    background-color: rgba(255,255,0,0.3) !important;
+}

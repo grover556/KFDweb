@@ -1,7 +1,24 @@
+/*
 const SOM_EOM = 0x61;
 const SOM_EOM_PLACEHOLDER = 0x62;
 const ESC = 0x63;
 const ESC_PLACEHOLDER = 0x64;
+*/
+
+const KFD100_const = {
+    SOM_EOM: 0x61,
+    SOM_EOM_PLACEHOLDER: 0x62,
+    ESC: 0x63,
+    ESC_PLACEHOLDER: 0x64
+};
+const KFDAVR_const = {
+    SOM: 0x61,
+    SOM_PLACEHOLDER: 0x62,
+    EOM: 0x63,
+    EOM_PLACEHOLDER: 0x64,
+    ESC: 0x70,
+    ESC_PLACEHOLDER: 0x71
+};
 
 let device = null;
 //let port = null;
@@ -19,7 +36,14 @@ let reader;
 //let writer;
 let exports = {};
 let connected = false;
-const filter = { usbVendorId: 0x2047 };
+const filterKfdTool = {//
+    usbVendorId: 0x2047
+};
+const filterKfdAvr = {
+    usbVendorId: 0x2341
+};
+
+let serialModelId;
 
 let frameBuffer = [];
 let packetBuffer = [];
@@ -51,8 +75,21 @@ async function connectSerial() {
     connectionMethod = "ws";
     
     try {
-        port = await navigator.serial.requestPort({filters: [filter]});
+        port = await navigator.serial.requestPort({filters: [filterKfdTool, filterKfdAvr]});
         
+        let portInfo = port.getInfo();
+        if (portInfo.usbVendorId == filterKfdTool.usbVendorId) {
+            serialModelId = "KFD100";
+        }
+        else if (portInfo.usbVendorId == filterKfdAvr.usbVendorId) {
+            serialModelId = "KFD-AVR";
+        }
+        else {
+            alert("Unsupported device type - KFDweb only supports KFDtool and KFD-AVR devices");
+            return;
+        }
+        console.log("Connected to " + serialModelId);
+
         port.addEventListener("connect", (event) => {
             // Device has been connected
 /*
@@ -283,6 +320,49 @@ async function readWithTimeout(timeout) {
     return rsp;
 }
 
+function CreateFrameKFD100(data) {
+    let frameData = [];
+    frameData.push(KFD100_const.SOM_EOM);
+    data.forEach((b) => {
+        if (b == KFD100_const.ESC) {
+            frameData.push(KFD100_const.ESC);
+            frameData.push(KFD100_const.ESC_PLACEHOLDER);
+        }
+        else if (b == KFD100_const.SOM_EOM) {
+            frameData.push(KFD100_const.ESC);
+            frameData.push(KFD100_const.SOM_EOM_PLACEHOLDER);
+        }
+        else {
+            frameData.push(b);
+        }
+    });
+    frameData.push(KFD100_const.SOM_EOM);
+    return frameData;
+}
+function CreateFrameKFDAVR(data) {
+    let frameData = [];
+    frameData.push(KFDAVR_const.SOM);
+    data.forEach((b) => {
+        if (b == KFDAVR_const.ESC) {
+            frameData.push(KFDAVR_const.ESC);
+            frameData.push(KFDAVR_const.ESC_PLACEHOLDER);
+        }
+        else if (b == KFDAVR_const.SOM) {
+            frameData.push(KFDAVR_const.ESC);
+            frameData.push(KFDAVR_const.SOM_PLACEHOLDER);
+        }
+        else if (b == KFDAVR_const.EOM) {
+            frameData.push(KFDAVR_const.ESC);
+            frameData.push(KFDAVR_const.EOM_PLACEHOLDER);
+        }
+        else {
+            frameData.push(b);
+        }
+    });
+    frameData.push(KFDAVR_const.EOM);
+    return frameData;
+}
+
 async function SendSerial(data) {
     //https://hpssjellis.github.io/web-serial-polyfill/desktop-serial05.html
     //console.log("SendSerial", data);
@@ -290,12 +370,12 @@ async function SendSerial(data) {
         alert("No device is connected");
         return;
     }
-    //console.log("send", data);
-    //let frameBuffer = [];
+
+
+// Native KFDtool    
+/*
     let frameData = [];
-
     frameData.push(SOM_EOM);
-
     data.forEach((b) => {
         if (b == ESC) {
             frameData.push(ESC);
@@ -309,22 +389,16 @@ async function SendSerial(data) {
             frameData.push(b);
         }
     });
-/*
-    for (var i=0; i<data.length; i++) {
-        if (data[i] == ESC) {
-            frameData.push(ESC);
-            frameData.push(ESC_PLACEHOLDER);
-        }
-        else if (data[i] == SOM_EOM) {
-            frameData.push(ESC);
-            frameData.push(SOM_EOM_PLACEHOLDER_);
-        }
-        else {
-            frameData.push(data[i]);
-        }
-    }
-*/
     frameData.push(SOM_EOM);
+*/
+
+    let frameData;
+    if (serialModelId == "KFD100") {
+        frameData = CreateFrameKFD100(data);
+    }
+    else if (serialModelId == "KFD-AVR") {
+        frameData = CreateFrameKFDAVR(data);
+    }
 
     let outData = new Uint8Array(frameData);
 
@@ -360,7 +434,7 @@ async function readUntilClosed() {
                     //reader.releaseLock();
                     break;
                 }
-                //console.log("readUntilClosed", BCTS(value).join("-"));
+                console.log("readUntilClosed", BCTS(value).join("-"));
                 await OnDataReceived(Array.from(value));
                 //frameBuffer = frameBuffer.concat(Array.from(value));
                 //console.log("frameBuffer BCTS", BCTS(frameBuffer).join("-"));
@@ -629,6 +703,98 @@ async function ReadBytesFromBuffer(timeout, numBytes) {
     return rsp;
 }
 
+function DecodePacketKFD100(data) {
+    let byteCounter = 0;
+    data.forEach((b) => {
+        if (b == KFD100_const.SOM_EOM) {
+            foundStart = true;
+            if (frameBuffer.length > 0) {
+                for (var i=0; i<frameBuffer.length; i++) {
+                    if (frameBuffer[i] == KFD100_const.ESC) {
+                        // this won't work if more than one are removed??
+                        frameBuffer = frameBuffer.splice(i + 1);
+                        if (i == frameBuffer.length) {
+                            console.error("escape character at end");
+                        }
+                        if (frameBuffer[i] == KFD100_const.ESC_PLACEHOLDER) {
+                            frameBuffer[i] = KFD100_const.ESC;
+                        }
+                        else if (frameBuffer[[i] == KFD100_const.SOM_EOM_PLACEHOLDER]) {
+                            frameBuffer[i] = KFD100_const.SOM_EOM;
+                        }
+                        else {
+                            console.error("invalid character after escape character");
+                        }
+                    }
+                }
+                let packet = [];
+                packet = packet.concat(frameBuffer);
+                packetBuffer.push(packet);
+                console.log("packet:", BCTS(packet).join("-"));
+                frameBuffer = [];
+            }
+            else {
+                haveStart = true;
+            }
+        }
+        else {
+            if (foundStart) {
+                frameBuffer.push(b);
+            }
+           //frameBuffer.push(b);
+        }
+        byteCounter++;
+    });
+}
+function DecodePacketKFDAVR(data) {
+    let byteCounter = 0;
+    data.forEach((b) => {
+        if (b == KFDAVR_const.SOM) {
+            foundStart = true;
+        }
+        else if (b == KFDAVR_const.EOM) {
+            if (frameBuffer.length > 0) {
+                for (var i=0; i<frameBuffer.length; i++) {
+                    if (frameBuffer[i] == KFDAVR_const.ESC) {
+                        // this won't work if more than one are removed??
+                        frameBuffer = frameBuffer.splice(i + 1);
+                        if (i == frameBuffer.length) {
+                            console.error("escape character at end");
+                        }
+                        if (frameBuffer[i] == KFDAVR_const.ESC_PLACEHOLDER) {
+                            frameBuffer[i] = KFDAVR_const.ESC;
+                        }
+                        else if (frameBuffer[[i] == KFDAVR_const.SOM_PLACEHOLDER]) {
+                            frameBuffer[i] = KFDAVR_const.SOM;
+                        }
+                        else if (frameBuffer[[i] == KFDAVR_const.EOM_PLACEHOLDER]) {
+                            frameBuffer[i] = KFDAVR_const.EOM;
+                        }
+                        else {
+                            console.error("invalid character after escape character");
+                        }
+                    }
+                }
+                let packet = [];
+                packet = packet.concat(frameBuffer);
+                packetBuffer.push(packet);
+                console.log("packet:", BCTS(packet).join("-"));
+                frameBuffer = [];
+            }
+            else {
+                haveStart = true;
+            }
+        }
+        else {
+            if (foundStart) {
+                frameBuffer.push(b);
+            }
+           //frameBuffer.push(b);
+        }
+        byteCounter++;
+    });
+}
+
 async function OnDataReceived(data) {
     //console.log("ondatareceived", BCTS(data).join("-"));
     if (data === undefined) {
@@ -637,6 +803,9 @@ async function OnDataReceived(data) {
     else if (data.length == 0) {
         return;
     }
+
+// Native KFDtool
+/*
     let byteCounter = 0;
     data.forEach((b) => {
         if (b == SOM_EOM) {
@@ -682,6 +851,14 @@ async function OnDataReceived(data) {
         }
         byteCounter++;
     });
+*/
+
+    if (serialModelId == "KFD100") {
+        DecodePacketKFD100(data);
+    }
+    else if (serialModelId == "KFD-AVR") {
+        DecodePacketKFDAVR(data);
+    }
 
     if (packetBuffer.length > 0) {
         packetReady = true;

@@ -97,11 +97,11 @@
         <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.13/dist/serial.js"></script>
     </head>
     <body>
-        <div data-role="page">
+        <div id="pageDiv" data-role="page">
             <div id="panelMenu" data-role="panel" data-position="left" data-display="reveal" data-theme="a">
                 <ul id="menuList" data-role="listview" data-inset="false" data-shadow="false">
                     <li data-icon="home"><a id="menu_homeDiv" href="#" class="menuItem ui-btn ui-btn-icon-right ui-icon-home">Home</a></li>
-                    <li class="disconnected"><a class="menuItem" id="menu_configKfd" href="#">Configure Key Fill Device</a></li>
+                    <li class="disconnected"><a class="menuItem" id="menu_configKfd" href="#">Connect Key Fill Device</a></li>
                     
                     <li><a class="menuItem" id="menu_loadKeySingle" href="#">Load Single Key</a></li>
                     <li><a class="menuItem" id="menu_loadKeyMultiple" href="#">Load Multiple Keys</a></li>
@@ -158,12 +158,45 @@
             	<div id="homeDiv" class="menu_divs">
                 	<h1>KFDweb</h1>
 					<h5 style="color:red;">This PRE-RELEASE software is still in development and should not be used for production</h5>
-					<h3>Open Source P25 Key Fill Device GUI, based on the <a href="https://github.com/KFDtool/KFDtool" target="_blank">KFDtool</a> project</h3><p>Currently compatible will all functionality of the KFDtool and supported devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
-                	<p><h3 id="secureContextStatus"></h3><span id="secureContextDetails"></span></p>
+					<h3>Open Source P25 Key Fill Device GUI, based on the <a href="https://github.com/KFDtool/KFDtool" target="_blank">KFDtool</a> project</h3>
+					<p>Currently compatible will all functionality of the KFDtool and supported devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
+                	<p><a href="https://kfdtool.com/store" target="_blank">KFDtool</a> and <a href="https://store.omahacommunicationsys.com" target="_blank">KFDshield</a> hardware devices are fully supported by KFDweb</p>
+					<p><h3 id="secureContextStatus"></h3><span id="secureContextDetails"></span></p>
 					<h5><a id="linkLicensingInformation" href="#">Licensing Information</a></h5>
+					<div id="featureChecklist" data-role="collapsible">
+						<h4>Feature Status</h4>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Main page layout</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Connect device page</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">KFDtool Serial Protocol</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">KFD-AVR Serial Protocol</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">ReadDeviceSettings(KFDtool)</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">ReadDeviceSettings(KFD-AVR)</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Key Partitioner</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Load Single Key to Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Load Single Key to Radio</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Load Multiple Keys</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Load Key Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Container: Manage Keys</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Container: Load Key to Radio</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Container: Manage Groups</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Create Key Group</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Edit Key Group</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Load Group to Radio</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Export Key Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Reset Key Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Radio: View Key Information</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: View Key Information Sorting</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Radio: View Keyset Information</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: View RSI Items</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Radio: View KMF Information</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Outer Layer Encryption</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">DLI</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">MR Emulator</button>
+						
+					</div>
                 </div>
             	<div id="configKfd" class="menu_divs" style="display:none;">
-                	<h3>Configure Key Fill Device</h3>
+                	<h3>Connect Key Fill Device</h3>
                 	<button id="buttonConnectKfd">Connect KFD</button>
                 	<button id="buttonDisconnectKfd" disabled>Disconnect KFD</button>
 					<button id="buttonCheckConnection" class="button-kfd">Check MR Connection</button>

@@ -1,7 +1,7 @@
 //KeyPartitioner
 
 class KeyPartitioner {
-    CheckForDifferentKeyLengths(inKeys) {
+    #CheckForDifferentKeyLengths(inKeys) {
         let len = new Map();
         
         inKeys.forEach((key) => {
@@ -10,12 +10,13 @@ class KeyPartitioner {
             }
             else {
                 if (len.get(key.AlgorithmId) != key.Key.length) {
+                    console.error("more than one length of key per algorithm id");
                     throw "more than one length of key per algorithm id";
                 }
             }
         });
     }
-    CalcMaxKeysPerKmm(keyLength) {
+    #CalcMaxKeysPerKmm(keyLength) {
         // TODO make this calc more dynamic
         
         let maxBytes = 512;
@@ -31,7 +32,7 @@ class KeyPartitioner {
 
         return maxKeys;
     }
-    PartitionByAlg(inKeys, outKeys) {
+    #PartitionByAlg(inKeys, outKeys) {
         let alg = new Map();
 
         inKeys.forEach((keyItem) => {
@@ -43,7 +44,7 @@ class KeyPartitioner {
             alg.set(keyItem.AlgorithmId, temp);
         });
     }
-    PartitionByType(maxKeys, inKeys, outKeys) {
+    #PartitionByType(maxKeys, inKeys, outKeys) {
         let tek = new [];
         let kek = new [];
 
@@ -56,11 +57,11 @@ class KeyPartitioner {
             }
         });
 
-        this.PartitionByLength(maxKeys, tek, outKeys);
+        this.#PartitionByLength(maxKeys, tek, outKeys);
 
-        this.PartitionByKeyset(maxKeys, kek, outKeys);
+        this.#PartitionByKeyset(maxKeys, kek, outKeys);
     }
-    PartitionByActive(maxKeys, inKeys, outKeys) {
+    #PartitionByActive(maxKeys, inKeys, outKeys) {
         let act = [];
         let def = [];
 
@@ -73,11 +74,11 @@ class KeyPartitioner {
             }
         });
 
-        this.PartitionByLength(maxKeys, act, outKeys);
+        this.#PartitionByLength(maxKeys, act, outKeys);
 
-        this.PartitionByKeyset(maxKeys, def, outKeys);
+        this.#PartitionByKeyset(maxKeys, def, outKeys);
     }
-    PartitionByKeyset(maxKeys, inKeys, outKeys) {
+    #PartitionByKeyset(maxKeys, inKeys, outKeys) {
         let kset = new Map();
 
         inKeys.forEach((keyItem) => {
@@ -90,22 +91,23 @@ class KeyPartitioner {
         });
 
         kset.forEach((ele) => {
-            this.PartitionByLength(maxKeys, ele, outKeys);
+            this.#PartitionByLength(maxKeys, ele, outKeys);
         });
     }
-    PartitionByLength(maxKeys, inKeys, outKeys) {
+    #PartitionByLength(maxKeys, inKeys, outKeys) {
         for (var i=0; i<inKeys.length; i += maxKeys) {
             //outKeys.Add(inKeys.GetRange(i, Math.Min(maxKeys, inKeys.Count - i)));
             outKeys = outKeys.concat(inKeys.slice(i, Math.min(maxKeys, inKeys.length)))
         }
     }
-    PartitionKeys(inKeys) {
-        this.CheckForDifferentKeyLengths(inKeys);
+    static PartitionKeys(inKeys) {
+        this.#CheckForDifferentKeyLengths(inKeys);
         
         let outKeys = [];
         
-        this.PartitionByAlg(inKeys, outKeys);
+        this.#PartitionByAlg(inKeys, outKeys);
         console.log(outKeys);
+
         return outKeys;
     }
 }

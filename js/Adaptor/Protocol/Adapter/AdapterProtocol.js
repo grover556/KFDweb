@@ -71,7 +71,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -124,7 +124,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -173,7 +173,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -224,7 +224,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -266,7 +266,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -310,7 +310,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -370,7 +370,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -404,7 +404,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -438,7 +438,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
@@ -472,7 +472,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, -1);
         let rsp = ReadPacketFromPacketBuffer();
         //rsp = UnpackResponse(rsp);
