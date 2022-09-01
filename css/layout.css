@@ -29,7 +29,7 @@
 #popupLicensingInformation-popup {
     padding: 32px;
 }
-.ui-icon-check {
+.ui-icon-star {
     background-color: rgba(0,255,0,0.3) !important;
 }
 .ui-icon-forbidden {

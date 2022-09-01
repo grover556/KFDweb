@@ -165,30 +165,31 @@
 					<h5><a id="linkLicensingInformation" href="#">Licensing Information</a></h5>
 					<div id="featureChecklist" data-role="collapsible">
 						<h4>Feature Status</h4>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Main page layout</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Connect device page</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">KFDtool Serial Protocol</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">KFD-AVR Serial Protocol</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">ReadDeviceSettings(KFDtool)</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Main page layout</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Connect device page</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">KFDtool Serial Protocol</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">KFD-AVR Serial Protocol</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">ReadDeviceSettings(KFDtool)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">ReadDeviceSettings(KFD-AVR)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Key Partitioner</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Load Single Key to Container</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Load Single Key to Radio</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Radio</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Single Key return fields to default (keylen, KSID)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Load Multiple Keys</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Load Key Container</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Container: Manage Keys</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Key Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Manage Keys</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Container: Load Key to Radio</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Container: Manage Groups</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Create Key Group</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Edit Key Group</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Load Group to Radio</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Export Key Container</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Reset Key Container</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Radio: View Key Information</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Export Key Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Reset Key Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View Key Information</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: View Key Information Sorting</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Radio: View Keyset Information</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View Keyset Information</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: View RSI Items</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-check">Radio: View KMF Information</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View KMF Information</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Outer Layer Encryption</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">DLI</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">MR Emulator</button>
@@ -286,15 +287,15 @@
                     	<input class="hex-input key-input" type="password" name="loadKeySingle_key" id="loadKeySingle_key" pattern="[a-fA-F\d]+" placeholder="" value="" maxlength="64">
                 	</div>
                 	<div class="ui-field-contain">
-                    	<button id="buttonGenerateRandomKey" class="ui-btn ui-btn-inline">Generate key</button>
+                    	<button id="buttonGenerateRandomKey" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Generate key</button>
                         <select id="loadKeySingle_toggleKeyVis" data-role="slider" data-mini="true">
                         	<option value="hide">Hide</option>
                         	<option value="show">Show</option>
                     	</select>
                 	</div>
                 	<div class="ui-field-contain">
-                    	<button id="buttonLoadKeyToRadio" class="ui-btn ui-btn-inline button-kfd">Load Key to Radio</button>
-                    	<button id="buttonLoadKeyToContainer" class="ui-btn ui-btn-inline">Load Key to Container</button>
+                    	<button id="buttonLoadKeyToRadio" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Load Key to Radio</button>
+                    	<button id="buttonLoadKeyToContainer" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Load Key to Container</button>
                 	</div>
             	</div>
             	<div id="loadKeyMultiple" class="menu_divs" style="display:none;">
@@ -323,7 +324,7 @@
             	<div id="viewKeyInfo" class="menu_divs" style="display:none;">
                 	<h3>View Key Information</h3>
                 	<div class="ui-field-contain">
-                    	<button id="buttonViewKeyInformation" class="ui-btn ui-btn-inline button-kfd">View Key Information</button>
+                    	<button id="buttonViewKeyInformation" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">View Key Information</button>
                 	</div>
 					<table data-role="table" id="table_keyinfo" class="table-stripe ui-responsive" data-filter="true" data-filter-placeholder="Filter keys..." data-column-btn-text="Columns...">
 						<thead>
@@ -337,12 +338,12 @@
 						</thead>
 						<tbody></tbody>
 					</table>
-					<button id="buttonEraseAllKeysFromRadio" class="ui-btn ui-btn-inline button-kfd">Erase All Keys From Radio</button>
+					<button id="buttonEraseAllKeysFromRadio" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Erase All Keys From Radio</button>
             	</div>
             	<div id="viewKeysetInfo" class="menu_divs" style="display:none;">
                 	<h3>View Keyset Information</h3>
                 	<div class="ui-field-contain">
-                    	<button id="buttonViewKeysetInformation" class="ui-btn ui-btn-inline button-kfd">View Keyset Information</button>
+                    	<button id="buttonViewKeysetInformation" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">View Keyset Information</button>
                 	</div>
 					<table data-role="table" id="table_keysets" class="table-stripe ui-responsive" data-filter="true" data-filter-placeholder="Filter keysets..." data-column-btn-text="Columns...">
 						<thead>
@@ -361,8 +362,8 @@
             	<div id="viewRsiItems" class="menu_divs" style="display:none;">
                 	<h3>View RSI Items</h3>
                 	<div class="ui-field-contain">
-                    	<button id="buttonViewRsiInformation" class="ui-btn ui-btn-inline button-kfd">View RSI Information</button>
-						<button id="buttonAddRsi" class="ui-btn ui-btn-inline button-kfd">Add New RSI</button>
+                    	<button id="buttonViewRsiInformation" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">View RSI Information</button>
+						<button id="buttonAddRsi" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Add New RSI</button>
                 	</div>
 					<table data-role="table" id="table_rsiItems" class="table-stripe ui-responsive" data-filter="true" data-filter-placeholder="Filter RSIs..." data-column-btn-text="Columns...">
 						<thead>
@@ -379,7 +380,7 @@
             	<div id="viewKmfInfo" class="menu_divs" style="display:none;">
                 	<h3>View KMF Information</h3>
                 	<div class="ui-field-contain">
-                    	<button id="buttonViewKmfInformation" class="ui-btn ui-btn-inline button-kfd">View KMF Information</button>
+                    	<button id="buttonViewKmfInformation" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">View KMF Information</button>
                 	</div>
 					<table data-role="table" id="table_kmfRsi" class="table-stripe ui-responsive" data-column-btn-text="Columns...">
 						<thead>
@@ -459,7 +460,7 @@
                 	    <label for="exportKeyContainer_filename">File name:</label>
                     	<input type="text" id="exportKeyContainer_filename" placeholder="" value="">
                 	</div>
-                	<a id="createEkc" href="#" class="ui-btn">Create key container</a>
+                	<button id="createEkc">Create key container</button>
                 	<a id="downloadEkc" download="" href=”#” class="ui-btn" style="display:none;">Download key container</a>
             	</div>
             	<div id="resetKeyContainer" class="menu_divs" style="display:none;">
