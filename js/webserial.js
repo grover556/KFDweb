@@ -140,16 +140,31 @@ $("#table_keyinfo tbody").on("click", "a.key-delete", function() {
 });
 $("#table_keysets tbody").on("click", "a.keyset-activate", function() {
     let tr = $(this).parent().parent();
-    let keyset_activate = tr.data("keysetid");
-    let tr2 = $("#table_keysets tr[data-active='true']")[0];
-    let keyset_deactivate = parseInt(tr2.attributes.getNamedItem("data-keysetid").value);
-    //console.log("Activate " + keyset_activate + ", deactivate " + keyset_deactivate);
-    if (keyset_deactivate == 255) {
+    let keysetId_activate = parseInt(tr.data("keysetid"));
+    let keyset_activate = keysetId_activate - 1;
+    let cryptoGroup_activate  = keyset_activate >>> 4;
+    
+    //console.log("Looking for active keyset in crypto group " + cryptoGroup_activate);
+    // Search all other active keysets, looking for the same crypto group
+    $("#table_keysets tr[data-active='true']").each(function() {
+        let ksid = parseInt($(this).attr("data-keysetid")) - 1;
+        if ((ksid >>> 4) == cryptoGroup_activate) {
+            keysetId_deactivate = ksid + 1;
+            //console.log("deactivating keyset id " + keysetId_deactivate);
+        }
+    });
+
+    // Old code, pre-crypto group
+    //let tr2 = $("#table_keysets tr[data-active='true']")[0];
+    //let keysetId_deactivate = parseInt(tr2.attributes.getNamedItem("data-keysetid").value);
+    
+    //console.log("Activate " + keysetId_activate + ", deactivate " + keysetId_deactivate);
+    if (keysetId_deactivate == 255) {
         alert("Error: Cannot deactivate KEK keyset");
         return;
     }
-    if (window.confirm("Warning: this will deactivate Keyset " + keyset_deactivate + ", and activate Keyset " + keyset_activate + " on the radio. Do you wish to continue?")) {
-        Changeover(keyset_deactivate, keyset_activate);
+    if (window.confirm("Warning: this will deactivate Keyset " + keysetId_deactivate + ", and activate Keyset " + keysetId_activate + " on the radio. Do you wish to continue?")) {
+        Changeover(keysetId_deactivate, keysetId_activate);
     }
 });
 $("#table_rsiItems tbody").on("click", "a.rsi-change", function() {
@@ -303,7 +318,7 @@ $("#buttonAddRsi").on("click", function() {
     $("#addEditRsi_rsi").focus();
 });
 $("#action_loadKeyToRadio").on("click", function() {
-    let ckid = $("#popupMenuKeyOptions_list ul").data("container-key-id");
+    let ckid = parseInt($("#popupMenuKeyOptions_list ul").attr("data-container-key-id"));
     let key = _keyContainer.keys.filter(function(obj) { return obj.Id === ckid; });
     if (key.length != 1) {
         alert("There was an error retrieving the key from the container");
@@ -312,6 +327,18 @@ $("#action_loadKeyToRadio").on("click", function() {
     SendKeysToRadio(key);
     $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", "");
     $("#popupMenuKeyOptions").popup("close");
+});
+$("#action_loadGroupToRadio").on("click", function() {
+    let cgid = parseInt($("#popupMenuGroupOptions_list ul").attr("data-container-group-id"));
+    let groupKeys = _keyContainer.groups.filter(function(obj) { return obj.Id === cgid; });
+    if (groupKeys.length != 1) {
+        alert("There was an error retrieving the group from the container");
+        return;
+    }
+    let keys = _keyContainer.keys.filter(function(obj) { return groupKeys[0].Keys.includes(obj.Id); });
+    SendKeysToRadio(keys);
+    $("#popupMenuGroupOptions_list ul").attr("data-container-group-id", "");
+    $("#popupMenuGroupOptions").popup("close");
 });
 $("#action_deleteKeyFromContainer").on("click", function() {
     let ckid = $("#popupMenuKeyOptions_list ul").data("container-key-id");
@@ -838,7 +865,9 @@ async function Changeover(ksidSuperseded, ksidActivated) {
 
         $("#table_keysets tbody tr[data-keysetid=" + result.KeysetIdSuperseded + "] th.th-action-flag").append($("#table_keysets tbody tr[data-keysetid=" + result.KeysetIdActivated + "] th.th-action-flag a")[0]);
         $("#table_keysets tbody tr[data-keysetid='" + ksidSuperseded + "']").attr("data-active", false);
+        $("#table_keysets tbody tr[data-keysetid='" + ksidSuperseded + "'] th").first().text("No");
         $("#table_keysets tbody tr[data-keysetid='" + ksidActivated + "']").attr("data-active", true);
+        $("#table_keysets tbody tr[data-keysetid='" + ksidActivated + "'] th").first().text("Yes");
     }
 }
 
@@ -1027,6 +1056,7 @@ $(".dec-input").on("keyup", function() {
     $(this).val(curVal.replace(/[^0-9\n\r]+/g, ''));
 });
 $(".hexdec-input").on("keyup", function() {
+    console.log("hexdec-input keyup");
     // Ensure that only decimal or hexidecimal values are input
     let curVal = $(this).val();
     if (inputType == "dec") {
@@ -1088,6 +1118,29 @@ $("#addEditRsi_rsi").on("keyup", function() {
     else {
         $("#addEditRsi_rsiType").text("Invalid RSI");
         $("#addEditRsi_rsiType").addClass("invalid");
+    }
+});
+$("#loadKeySingle_SlnCkr").on("keyup", function() {
+    console.log("loadKeySingle_SlnCkr keyup");
+    if ($("#loadKeySingle_SlnCkr").val() == "") {
+        $("#cryptoGroupLabel").text("");
+        $("#keyTypeLabel").text("");
+    }
+    let sln = parseInt($("#loadKeySingle_SlnCkr").val(), inputBase);
+    let cg = sln >>> 12;
+    //let keyNum = sln && 0x0FFF;
+    
+    if (cg < 0xF) {
+        $("#cryptoGroupLabel").text(cg);
+        $("#keyTypeLabel").text("TEK");
+    }
+    else if (cg == 0xF) {
+        $("#cryptoGroupLabel").text(cg);
+        $("#keyTypeLabel").text("KEK");
+    }
+    else {
+        $("#cryptoGroupLabel").text("Invalid");
+        $("#keyTypeLabel").text("Invalid");
     }
 });
 
@@ -1295,10 +1348,11 @@ async function ReadDeviceSettings() {
     else if (serialModelId == "KFD-AVR") {
         
     }
-    
-    let ap = new AdapterProtocol();
+    let apVersion, fwVersion, uniqueId, modelId, hwVersion, serial;
 
-    let apVersion = await ap.ReadAdapterProtocolVersion();//NOTHING
+    let ap = new AdapterProtocol();
+    /*
+    let apVersion = await ap.ReadAdapterProtocolVersion();
     device.adapterProtocolVersion = apVersion.join(".");
     
     let fwVersion = await ap.ReadFirmwareVersion();
@@ -1320,7 +1374,35 @@ async function ReadDeviceSettings() {
     let serial = await ap.ReadSerialNumber();
     let serialString = serial.map(hex => String.fromCharCode(hex));
     device.serial = serialString.join("");
-    
+    */
+
+    try {
+        apVersion = await ap.ReadAdapterProtocolVersion();
+        fwVersion = await ap.ReadFirmwareVersion();
+        uniqueId = await ap.ReadUniqueId();
+        modelId = await ap.ReadModelId();
+        hwVersion = await ap.ReadHardwareRevision();
+        serial = await ap.ReadSerialNumber();
+    }
+    catch (error) {
+        console.error(error);
+    }
+
+    if (apVersion != undefined) device.adapterProtocolVersion = apVersion.join(".");
+    if (uniqueId != undefined) device.uniqueId = uniqueId.join("");
+    if (modelId != undefined) {
+        let mId = "NOT SET";
+        if (modelId == 0x01) mId = "KFD100";
+        else if (modelId == 0x02) mId = "KFD-AVR";
+        else mId = "UNKNOWN";
+        device.modelId = mId;
+    }
+    if (hwVersion != undefined) device.hardwareVersion = hwVersion.join(".");
+    if (serial != undefined) {
+        let serialString = serial.map(hex => String.fromCharCode(hex));
+        device.serial = serialString.join("");
+    }
+
     //console.log("device", device);
     
     $("#deviceProperties").html(

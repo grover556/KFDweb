@@ -747,6 +747,7 @@ function DecodePacketKFD100(data) {
     });
 }
 function DecodePacketKFDAVR(data) {
+    //console.log("DecodePacketKFDAVR", BCTS(data).join("-"));
     let byteCounter = 0;
     data.forEach((b) => {
         if (b == KFDAVR_const.SOM) {

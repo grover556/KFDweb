@@ -174,15 +174,16 @@
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Key Partitioner</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Radio</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Keyload error on inactive keyset</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Single Key return fields to default (keylen, KSID)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Load Multiple Keys</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Key Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Manage Keys</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Container: Load Key to Radio</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Load Key to Radio</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Load Group to Radio</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Container: Manage Groups</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Create Key Group</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Edit Key Group</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Load Group to Radio</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Export Key Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Reset Key Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View Key Information</button>
@@ -240,6 +241,7 @@
                 	<div class="ui-field-contain">
                     	<label for="loadKeySingle_SlnCkr">SLN/CKR:</label>
                     	<input class="hexdec-input" type="text" name="loadKeySingle_SlnCkr" id="loadKeySingle_SlnCkr" placeholder="" value="" data-min-value="0" data-max-value="65535">
+						<p>Crypto Group: <span id="cryptoGroupLabel"></span><br>Key Type: <span id="keyTypeLabel"></span></p>
                 	</div>
                 	<div class="ui-field-contain" style="display:none;">
                 	<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
@@ -499,6 +501,14 @@
                     	</fieldset>
                 	</div>
             	</div>
+				<div data-role="popup" id="popupMenuGroupOptions">
+					<div id="popupMenuGroupOptions_list">
+                    	<ul data-role="listview" data-inset="true" style="min-width:210px;" data-container-group-id="">
+                        	<li><a id="action_loadGroupToRadio" href="#">Load Key Group to Radio</a></li>
+                        	<li><a id="action_editGroupContainer" href="#">Edit Key Group</a></li>
+                    	</ul>
+                	</div>
+				</div>
 				<div id="popupLicensingInformation" data-role="popup" data-overlay-theme="a" class="ui-content" data-position-to="window">
 					<div style="padding:10px 20px;">
 						<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>

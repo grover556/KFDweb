@@ -112,7 +112,7 @@ function IsValidKeysetId(keysetId) {
 
 function IsValidSln(sln) {
     /* TIA 102.AACA-A 10.3.25 */
-    if (sln < 0 || sln > 65535) {
+    if (sln < 0x0000 || sln > 0xFFFF) {
         return false;
     }
     else {
@@ -166,7 +166,7 @@ function IsValidSingleDesKeyParity(key) {
     return true;
 }
 
-function KeyloadValidate(keysetId, sln, isKek, keyId, algId, key) {
+function KeyloadValidate(keysetId, sln, keyId, algId, key) {
     if (!IsValidKeysetId(keysetId)) {
         return "Keyset ID invalid - valid range 1 to 255 (dec), 0x01 to 0xFF (hex)";
     }
@@ -244,22 +244,11 @@ function KeyloadValidate(keysetId, sln, isKek, keyId, algId, key) {
     }
 
     // good practice validators
-
-    if (sln == 0) {
+    if (sln == 0x00) {
         return {status: "Warning", message: "While the SLN 0 is valid, some equipment may have issues using it"}; // *cough* Motorola KVLs *cough*
     }
-    if (sln >= 1 && sln <= 4095) {
-        if (isKek) {
-            return {status: "Warning", message: "This SLN is in the range for TEKs, but the key type KEK is selected"};
-        }
-    }
-    else if (sln >= 4096 && sln <= 61439) {
+    else if (sln > 0x0FFF && sln < 0xF000) {
         return {status: "Warning", message: "While this SLN is valid, it uses a crypto group other than 0 or 15, some equipment may have issues using it"};
-    }
-    else if (sln >= 61440 && sln <= 65535) {
-        if (!isKek) {
-            return {status: "Warning", message: "This SLN is in the range for KEKs, but the key type TEK is selected"};
-        }
     }
 
     return {status: "Success", message: ""};
