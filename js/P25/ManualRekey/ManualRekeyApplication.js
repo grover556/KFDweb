@@ -131,7 +131,8 @@ class ManualRekeyApplication {
     async Keyload(keyItems) {
         let keyGroups = KeyPartitioner.PartitionKeys(keyItems);
         //console.log(keyGroups);
-        keyGroups = [keyItems];
+        //keyGroups = [keyItems];
+        console.log(keyItems);
         console.log(keyGroups);
         let keyStatuses = [];
         await this.Begin();

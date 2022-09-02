@@ -33,7 +33,7 @@ class ModifyKeyCommand extends KmmBody {
         console.log(this.KeyItems);
         this.KeyItems.forEach((key) => {
             //keys.AddRange(key.ToBytes());
-            console.log("key", BCTS(key.ToBytes()).join("-"));
+            //console.log("key", BCTS(key.ToBytes()).join("-"));
             keys = keys.concat(key.ToBytes());
         });
         console.log(keys);

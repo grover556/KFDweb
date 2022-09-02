@@ -548,7 +548,7 @@ class AdapterProtocol {
         //let rsp = await Send(cmd);
         await SendSerial(cmd);// added await
         //let rsp = await readWithTimeout(AP_TIMEOUT);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 30));
         //let rsp = await ReadBytesFromBuffer(AP_TIMEOUT, 5);
         let rsp = ReadPacketFromPacketBuffer();
         //console.log("sb rsp:", BCTS(rsp).join("-"));
