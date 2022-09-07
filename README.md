@@ -26,4 +26,5 @@ Included open-source components:
 * [KFD-AVR](https://github.com/omahacommsys/KFDtool) - MIT License
 * [pako](https://github.com/nodeca/pako) - MIT License
 * [CryptoJS](https://code.google.com/archive/p/crypto-js/) - New BSD License
+* [jQuery](https://jquery.org) - MIT License
 * [Serial API Polyfill](https://github.com/google/web-serial-polyfill) - Apache License
