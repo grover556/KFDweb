@@ -115,19 +115,26 @@ class KmmFrame {
                 if (inventoryType == InventoryType.ListActiveKsetIds) {
                     console.log("InventoryType = ListActiveKsetIds");
                     let kmmBody = new InventoryCommandListActiveKsetIds();
-                    kmmBody.parse(messageBody);
+                    kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListRsiItems) {
                     console.log("InventoryType = ListRsiItems");
                     let kmmBody = new InventoryCommandListRsiItems();
-                    kmmBody.parse(messageBody);
+                    kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else if (inventoryType == InventoryType.ListActiveKeys) {
                     console.log("InventoryType = ListActiveKeys");
                     let kmmBody = new InventoryCommandListActiveKeys();
-                    kmmBody.parse(messageBody);
+                    kmmBody.Parse(messageBody);
+                    this.KmmBody = kmmBody;
+                }
+                // OTAR COMMANDS
+                else if (inventoryType == InventoryType.ListInactiveKeyIds) {
+                    console.log("InventoryType = ListInactiveKeyIds");
+                    let kmmBody = new InventoryCommandListInactiveKeyIds();
+                    kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
                 else {
@@ -177,6 +184,14 @@ class KmmFrame {
                 else if (inventoryType == InventoryType.ListKeysetTaggingInfo) {
                     console.log("InventoryType = ListKeysetTaggingInfo");
                     let kmmBody = new InventoryResponseListKeysetTaggingInfo();
+                    console.log(kmmBody);
+                    kmmBody.Parse(messageBody);
+                    this.KmmBody = kmmBody;
+                }
+                // OTAR COMMANDS
+                else if (inventoryType == InventoryType.ListInactiveKeyIds) {
+                    console.log("InventoryType = ListInactiveKeyIds");
+                    let kmmBody = new InventoryResponseLListInactiveKeyIds();
                     console.log(kmmBody);
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;

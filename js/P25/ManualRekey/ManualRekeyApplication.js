@@ -553,7 +553,6 @@ class ManualRekeyApplication {
                         console.log("key id: " + info.KeyId);
 */
                         let res = new RspKeyInfo();
-
                         res.KeysetId = info.KeySetId;
                         res.Sln = info.SLN;
                         res.AlgorithmId = info.AlgorithmId;
@@ -561,6 +560,7 @@ class ManualRekeyApplication {
 
                         result.push(res);
                     }
+                    console.log(result);
                 }
                 else if (responseKmmBody instanceof NegativeAcknowledgment) {
                     let kmm = responseKmmBody;
