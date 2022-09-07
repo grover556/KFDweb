@@ -50,6 +50,10 @@ $(document).ready(function() {
     }
     DisableKfdButtons();
 });
+$("#downloadSampleEkc").on("click", function(e) {
+    e.preventDefault();
+    window.location.href = $(this).attr("href");
+});
 $("#buttonTestPopupStatus").on("click", function() {
     //$("#popupKeyloadStatus").popup("open");
     ShowLoading("key");
