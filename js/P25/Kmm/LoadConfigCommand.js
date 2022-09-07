@@ -31,14 +31,14 @@ class LoadConfigCommand extends KmmBody {
         let contents = [5];
 
         /* kmf rsi */
-        contents[0] = this.KmfRsi >>> 16;
-        contents[1] = this.KmfRsi >>> 8;
-        contents[2] = this.KmfRsi & 0xFF;
+        contents[0] = (this.KmfRsi >>> 16);
+        contents[1] = (this.KmfRsi >>> 8) & 0xFF;
+        contents[2] = (this.KmfRsi & 0xFF);
 
         /* message number period */
-        contents[3] = this.MessageNumberPeriod >>> 8;
-        contents[4] = this.MessageNumberPeriod & 0xFF;
-
+        contents[3] = (this.MessageNumberPeriod >>> 8);
+        contents[4] = (this.MessageNumberPeriod & 0xFF);
+console.log(contents);
         return contents;
     }
     Parse(contents) {

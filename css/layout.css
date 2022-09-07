@@ -26,6 +26,13 @@
     font-size: 12px;
     font-style: normal;
 }
+.groupCheckbox-small {
+    font-size: 12px;
+    font-style: normal;
+}
+.emptyGroup {
+    color: #808080;
+}
 #popupLicensingInformation-popup {
     padding: 32px;
 }
@@ -37,4 +44,36 @@
 }
 .ui-icon-alert {
     background-color: rgba(255,255,0,0.3) !important;
+}
+/* Keyload status slider popup */
+#keyloadStatus input.ui-slider-input {
+    display: none;
+}
+#keyloadStatus a.ui-slider-handle {
+    display: none;
+}
+#keyloadStatus .ui-slider-track {
+    margin-left: 15px;
+}
+#keyloadStatus .details {
+    font-size:80%;
+}
+#keyloadStatus .left {
+    float: left;
+    text-align: left;
+}
+#keyloadStatus .right {
+    float: right;
+    text-align: right;
+    
+}
+.ui-loader {
+    opacity: 1 !important;
+    width: 300px !important;/*220*/
+    position: absolute !important;
+    top: 40% !important;
+    left: 50% !important;
+    right: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
 }

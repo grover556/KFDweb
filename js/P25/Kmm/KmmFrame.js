@@ -96,7 +96,7 @@ class KmmFrame {
         if (contents.length < 10) {
             throw "ArgumentOutOfRangeException";
         }
-        console.log("contents", BCTS(contents).join("-"));
+        //console.log("contents", BCTS(contents).join("-"));
         let messageId = contents[0];
 
         let messageLength = 0;
@@ -106,7 +106,7 @@ class KmmFrame {
         let messageBodyLength = messageLength - 7;
         let messageBody = [messageBodyLength];
         messageBody = contents.slice(10, 10 + messageBodyLength);
-        console.log("messageBody", BCTS(messageBody).join("-"));
+        //console.log("messageBody", BCTS(messageBody).join("-"));
         if (messageId == MessageId.InventoryCommand) {
             console.log("MessageId = InventoryCommand");
             if (messageBody.length > 0) {
@@ -274,7 +274,7 @@ class KmmFrame {
             console.error("unknown kmm - message id: " + messageId.toString());
             throw "unknown kmm - message id: " + messageId.toString();
         }
-        console.log("kmmBody", this.KmmBody);
+        //console.log("kmmBody", this.KmmBody);
     }
     ParseWithPreamble(contents) {
         // TODO bounds check

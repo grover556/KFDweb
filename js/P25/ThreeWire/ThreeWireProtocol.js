@@ -14,19 +14,65 @@ class ThreeWireProtocol {
         await this.Protocol.SendKeySignature();
     }
     async InitSession() {
+        breakNow == false;
+
         // send ready req opcode
-        var cmd = [];
-        cmd.push(OPCODE_READY_REQ);
+        let cmd = [OPCODE_READY_REQ];
         //SendData(cmd);
         await this.Protocol.SendData(cmd);
         
         // receive ready general mode opcode
-        //await new Promise(resolve => setTimeout(resolve, 50));
-        var rsp = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        if (serialModelId == "KFD100") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
+        else if (serialModelId == "KFD-AVR") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
+        
+        var rsp = await this.Protocol.GetByte(TIMEOUT_STD, false);////////true
         
         if (rsp != OPCODE_READY_GENERAL_MODE) {
             //console.error("mr: unexpected opcode");
             throw "mr: unexpected opcode";
+        }
+    }
+    async EndSession() {
+        // send transfer done opcode
+        let cmd1 = [OPCODE_TRANSFER_DONE];
+        console.log("kfd: transfer done");
+        await this.Protocol.SendData(cmd1);
+
+        // receive transfer done opcode
+        console.log("mr: transfer done");
+        
+        if (serialModelId == "KFD100") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
+        else if (serialModelId == "KFD-AVR") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
+        let rsp1 = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        if (rsp1 != OPCODE_TRANSFER_DONE) {
+            console.error("mr: unexpected opcode");
+        }
+
+        // send disconnect opcode
+        let cmd2 = [OPCODE_DISCONNECT];
+        console.log("kfd: disconnect");
+        await this.Protocol.SendData(cmd2);
+        
+        // receive disconnect ack opcode
+        console.log("mr: disconnect ack");
+        
+        if (serialModelId == "KFD100") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
+        else if (serialModelId == "KFD-AVR") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
+        let rsp2 = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        if (rsp2 != OPCODE_DISCONNECT_ACK) {
+            console.error("mr: unexpected opcode");
         }
     }
     async CheckTargetMrConnection() {
@@ -69,34 +115,34 @@ class ThreeWireProtocol {
         let length = 0;
 
         // Let the packetbuffer populate
-        await new Promise(resolve => setTimeout(resolve, 100));
+        //await new Promise(resolve => setTimeout(resolve, 100));////////
 
         // receive length high byte
-        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
 
         length |= (temp & 0xFF) << 8;
 
         // receive length low byte
-        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
 
         length |= temp & 0xFF;
 
         let toCrc = [];
 
         // receive control
-        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
         toCrc.push(temp);
 
         // receive dest rsi high byte
-        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
         toCrc.push(temp);
 
         // receive dest rsi mid byte
-        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
         toCrc.push(temp);
 
         // receive dest rsi low byte
-        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        temp = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
         toCrc.push(temp);
 
         let bodyLength = length - 6;
@@ -104,7 +150,7 @@ class ThreeWireProtocol {
         let kmm = [];
 
         for (var i=0;i<bodyLength;i++) {
-            temp = await this.Protocol.GetByte(TIMEOUT_STD, true);
+            temp = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
             kmm.push(temp);
         }
 
@@ -114,56 +160,18 @@ class ThreeWireProtocol {
         let expectedCrc = CalculateCrc(toCrc);
 
         let crc = [2];
-
+//console.log("expectedCrc", BCTS(expectedCrc).join("-"));
         // receive crc high byte
-        crc[0] = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        crc[0] = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
 
         // receive crc low byte
-        crc[1] = await this.Protocol.GetByte(TIMEOUT_STD, true);
+        crc[1] = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
 
         if (expectedCrc[1] != crc[1]) {
             console.error("mr: crc low byte mismatch");
         }
         
         return kmm;
-    }
-    async EndSession() {
-        // send transfer done opcode
-        let cmd1 = [OPCODE_TRANSFER_DONE];
-        //cmd1.push(OPCODE_TRANSFER_DONE);
-        console.log("kfd: transfer done");
-        await this.Protocol.SendData(cmd1);
-
-        // receive transfer done opcode
-        console.log("mr: transfer done");
-        
-        //await new Promise(resolve => setTimeout(resolve, 50));
-        let rsp1 = await this.Protocol.GetByte(TIMEOUT_STD, true);
-        //console.log("mr -> kfd: ", rsp1);
-        if (rsp1 != OPCODE_TRANSFER_DONE) {
-            console.error("mr: unexpected opcode");
-        }
-
-        // send disconnect opcode
-        let cmd2 = [OPCODE_DISCONNECT];
-        //cmd2.push(OPCODE_DISCONNECT);
-        console.log("kfd: disconnect");
-        await this.Protocol.SendData(cmd2);
-        
-        // receive disconnect ack opcode
-        console.log("mr: disconnect ack");
-        
-        //await new Promise(resolve => setTimeout(resolve, 50));
-        let rsp2 = await this.Protocol.GetByte(TIMEOUT_STD, true);
-        if (rsp2 === undefined) {
-            console.error("undefined");
-            //await new Promise(resolve => setTimeout(resolve, 50));
-            //rsp2 = await this.Protocol.GetByte(TIMEOUT_STD, false);
-        }
-        console.log("mr -> kfd: ", BCTS(rsp2).join("-"));
-        if (rsp2 != OPCODE_DISCONNECT_ACK) {
-            console.error("mr: unexpected opcode");
-        }
     }
     async SendKmm(inKmm) {
         console.log("TWP.SendKmm inKmm", BCTS(inKmm).join("-"));
@@ -183,11 +191,11 @@ class ThreeWireProtocol {
         console.log("TWP.PerformKmmTransfer KmmSent");
         let rx;
         // Give time for the MR to respond
-        await new Promise(resolve => setTimeout(resolve, 100));
+        //await new Promise(resolve => setTimeout(resolve, 100));////////
 
         // receive kmm opcode
         try {
-            rx = await this.Protocol.GetByte(TIMEOUT_STD, true);
+            rx = await this.Protocol.GetByte(TIMEOUT_STD, true);////////true
         }
         catch (exception) {
             console.error("in: timed out waiting for kmm opcode", exception);

@@ -166,7 +166,7 @@ function IsValidSingleDesKeyParity(key) {
     return true;
 }
 
-function KeyloadValidate(keysetId, sln, keyId, algId, key) {
+function KeyloadValidate(keysetId, sln, isKek, keyId, algId, key) {
     if (!IsValidKeysetId(keysetId)) {
         return "Keyset ID invalid - valid range 1 to 255 (dec), 0x01 to 0xFF (hex)";
     }

@@ -30,14 +30,13 @@ class ModifyKeyCommand extends KmmBody {
     }
     ToBytes() {
         let keys = [];
-        console.log(this.KeyItems);
+        
         this.KeyItems.forEach((key) => {
             //keys.AddRange(key.ToBytes());
             //console.log("key", BCTS(key.ToBytes()).join("-"));
             keys = keys.concat(key.ToBytes());
         });
-        console.log(keys);
-
+        
         let contents = [];
 
         /* decryption instruction format */

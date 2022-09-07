@@ -33,7 +33,7 @@ const serialPortSettings = {
     //flowControl: "hardware"
 };
 let reader;
-//let writer;
+let writer;
 let exports = {};
 let connected = false;
 const filterKfdTool = {//
@@ -47,6 +47,7 @@ let serialModelId;
 
 let frameBuffer = [];
 let packetBuffer = [];
+let packetReady = false;
 
 let newData = false;
 
@@ -66,6 +67,10 @@ let foundStart = false;
 let haveStart = false;
 let haveEnd = false;
 
+let breakNow = false;
+
+const transferMethod = "RUC";//RUC=readUntilComplete , RWT=readWithTimeout
+
 //https://hpssjellis.github.io/web-serial-polyfill/desktop-serial05.html
 let port;
 let keepReading = true;
@@ -76,7 +81,7 @@ async function connectSerial() {
     
     try {
         port = await navigator.serial.requestPort({filters: [filterKfdTool, filterKfdAvr]});
-        
+        //console.log(port);
         let portInfo = port.getInfo();
         if (portInfo.usbVendorId == filterKfdTool.usbVendorId) {
             serialModelId = "KFD100";
@@ -92,28 +97,11 @@ async function connectSerial() {
 
         port.addEventListener("connect", (event) => {
             // Device has been connected
-/*
-            //$("#iconConnectionStatus").removeClass("connection-status-disconnected");
-            //$("#iconConnectionStatus").addClass("connection-status-connected");
-            $("#iconConnectionStatus").css("background-color", "#aaffaa");
-            $("#buttonConnectKfd").prop("disabled", true);
-            $("#buttonDisconnectKfd").prop("disabled", false);
-*/
             console.log(event);
+
         });
         port.addEventListener("disconnect", (event) => {
             // Device has been disconnected
-/*
-            //$("#iconConnectionStatus").removeClass("connection-status-connected");
-            //$("#iconConnectionStatus").addClass("connection-status-disconnected");
-            connected = false;
-            //port.close();
-            $("#iconConnectionStatus").css("background-color", "#ffaaaa");
-            $("#buttonConnectKfd").prop("disabled", false);
-            $("#buttonDisconnectKfd").prop("disabled", true);
-            $("#connectionStatus").text("Disconnected");
-            $("#deviceProperties").html("");
-*/
             console.log(port);
             console.log(event);
             
@@ -131,6 +119,17 @@ async function connectSerial() {
         await port.open(serialPortSettings);
         connected = true;
 
+        // Uncomment for readUntilClosed, comment for readWithTimeout
+        if (transferMethod == "RUC") {
+            reader = port.readable.getReader();////////
+        }
+        
+
+
+
+
+        //writer = port.writable.getWriter();////////
+        
         //writer = await port.writable.getWriter();
         //reader = await port.readable.getReader();
 
@@ -279,8 +278,76 @@ async function connectSerial() {
         */
         //readUntilClosed();
     }
-    catch(e) {
-        console.error("Error", e);
+    catch(error) {
+        console.error("Error", error);
+    }
+}
+
+//https://hpssjellis.github.io/web-serial-polyfill/desktop-serial05.html
+async function connectPolyfill() {
+    //https://rmarketingdigital.com/en/dev/read-and-write-from-a-serial-port/
+    console.log("connectPolyfill()");
+    connectionMethod = "poly";
+    
+    //https://github.com/google/web-serial-polyfill/issues?q=is%3Aissue+is%3Aclosed
+    //chrome://device-log
+    //chrome://usb-internals
+    //https://github.com/google/web-serial-polyfill/issues/14
+    //https://stackoverflow.com/questions/67910528/tried-to-connect-a-device-to-web-via-webusb-but-failed-to-claim-interface-acc
+    //https://developer.mozilla.org/en-US/docs/Web/API/USBDevice/claimInterface
+    //https://stackoverflow.com/questions/65152371/is-there-a-way-to-get-chrome-to-forget-a-device-to-test-navigator-usb-requestd
+    //https://github.com/WICG/webusb/issues/184#issuecomment-599790333
+    //https://larsgk.github.io/webusb-tester/
+    // use sample code from https://4dkfire.com/webusb/polyfill.html
+    
+    //if we have not gotten permission yet we need to request for the port like this
+    try {
+        port = await exports.serial.requestPort({filters: [filterKfdTool, filterKfdAvr]});
+        let portInfo = port.getInfo();
+
+        if (portInfo.usbVendorId == filterKfdTool.usbVendorId) {
+            serialModelId = "KFD100";
+        }
+        else if (portInfo.usbVendorId == filterKfdAvr.usbVendorId) {
+            serialModelId = "KFD-AVR";
+        }
+        else {
+            alert("Unsupported device type - KFDweb only supports KFDtool and KFD-AVR devices");
+            return;
+        }
+        console.log("Connected to " + serialModelId);
+
+        port.addEventListener("connect", (event) => {
+            // Device has been connected
+            console.log(event);
+
+        });
+        port.addEventListener("disconnect", (event) => {
+            // Device has been disconnected
+            console.log(port);
+            console.log(event);
+            
+            try {
+                //reader.cancel();
+                port.close();
+            }
+            catch (error) {
+                console.error(error);
+            }
+            DisconnectDevice();
+        });
+
+        //https://bugs.chromium.org/p/chromium/issues/detail?id=1099521
+        await port.open(serialPortSettings);
+        connected = true;
+
+        // Uncomment for readUntilClosed, comment for readWithTimeout
+        if (transferMethod == "RUC") {
+            reader = port.readable.getReader();
+        }
+    }
+    catch (error) {
+        console.error(error);
     }
 }
 
@@ -293,30 +360,40 @@ async function DisconnectDevice() {
 }
 
 async function readWithTimeout(timeout) {
+    // Either readUntilClosed OR readWithTimeout
     //https://wicg.github.io/serial/
     console.log("readWithTimeout", timeout);
     //const reader = port.readable.getReader();
-    reader = port.readable.getReader();
+    reader = port.readable.getReader();////////
     let timedOut = false;
     const timer = setTimeout(() => {
         timedOut = true;
         console.log("timed out");
         console.log("releasing log 1");
-        reader.releaseLock();
+        //reader.releaseLock();
         console.log("released log 1");
         console.error("readWithTimeout", "timeout exceeded");
         //throw "timeout exceeded";
         //return [];
     }, timeout);
     const result = await reader.read();// Uncaught (in promise) after sending 61-17-00-C1-61
-    console.log("clearing timeout");
+    console.log("readWithTimeout inData:", BCTS(result.value).join("-"));
+    //console.log("clearing timeout");
     clearTimeout(timer);
+    //reader.releaseLock();////////
     if (!timedOut) {
         //console.log("releasing log 2");
         reader.releaseLock();
         //console.log("released log 2");
     }
-    let rsp = UnpackResponse(result.value);
+    //let rsp = UnpackResponse(result.value);
+    let rsp;
+    if (serialModelId == "KFD100") {
+        rsp = await UnpackResponseKFD100(result.value);
+    }
+    else if (serialModelId == "KFD-AVR") {
+        rsp = await UnpackResponseKFDAVR(result.value);
+    }
     return rsp;
 }
 
@@ -401,8 +478,8 @@ async function SendSerial(data) {
     }
 
     let outData = new Uint8Array(frameData);
-
-    console.log("outData:", BCTS(frameData).join("-"));
+    
+    //console.log(serialModelId + " outData:", BCTS(frameData).join("-"));
     
     if (connectionMethod == "poly") {
         console.log("sending via polyfill");
@@ -424,17 +501,22 @@ async function SendSerial(data) {
 }
 
 async function readUntilClosed() {
+    // Either readUntilClosed OR readWithTimeout
     while (port.readable && keepReading) {
-        reader = port.readable.getReader();
+        //console.log("port.readable && keepReading");
+        //reader = port.readable.getReader();////////
         try {
+            //console.log("trying to wait for data");
             while (true) {
+                //console.warn("waiting for data");
                 const {value, done} = await reader.read();
                 if (done) {
                     // reader has been canceled
                     //reader.releaseLock();
                     break;
                 }
-                //console.log("readUntilClosed", BCTS(value).join("-"));
+                //console.log("data received:", BCTS(value).join("-"));
+                //data received: 61-31-00-00-61-61-31-00-00-61-61-31-00-42
                 await OnDataReceived(Array.from(value));
                 //frameBuffer = frameBuffer.concat(Array.from(value));
                 //console.log("frameBuffer BCTS", BCTS(frameBuffer).join("-"));
@@ -499,121 +581,9 @@ async function Send(data) {
     await writer.write(outData);
     writer.releaseLock();
     return [];
-    // THIS BLOCK ONLY LETS ME READ IMMEDIATELY AFTER A WRITE
-    let reader = inputStream.getReader();
-    await reader.read()
-    .then((value, done) => {
-        console.log(value, done);
-        frameBuffer = Array.from(value.value);
-        reader.releaseLock();
-        //return value.value;
-        //return Array.from(value.value);
-    });
-    writer.releaseLock();
-    return frameBuffer;
-    
-
-
-
-
-
-
-
-
-    /*
-    const writer = port.writable.getWriter();
-    writer.write(outData)
-    .then(() => {
-        writer.releaseLock();
-        const decoder = new TransformStream();
-        port.readable.pipeTo(decoder.writable);
-        const inputStream = decoder.readable;
-        const reader = inputStream.getReader();
-        //let response = await reader.read();
-        //console.log(response);
-        
-        reader.read()
-        .then((value, done) => {
-            console.log(value);
-            reader.releaseLock();
-            //resolve(value.value);
-            //return value.value;
-        })
-        .finally(() => {
-            console.log("reader finally");
-        });
-        
-    })
-    .finally(() => {
-        console.log("writer finally");
-    });
-    */
-    
-    /*
-    const writer = port.writable.getWriter();
-    let writeResult = await writer.write(outData);
-    //writer.releaseLock();
-    const decoder = new TransformStream();
-    port.readable.pipeTo(decoder.writable);
-    const inputStream = decoder.readable;
-    const reader = inputStream.getReader();
-    let readResult = await reader.read();
-    //reader.releaseLock();
-    writer.releaseLock();
-    reader.releaseLock();
-    console.log(readResult.value);
-    return readResult.value;
-    */
 }
 
-//https://hpssjellis.github.io/web-serial-polyfill/desktop-serial05.html
-async function connectPolyfill() {
-    //https://rmarketingdigital.com/en/dev/read-and-write-from-a-serial-port/
-    console.log("connectPolyfill()");
-    connectionMethod = "poly";
-    
-    //https://github.com/google/web-serial-polyfill/issues?q=is%3Aissue+is%3Aclosed
-    //chrome://device-log
-    //chrome://usb-internals
-    //https://github.com/google/web-serial-polyfill/issues/14
-    //https://stackoverflow.com/questions/67910528/tried-to-connect-a-device-to-web-via-webusb-but-failed-to-claim-interface-acc
-    //https://developer.mozilla.org/en-US/docs/Web/API/USBDevice/claimInterface
-    //https://stackoverflow.com/questions/65152371/is-there-a-way-to-get-chrome-to-forget-a-device-to-test-navigator-usb-requestd
-    //https://github.com/WICG/webusb/issues/184#issuecomment-599790333
-    //https://larsgk.github.io/webusb-tester/
-    // use sample code from https://4dkfire.com/webusb/polyfill.html
-    
-    //if we have not gotten permission yet we need to request for the port like this
-    mySerial = await exports.serial.requestPort()
-    .then(async(serialPort) => {
-        console.log(serialPort);
-        $("#deviceProperties").text(serialPort.device_.productName);
-        $("#connectionStatus").text("Connected");
-        mySerial = serialPort;
-        //await mySerial.open({baudRate: 115200});// Not getting past here
-        await mySerial.open(serialPortSettings);
-        // Uncaught (in promise) Error: Error setting up device: NetworkError: Failed to execute 'claimInterface' on 'USBDevice': Unable to claim interface. (serial.ts:308) (mac chrome)
-        // Uncaught (in promose) Error: Error setting up device: SecurityError: Failed to execute 'open' on 'USBDevice': Access denied. (serial.ts:308) (windows chrome and edge)
-        polyReader = mySerial.readable.getReader();
-        polyWriter = mySerial.writable.getWriter();
-    });
-    
-    //if there is already a device that we have been given permission for we can just grab it like this
-    /*
-    mySerial = await polySerial.requestPort();
-    console.log(mySerial);
-    //const myOpen = await mySerial.open(serialPortSettings);
-    const myOpen = await mySerial.open({baudRate: 115200});
-    polyReader = mySerial.readable.getReader();
-    polyWriter = mySerial.writable.getWriter();
-    */
-    
-    const results = mySerial.getInfo();
-    console.log(results);
-    
-    clearInterval(myLooping);
-    myLooping = setInterval(myRead, 1000);
-}
+
 
 /*
 async function mySend(myData2) {
@@ -624,6 +594,165 @@ async function mySend(myData2) {
     });
 }
 */
+
+async function UnpackResponseKFD100(rsp) {
+    console.warn("UnpackResponseKFD100: ", BCTS(rsp).join("-"));
+    rsp = Array.from(rsp);
+    if ((rsp[0] != KFD100_const.SOM_EOM) || (rsp[rsp.length - 1] != KFD100_const.SOM_EOM)) {
+        console.error("invalid packet structure: ", BCTS(rsp).join("-"));
+        return [];
+    }
+    let frameBuffer = [];
+    let foundStart = false;
+    rsp.forEach((b) => {
+        //console.log(b);
+        if (b == KFD100_const.SOM_EOM) {
+            foundStart = true;
+            if (frameBuffer.length > 0) {
+                for (var i=0; i<frameBuffer.length; i++) {
+                    if (frameBuffer[i] == KFD100_const.ESC) {
+                        // this won't work if more than one are removed??
+                        frameBuffer = frameBuffer.splice(i + 1);
+                        if (i == frameBuffer.length) {
+                            console.error("escape character at end");
+                        }
+                        if (frameBuffer[i] == KFD100_const.ESC_PLACEHOLDER) {
+                            frameBuffer[i] = KFD100_const.ESC;
+                        }
+                        else if (frameBuffer[[i] == KFD100_const.SOM_EOM_PLACEHOLDER]) {
+                            frameBuffer[i] = KFD100_const.SOM_EOM;
+                        }
+                        else {
+                            console.error("invalid character after escape character");
+                        }
+                    }
+                }
+                //return frameBuffer;
+                //let packet = [];
+                //packet = packet.concat(frameBuffer);
+                //return packet;
+            }
+            else {
+                //haveStart = true;
+            }
+        }
+        else {
+            if (foundStart) {
+                frameBuffer.push(b);
+            }
+        }
+        //console.log(frameBuffer);
+    });
+    //return packet;
+    return frameBuffer;
+}
+
+async function UnpackResponseKFDAVR(data) {
+    rsp = Array.from(data);
+    //console.log("UnpackResponseKFDAVR", BCTS(rsp).join("-"));
+    if ((rsp[0] != KFDAVR_const.SOM) || (rsp[rsp.length - 1] != KFDAVR_const.EOM)) {
+        // invalid packet
+        console.log("invalid packet structure: ", BCTS(rsp).join("-"));
+        return [];
+    }
+
+    // Remove the SOM_EOM opcodes
+    let temp = rsp.shift();
+    temp = rsp.pop();
+
+    let output = [];
+    
+    for (var i=0; i<rsp.length; i++) {
+        if (rsp[i] == KFDAVR_const.ESC) {
+            if (i == rsp.length) {
+                console.error("escape character at end");
+                return [];
+            }
+            if (rsp[i+1] == KFDAVR_const.ESC_PLACEHOLDER) {
+                //rsp[i] = ESC;
+                output.push(KFDAVR_const.ESC);
+                i++;
+                continue;
+            }
+            else if (rsp[i+1] == KFDAVR_const.SOM_PLACEHOLDER) {
+                output.push(KFDAVR_const.SOM);
+                i++;
+                continue;
+            }
+            else if (rsp[i+1] == KFDAVR_const.EOM_PLACEHOLDER) {
+                output.push(KFDAVR_const.EOM);
+                i++;
+                continue;
+            }
+            else {
+                console.log("invalid character after escape character");
+                return [];
+            }
+        }
+        output.push(rsp[i]);
+    }
+    console.log("packet:", BCTS(rsp).join("-"));
+    return rsp;
+
+
+
+
+
+
+
+    return rsp;
+    let byteCounter = 0;
+    data.forEach((b) => {
+        //console.log("b", b);
+        if (b == KFDAVR_const.SOM) {
+            foundStart = true;
+        }
+        else if (b == KFDAVR_const.EOM) {
+            if (frameBuffer.length > 0) {
+                for (var i=0; i<frameBuffer.length; i++) {
+                    if (frameBuffer[i] == KFDAVR_const.ESC) {
+                        // this won't work if more than one are removed??
+                        frameBuffer = frameBuffer.splice(i + 1);
+                        if (i == frameBuffer.length) {
+                            console.error("escape character at end");
+                        }
+                        if (frameBuffer[i] == KFDAVR_const.ESC_PLACEHOLDER) {
+                            frameBuffer[i] = KFDAVR_const.ESC;
+                        }
+                        else if (frameBuffer[[i] == KFDAVR_const.SOM_PLACEHOLDER]) {
+                            frameBuffer[i] = KFDAVR_const.SOM;
+                        }
+                        else if (frameBuffer[[i] == KFDAVR_const.EOM_PLACEHOLDER]) {
+                            frameBuffer[i] = KFDAVR_const.EOM;
+                        }
+                        else {
+                            console.error("invalid character after escape character");
+                        }
+                    }
+                }
+                let packet = [];
+                packet = packet.concat(frameBuffer);
+                packetBuffer.push(packet);
+                console.log("packet:", BCTS(packet).join("-"));
+                console.log(frameBuffer);
+                return frameBuffer;
+                frameBuffer = [];
+                return packet;
+            }
+            else {
+                haveStart = true;
+            }
+        }
+        else {
+            if (foundStart) {
+                frameBuffer.push(b);
+            }
+            //return packet;
+           //frameBuffer.push(b);
+        }
+        byteCounter++;
+    });
+}
 
 function UnpackResponse(rsp) {
     //console.log(rsp);
@@ -703,8 +832,14 @@ async function ReadBytesFromBuffer(timeout, numBytes) {
     return rsp;
 }
 
-function DecodePacketKFD100(data) {
+async function DecodePacketKFD100(data) {
+    if ((data[0] != KFD100_const.SOM_EOM) || (data[data.length - 1] != KFD100_const.SOM_EOM)) {
+        console.warn("incomplete packet received: ", BCTS(data).join("-"));
+        //return [];
+    }
+    
     let byteCounter = 0;
+    //console.log("DecodePacketKFD100:", BCTS(data).join("-"));
     data.forEach((b) => {
         if (b == KFD100_const.SOM_EOM) {
             foundStart = true;
@@ -730,7 +865,8 @@ function DecodePacketKFD100(data) {
                 let packet = [];
                 packet = packet.concat(frameBuffer);
                 packetBuffer.push(packet);
-                console.log("packet:", BCTS(packet).join("-"));
+                //console.log("packet:", BCTS(packet).join("-"));
+                //console.log("packetBuffer length:", packetBuffer.length);
                 frameBuffer = [];
             }
             else {
@@ -739,14 +875,14 @@ function DecodePacketKFD100(data) {
         }
         else {
             if (foundStart) {
-                frameBuffer.push(b);
+                //frameBuffer.push(b);
             }
-           //frameBuffer.push(b);
+           frameBuffer.push(b);
         }
         byteCounter++;
     });
 }
-function DecodePacketKFDAVR(data) {
+async function DecodePacketKFDAVR(data) {
     //console.log("DecodePacketKFDAVR", BCTS(data).join("-"));
     let byteCounter = 0;
     data.forEach((b) => {
@@ -797,6 +933,7 @@ function DecodePacketKFDAVR(data) {
 }
 
 async function OnDataReceived(data) {
+    //console.log("OnDataReceived START");
     //console.log("ondatareceived", BCTS(data).join("-"));
     if (data === undefined) {
         return;
@@ -854,15 +991,23 @@ async function OnDataReceived(data) {
     });
 */
 
+    if (frameBuffer.length > 0) {
+        //console.log("frameBufferStart", BCTS(frameBuffer).join("-"));
+    }
+
     if (serialModelId == "KFD100") {
-        DecodePacketKFD100(data);
+        await DecodePacketKFD100(data);
     }
     else if (serialModelId == "KFD-AVR") {
-        DecodePacketKFDAVR(data);
+        await DecodePacketKFDAVR(data);
     }
 
     if (packetBuffer.length > 0) {
         packetReady = true;
+    }
+
+    if (frameBuffer.length > 0) {
+        //console.log("frameBufferEnd", BCTS(frameBuffer).join("-"));
     }
 }
 
@@ -888,12 +1033,45 @@ function Read(timeout) {
     return data;
 }
 
-function ReadPacketFromPacketBuffer() {
+async function ReadPacketFromPacketBuffer() {
+    //console.log("ReadPacketFromPacketBuffer");
+    //let packet = [];
     if (packetBuffer.length == 0) {
-        console.warn("no packet in packet buffer");
-        return [];
+        await CheckPacketBufferUntilPopulated();
+        //console.log("got it");
+/*
+        console.error("waiting 1");
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (packetBuffer.length == 0) {
+            console.error("waiting 2");
+            await new Promise(resolve => setTimeout(resolve, 100));
+            if (packetBuffer.length == 0) {
+                console.warn("no packet in packet buffer");
+                return [];
+            }
+        }
+*/
     }
     let packet = packetBuffer[0];
+    //console.log("packetBuffer[0]:", BCTS(packet).join("-"));
     packetBuffer = packetBuffer.splice(1);
     return packet;
+}
+
+async function CheckPacketBufferUntilPopulated() {
+    console.warn("CheckPacketBufferUntilPopulated");
+    let counter = 0;
+    while((packetBuffer.length == 0) && (breakNow == false)) {
+        if (counter > 100) break;
+        console.error("wait");
+        
+        if (serialModelId == "KFD100") {
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
+        else if (serialModelId == "KFD-AVR") {
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
+        counter++;
+    }
+    return;
 }

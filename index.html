@@ -17,9 +17,9 @@
     	<title>KFDweb</title>
     	<link rel="shortcut icon" href="favicon.ico">
 		<link rel="stylesheet" href="css/layout.css" />
-    	<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
-    	<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
-    	<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    	<link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
+    	<script src="js/jquery-1.11.1.min.js"></script>
+    	<script src="js/jquery.mobile-1.4.5.min.js"></script>
 		<script src="js/Adaptor/Protocol/Adapter/AdapterProtocol.js"></script>
         <script src="js/Adaptor/Protocol/Serial/SerialProtocol.js"></script>
 		
@@ -93,8 +93,8 @@
 
 		<script src="js/utilities.js"></script>
 		
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/web-serial-polyfill@1.0.13/dist/serial.js"></script>
+		<script src="js/pako.min.js"></script>
+        <script src="js/serial.js"></script>
     </head>
     <body>
         <div id="pageDiv" data-role="page">
@@ -163,34 +163,40 @@
                 	<p><a href="https://kfdtool.com/store" target="_blank">KFDtool</a> and <a href="https://store.omahacommunicationsys.com" target="_blank">KFDshield</a> hardware devices are fully supported by KFDweb</p>
 					<p><h3 id="secureContextStatus"></h3><span id="secureContextDetails"></span></p>
 					<h5><a id="linkLicensingInformation" href="#">Licensing Information</a></h5>
+					<button id="buttonTestPopupStatus">Test popup Status</button>
+					<button id="buttonTestPopupResults">Test popup Results</button>
 					<div id="featureChecklist" data-role="collapsible">
 						<h4>Feature Status</h4>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Main page layout</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Connect device page</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">KFDtool Serial Protocol</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">KFD-AVR Serial Protocol</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Serial interface</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">ReadDeviceSettings(KFDtool)</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">ReadDeviceSettings(KFD-AVR)</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">ReadDeviceSettings(KFD-AVR)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Key Partitioner</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Radio</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Keyload error on inactive keyset</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Single Key return fields to default (keylen, KSID)</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Load Multiple Keys</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Key Container</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Load Multiple Keys</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Manage Keys</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Edit Key (name, key id, key)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Load Key to Radio</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Load Group to Radio</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Container: Manage Groups</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Create Key Group</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Edit Key Group</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Manage Groups</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Create Key Group</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Edit Key Group</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Export Key Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Reset Key Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View Key Information</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: View Key Information Sorting</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View Keyset Information</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: View RSI Items</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View RSI Items</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: Edit RSI Items</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View KMF Information</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: Edit KMF Information</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Outer Layer Encryption</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">DLI</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">MR Emulator</button>
@@ -200,18 +206,22 @@
             	<div id="configKfd" class="menu_divs" style="display:none;">
                 	<h3>Connect Key Fill Device</h3>
                 	<button id="buttonConnectKfd">Connect KFD</button>
-                	<button id="buttonDisconnectKfd" disabled>Disconnect KFD</button>
+                	<button id="buttonDisconnectKfd" class="button-kfd">Disconnect KFD</button>
 					<button id="buttonCheckConnection" class="button-kfd">Check MR Connection</button>
                 	<p><h3>Connection method:</h3><span id="connectionMethod"></span></p>
                 	<p><h3>Connection status:</h3><span id="connectionStatus">Disconnected</span></p>
                 	<p><h3>Device properties:</h3><span id="deviceProperties"></span></p>
             	</div>
             	<div id="addGroup" class="menu_divs" style="display:none;">
-                	<h3>Add Group</h3>
-                	<div class="ui-field-contain">
-                        <label for="addGroup_name">Name:</label>
-                    	<input type="text" id="addGroup_name" placeholder="" value="">
-                	</div>
+                	<h3><span id="groupAction"></span> Group</h3>
+					<label for="addGroup_name">Name:</label>
+					<input type="text" id="addGroup_name" placeholder="Group name" value="" maxlength="31">
+					<input type="hidden" id="originalGroup_name" value="">
+					<input type="hidden" id="addGroup_id" value="">
+					<div class="ui-field-contain">
+						<button id="buttonSaveGroupChanges" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-left ui-icon-check">Save Changes</button>
+						<button id="buttonCancelGroupChanges" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-left ui-icon-delete">Cancel</button>
+					</div>
                 	<fieldset id="addGroupKeyList" data-role="controlgroup" data-filter="true" data-filter-placeholder="Filter keys..." data-mini="false">
                 	</fieldset>
             	</div>
@@ -302,6 +312,17 @@
             	</div>
             	<div id="loadKeyMultiple" class="menu_divs" style="display:none;">
                 	<h3>Load Multiple Keys</h3>
+					<button id="buttonLoadMultipleKeys" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfdX">Load Keys to Radio</button>
+					<div class="ui-grid-a">
+						<div class="ui-block-a" style="border-collapse:separate;padding:0px 5px;">
+							<fieldset id="addMultipleKeyList" data-role="controlgroup" data-filter="true" data-filter-placeholder="Filter keys..." data-mini="false">
+							</fieldset>
+						</div>
+						<div class="ui-block-b" style="border-collapse:separate;padding:0px 5px;">
+							<fieldset id="addMultipleGroupList" data-role="controlgroup" data-filter="true" data-filter-placeholder="Filter groups..." data-mini="false">
+							</fieldset>
+						</div>
+					</div>
             	</div>
             	<div id="eraseKeySingle" class="menu_divs" style="display:none;">
                 	<h3>Erase Single Key</h3>
@@ -324,7 +345,7 @@
                 	</div>
             	</div>
             	<div id="viewKeyInfo" class="menu_divs" style="display:none;">
-                	<h3>View Key Information</h3>
+                	<h3>Manage Radio Keys</h3>
                 	<div class="ui-field-contain">
                     	<button id="buttonViewKeyInformation" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">View Key Information</button>
                 	</div>
@@ -343,7 +364,7 @@
 					<button id="buttonEraseAllKeysFromRadio" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Erase All Keys From Radio</button>
             	</div>
             	<div id="viewKeysetInfo" class="menu_divs" style="display:none;">
-                	<h3>View Keyset Information</h3>
+                	<h3>Manage Radio Keysets</h3>
                 	<div class="ui-field-contain">
                     	<button id="buttonViewKeysetInformation" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">View Keyset Information</button>
                 	</div>
@@ -362,7 +383,7 @@
 					</table>
             	</div>
             	<div id="viewRsiItems" class="menu_divs" style="display:none;">
-                	<h3>View RSI Items</h3>
+                	<h3>Manage RSI Items</h3>
                 	<div class="ui-field-contain">
                     	<button id="buttonViewRsiInformation" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">View RSI Information</button>
 						<button id="buttonAddRsi" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Add New RSI</button>
@@ -380,7 +401,7 @@
 					</table>
             	</div>
             	<div id="viewKmfInfo" class="menu_divs" style="display:none;">
-                	<h3>View KMF Information</h3>
+                	<h3>Manage KMF Information</h3>
                 	<div class="ui-field-contain">
                     	<button id="buttonViewKmfInformation" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">View KMF Information</button>
                 	</div>
@@ -443,6 +464,7 @@
             	</div>
             	<div id="loadKeyContainer" class="menu_divs" style="display:none;">
                 	<h3>Load Key Container</h3>
+					<h5>Current container: <span class="keyContainerFileName"></span></h5>
                 	<h5 style="color:red;">WARNING: This will clear any existing keys and groups!</h5>
                 	<input type="file" id="inputFile" accept=".ekc">
                 	<label for="passwordEkc" class="ui-hidden-accessible">Password:</label>
@@ -450,6 +472,8 @@
                 	<button id="buttonOpenEkc" type="submit" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-btn-icon-left ui-icon-check">Open File</button>
             	</div>
             	<div id="exportKeyContainer" class="menu_divs" style="display:none;">
+					<h3>Export Key Container</h3>
+					<h5>Current container: <span class="keyContainerFileName"></span></h5>
                 	<div class="ui-field-contain">
                     	<label for="exportKeyContainer_password">Password:</label>
                     	<input type="password" id="exportKeyContainer_password" value="" placeholder="Password...">
@@ -467,16 +491,19 @@
             	</div>
             	<div id="resetKeyContainer" class="menu_divs" style="display:none;">
                 	<h3>Reset key container</h3>
+					<h5>Current container: <span class="keyContainerFileName"></span></h5>
                 	<h5 style="color:red;">WARNING: This will clear any existing keys and groups!</h5>
                 	<button id="buttonResetEkc">Clear all keys and groups</button>
             	</div>
             	<div id="manageKeys" class="menu_divs" style="display:none;">
-                	<h3>Manage Keys</h3>
+                	<h3>Manage Container Keys</h3>
+					<h5>Current container: <span class="keyContainerFileName"></span></h5>
                 	<a id="buttonManageKeyActions" href="#" class="ui-btn ui-corner-all ui-shadow ui-mini ui-btn-inline ui-icon-gear ui-btn-icon-left" style="display:none;">Actions...</a>
                 	<ul id="keyContainerKeyList" data-role="listview" data-filter="true" data-filter-placeholder="Filter keys..." data-inset="false"></ul>
             	</div>
             	<div id="manageGroups" class="menu_divs" style="display:none;">
-                	<h3>Manage Groups</h3>
+                	<h3>Manage Container Groups</h3>
+					<h5>Current container: <span class="keyContainerFileName"></span></h5>
                 	<a id="buttonManageGroup_addGroup" href="#" class="ui-btn ui-corner-all ui-shadow ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left">Add Group</a>
                 	<ul id="keyContainerGroupList" data-role="listview" data-filter="true" data-filter-placeholder="Filter groups..." data-inset="false"></ul>
             	</div>
@@ -484,6 +511,7 @@
                 	<div id="popupMenuKeyOptions_list">
                     	<ul data-role="listview" data-inset="true" style="min-width:210px;" data-container-key-id="">
                         	<li><a id="action_loadKeyToRadio" href="#">Load Key to Radio</a></li>
+							<li><a id="action_editKeyInContainer" href="#">Edit Container Key</a></li>
                         	<li><a id="action_deleteKeyFromContainer" href="#">Delete Key from Container</a></li>
                         	<li><a href="#popupMenuKeyOptions_sort" data-rel="dialog" data-transition="slide" style="display:none;">Sort</a></li>
                     	</ul>
@@ -506,10 +534,11 @@
                     	<ul data-role="listview" data-inset="true" style="min-width:210px;" data-container-group-id="">
                         	<li><a id="action_loadGroupToRadio" href="#">Load Key Group to Radio</a></li>
                         	<li><a id="action_editGroupContainer" href="#">Edit Key Group</a></li>
+							<li><a id="action_deleteContainerGroup" href="#">Delete Key Group</a></li>
                     	</ul>
                 	</div>
 				</div>
-				<div id="popupLicensingInformation" data-role="popup" data-overlay-theme="a" class="ui-content" data-position-to="window">
+				<div data-role="popup"id="popupLicensingInformation" data-overlay-theme="a" class="ui-content" data-position-to="window">
 					<div style="padding:10px 20px;">
 						<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
 						<h3>Licensing Information</h3>
@@ -519,6 +548,7 @@
 						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright 2019-2020 Daniel Dugger, Copyright 2021 Nat Moore</h4><div class="ui-body"><a href="https://github.com/omahacommsys/KFDtool/blob/master/LICENSE.txt">KFD-AVR</a><p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></div>
 						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright (C) 2014-2017 by Vitaly Puzrin and Andrei Tuputcyn</h4><div class="ui-body"><a href="https://github.com/nodeca/pako/blob/master/LICENSE">pako</a><p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></div>
 						<h4 class="ui-bar ui-bar-a" target="_blank">(c) 2009-2013 by Jeff Mott. All rights reserved.</h4><div class="ui-body"><a href="https://code.google.com/archive/p/crypto-js/wikis/License.wiki">CryptoJS</a><p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:<ul><li>Redistributions of source code must retain the above copyright notice, this list of conditions, and the following disclaimer.</li><li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions, and the following disclaimer in the documentation or other materials provided with the distribution.</li><li>Neither the name CryptoJS nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.</li></ul><br>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS," AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p></div>
+						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright jQuery Foundation and other contributors</h4><div class="ui-body"><a href="https://jquery.org/">jQuery</a><p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></div>
 						<h4 class="ui-bar ui-bar-a" target="_blank">Copyright 2018 Google LLC</h4><div class="ui-body"><a href="https://github.com/google/web-serial-polyfill/blob/main/LICENSE">Serial API Polyfill</a><p>Licensed under the Apache License, Version 2.0 (the "License");<ul><li>You may not use this file except in compliance with the License.</li><li>You may obtain a copy of the License at:</li></ul><br><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p><p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p></div>
 					</div>
             	</div>
@@ -542,10 +572,46 @@
 						</div>
 					</form>
 				</div>
-            	<div data-role="popup" id="popupMenuKeyOptions_sort_DEP">
-                	
+            	<div data-role="popup" id="popupKeyloadStatus" data-dismissible="false">
+					<div id="keyloadStatusDEPRECATED" style="width:300px;">
+						<div class="ui-corner-all custom-corners">
+							<div class="ui-bar ui-bar-a">
+								<h3>Loading Keys</h3>
+							</div>
+							<div class="ui-body ui-body-a">
+								<p>Loading 1 of 3 keys</p>
+								<label for="slider-keyload-status" class="ui-hidden-accessible">Status:</label>
+								<input type="range" name="slider-keyload-status" id="slider-keyload-status" data-highlight="true" disabled="disabled" min="0" max="100" value="33">
+								<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-delete">Cancel</a>
+							</div>
+						</div>
+					</div>
             	</div>
-            	
+				<div data-role="popup" id="popupKeyloadResults">
+					<div id="keyloadResults" style="width:220px;">
+						<div class="ui-corner-all custom-corners">
+							<div class="ui-bar ui-bar-a">
+								<h3>Keyload Results</h3>
+							</div>
+							<div class="ui-body ui-body-a">
+								<ul id="keyloadResultList" data-role="listview" data-inset="true">
+									<li>
+										<h4>key 1</h4>
+										<p class="invalid">Not supported by device</p>
+									</li>
+									<li>
+										<h4>key 2</h4>
+										<p>Succeeded</p>
+									</li>
+									<li>
+										<h4>key 3</h4>
+										<p>Succeeded</p>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+            	</div>
         	</div><!-- /content -->
         </div><!-- /page -->
         <script src="js/webserial.js"></script>

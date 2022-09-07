@@ -2,7 +2,8 @@ let _keyContainer = {
     keys: [],
     nextKeyNumber: 1,
     groups: [],
-    nextGroupNumber: 1
+    nextGroupNumber: 1,
+    source: "Memory"
 };
 
 async function CreateEkc(keyContainer, password) {
@@ -18,6 +19,8 @@ async function CreateEkc(keyContainer, password) {
 
 async function OpenEkc(file, password) {
     ResetKeyContainer();
+    _keyContainer.source = file.name;
+    $(".keyContainerFileName").text(_keyContainer.source);
 
     let fileContents = await ReadFileAsync(file);//ArrayBuffer
     

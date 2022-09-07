@@ -12,6 +12,8 @@ let inputType = "dec";
 let inputBase = 10;
 let xmlDoc;
 
+let canceltransferFlag = false;
+
 let secureContext = false;
 if (document.location.protocol.includes("https")) secureContext = true;
 else if ((document.location.host == "127.0.0.1") || (document.location.host == "localhost")) secureContext = true;
@@ -39,6 +41,7 @@ $(document).ready(function() {
     }
     $("#secureContextStatus").text(status);
     $("#secureContextDetails").text(description);
+    $(".keyContainerFileName").text(_keyContainer.source);
     if (navigator.serial) {
         $("#connectionMethod").text("Web Serial API");
     }
@@ -47,6 +50,35 @@ $(document).ready(function() {
     }
     DisableKfdButtons();
 });
+$("#buttonTestPopupStatus").on("click", function() {
+    //$("#popupKeyloadStatus").popup("open");
+    ShowLoading("key");
+});
+$("#buttonTestPopupResults").on("click", function() {
+    $("#popupKeyloadResults").popup("open");
+});
+
+$("buttonCancelLoading").on("click", function() {
+    //console.log($(this));
+    //HideLoading();
+});
+
+function CancelTransfers() {
+    //$("#keyloadStatus input[type=number]");
+    //$("#keyloadStatus input[id=slider-keyload-status]") returns 2 items
+    //$("#slider-keyload-status").val("0").slider("refresh");
+    //$("#slider-keyload-status").slider("option", "value", 0);
+    //$("slider-keyload-status").prop("value", 0).slider("refresh");
+    //$.mobile.loading("checkLoaderPosition");
+    //$.mobile.loading("resetHtml");
+    //https://stackoverflow.com/questions/12795307/jquery-ui-slider-change-value-of-slider-when-changed-in-input-field
+    //https://stackoverflow.com/questions/71983489/programmatically-animating-a-jquery-slider
+    //https://stackoverflow.com/questions/25649904/set-max-attribute-for-the-jquerymobile-slider-from-javascript
+    canceltransferFlag = true;
+    breakNow = true;
+    HideLoading();
+    EnableKfdButtons();
+}
 
 $("#linkLicensingInformation").on("click", function() {
     $("#popupLicensingInformation").popup("open");
@@ -105,7 +137,7 @@ $("#addEditRsiConfirm").on("click", function() {
 });
 $("#buttonCancelEkc").on("click", function() {
     $("#popupImportEkc").popup("close");
-    ClearPopupEkc();
+    ClearEkcFields();
 });
 $("#buttonOpenEkc").on("click", function() {
     if ($("#passwordEkc").val() == "") {
@@ -120,7 +152,7 @@ $("#buttonOpenEkc").on("click", function() {
     //importFile($("#passwordEkc").val());
     OpenEkc(fileInputElement.files[0], $("#passwordEkc").val());
     //loadFile();
-    ClearPopupEkc();
+    ClearEkcFields();
 });
 $("#table_keyinfo tbody").on("click", "a.key-delete", function() {
     let tr = $(this).parent().parent();
@@ -196,14 +228,14 @@ $("#table_kmfRsi tbody").on("click", "a.kmf-rsi-change", function() {
     //console.log($(this).parent().parent()[0].dataset);
     // This should trigger mra.LoadConfig(rsi, mn);
     let tr = $(this).parent().parent();
-    let rsiOld = parseInt(tr.data("rsiid"));
-    let mnpOld = parseInt(tr.data("mnp"));
-
+    let rsiOld = parseInt(tr.attr("data-rsiid"));
+    let mnpOld = parseInt(tr.attr("data-messagenumber"));
+console.log("rsiOld: " + rsiOld + ", mnpOld: " + mnpOld);
     $("#addEditRsi_typeOld").val("KMF");
     $("#addEditRsi_action").val("change");
     $("#addEditRsi_rsiOld").val(rsiOld);
-    $("#addEditRsi_rsi").val(rsiOld);
-    $("#addEditRsi_mnp").val(mnpOld);
+    $("#addEditRsi_rsi").val(rsiOld.toString(inputBase));
+    $("#addEditRsi_mnp").val(mnpOld.toString(inputBase));
     $("#popupAddEditRsi").popup("open");
     $("#addEditRsi_rsi").focus();
 });
@@ -215,10 +247,10 @@ $(".menuItem").on("click", function() {
     $("#panelMenu").panel("close");
     
     if (menuName == "manageKeys") {
-        //PopulateKeys();
+        
     }
     else if (menuName == "manageGroups") {
-        //PopulateGroups();
+        
     }
     else if (menuName == "loadKeyMultiple") {
         
@@ -226,26 +258,42 @@ $(".menuItem").on("click", function() {
 });
 $("#buttonManageGroup_addGroup").on("click", function() {
     $(".menu_divs").hide();
+    let nextContainerGroupId = _keyContainer.nextGroupNumber;
+    $("#addGroup_id").val(nextContainerGroupId);
+    $("#addGroup_name").val("");
+    $("#originalGroup_name").val("");
+    $("#groupAction").text("Add");
+    $("#addGroupKeyList input:checkbox").prop("checked", false).checkboxradio("refresh");
     $("#addGroup").show();
 });
 $("#buttonManageKeyActions").on("click", function() {
+    //DEPRECATED
     $("#popupMenuKeyOptions").popup("open");
 });
 $("#buttonLoadKeyToContainer").on("click", function() {
-    let keyItem = CreateKeyFromFields("container");
+    let containerKeyItem = CreateKeyFromFields("container");
     
-    if (keyItem === undefined) {
+    if (containerKeyItem === undefined) {
         return;
     }
+    
+    // Check for identical Algorithm and Key ID combination
+    let keys = _keyContainer.keys.filter(function(obj) { return obj.KeyId === containerKeyItem.KeyId; });
+    for (var i=0; i<keys.length; i++) {
+        if (keys[i].AlgorithmId == containerKeyItem.AlgorithmId) {
+            alert("Error: Key ID " + containerKeyItem.KeyId + " with Algorithm " + LookupAlgorithmId(keyItem.AlgorithmId) + " already exists");
+            return;
+        }
+    }
 
-    let validation = KeyloadValidate(keyItem.KeysetId, keyItem.Sln, keyItem.KeyTypeKek, keyItem.KeyId, keyItem.AlgorithmId, keyItem.Key);
+    let validation = KeyloadValidate(containerKeyItem.KeysetId, containerKeyItem.Sln, containerKeyItem.KeyTypeKek, containerKeyItem.KeyId, containerKeyItem.AlgorithmId, containerKeyItem.Key);
     if (validation.status == "Success") {
-        AddKeyToContainer(keyItem);
+        AddKeyToContainer(containerKeyItem);
         ClearKeyInfo();
     }
     else if (validation.status == "Warning") {
         if (window.confirm("Warning: " + validation.message + " - do you wish to continue anyways?")) {
-            AddKeyToContainer(keyItem);
+            AddKeyToContainer(containerKeyItem);
             ClearKeyInfo();
         }
     }
@@ -262,12 +310,12 @@ $("#buttonLoadKeyToRadio").on("click", function() {
 
     let validation = KeyloadValidate(keyItem.KeysetId, keyItem.Sln, keyItem.KeyTypeKek, keyItem.KeyId, keyItem.AlgorithmId, keyItem.Key);
     if (validation.status == "Success") {
-        SendKeysToRadio([keyItem]);
+        SendKeysToRadio([keyItem], "single");
         ClearKeyInfo();
     }
     else if (validation.status == "Warning") {
         if (window.confirm("Warning: " + validation.message + " - do you wish to continue anyways?")) {
-            SendKeysToRadio([keyItem]);
+            SendKeysToRadio([keyItem], "single");
             ClearKeyInfo();
         }
     }
@@ -317,37 +365,193 @@ $("#buttonAddRsi").on("click", function() {
     $("#popupAddEditRsi").popup("open");
     $("#addEditRsi_rsi").focus();
 });
+$("#buttonSaveGroupChanges").on("click", function() {
+    let containerKeyIds = [];
+    let containerGroupId = parseInt($("#addGroup_id").val());
+    let containerGroupName = $("#addGroup_name").val();
+    let containerGroupNameOriginal = $("#originalGroup_name").val();
+    $("#addGroupKeyList input:checked").each(function() {
+        containerKeyIds.push(parseInt($(this).attr("data-container-key-id")));
+    });
+    //console.log(containerGroupId, containerKeyIds);
+
+    let existingGroupNames = _keyContainer.groups.filter(function(obj) { return obj.Name.toUpperCase() === containerGroupName.toUpperCase(); });
+    if ((containerGroupName != containerGroupNameOriginal) && existingGroupNames.length) {
+        alert("Error: group name already exists");
+        return;
+    }
+    if (containerGroupName == "") {
+        alert("Error: the group must have a name assigned");
+        return;
+    }
+    if (containerKeyIds.length == 0) {
+        //alert("Error: there must be at least one key in the group");
+        //return;
+    }
+    
+    if (containerGroupId == _keyContainer.nextGroupNumber) {
+        /*
+        _keyContainer.groups.push({
+            Id: containerGroupId,
+            Name: containerGroupName,
+            Keys: containerKeyIds
+        });
+        _keyContainer.nextGroupNumber++;
+        */
+        AddGroupToContainer({
+            //Id: containerGroupId,
+            Name: containerGroupName,
+            Keys: containerKeyIds
+        });
+    }
+    else {
+        for (let i=0;i<_keyContainer.groups.length;i++) {
+            if (_keyContainer.groups[i].Id == containerGroupId) {
+                _keyContainer.groups[i].Name = containerGroupName;
+                _keyContainer.groups[i].Keys = containerKeyIds;
+                break;
+            }
+        }
+    }
+    PopulateGroups();
+    // Go back to group page
+    $("#addGroup").hide();
+    $("#manageGroups").show();
+});
+$("#buttonCancelGroupChanges").on("click", function() {
+    $("#addGroup").hide();
+    $("#manageGroups").show();
+});
 $("#action_loadKeyToRadio").on("click", function() {
-    let ckid = parseInt($("#popupMenuKeyOptions_list ul").attr("data-container-key-id"));
-    let key = _keyContainer.keys.filter(function(obj) { return obj.Id === ckid; });
-    if (key.length != 1) {
+    let containerKeyId = parseInt($("#popupMenuKeyOptions_list ul").attr("data-container-key-id"));
+    let containerKey = _keyContainer.keys.filter(function(obj) { return obj.Id === containerKeyId; });
+    if (containerKey.length != 1) {
         alert("There was an error retrieving the key from the container");
         return;
     }
-    SendKeysToRadio(key);
+    SendKeysToRadio(containerKey, "single");
     $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", "");
     $("#popupMenuKeyOptions").popup("close");
 });
 $("#action_loadGroupToRadio").on("click", function() {
-    let cgid = parseInt($("#popupMenuGroupOptions_list ul").attr("data-container-group-id"));
-    let groupKeys = _keyContainer.groups.filter(function(obj) { return obj.Id === cgid; });
+    let containerGroupId = parseInt($("#popupMenuGroupOptions_list ul").attr("data-container-group-id"));
+    let groupKeys = _keyContainer.groups.filter(function(obj) { return obj.Id === containerGroupId; });
     if (groupKeys.length != 1) {
         alert("There was an error retrieving the group from the container");
         return;
     }
-    let keys = _keyContainer.keys.filter(function(obj) { return groupKeys[0].Keys.includes(obj.Id); });
-    SendKeysToRadio(keys);
+    let containerKeys = _keyContainer.keys.filter(function(obj) { return groupKeys[0].Keys.includes(obj.Id); });
+    SendKeysToRadio(containerKeys, "multiple");
     $("#popupMenuGroupOptions_list ul").attr("data-container-group-id", "");
     $("#popupMenuGroupOptions").popup("close");
 });
+$("#buttonLoadMultipleKeys").on("click", function() {
+    let containerKeyIds = [];
+    let containerGroupIds = [];
+    let key_set = new Set();
+
+    $("#addMultipleKeyList input:checked").each(function() {
+        //console.log("key", $(this));
+        containerKeyIds.push(parseInt($(this).attr("data-container-key-id")));
+        key_set.add(parseInt($(this).attr("data-container-key-id")));
+    });
+    $("#addMultipleGroupList input:checked").each(function() {
+        //console.log("group", $(this));
+        containerGroupIds.push(parseInt($(this).attr("data-container-group-id")));
+    });
+
+    containerGroupIds.forEach((cgid) => {
+        let containerGroup = _keyContainer.groups.filter(function(obj) { return obj.Id === cgid; });
+        containerGroup[0].Keys.forEach((ckid) => {
+            key_set.add(ckid);
+        });
+    });
+    
+    console.log("keys", containerKeyIds);
+    console.log("groups", containerGroupIds);
+    console.log("set", key_set);
+
+    let containerKeys = _keyContainer.keys.filter(function(obj) { return key_set.has(obj.Id); });
+    console.log(containerKeys);
+
+    SendKeysToRadio(containerKeys, "multiple");
+    return;
+
+    // Initialize loading widget
+    ShowLoading("key");
+    $("#keyloadStatus_itemNumber").text("0");
+    $("#keyloadStatus_itemTotal").text(containerKeyIds.length);
+    $("#keyloadResultList").empty();
+
+    for (var i=0; i<containerKeyIds.length; i++) {
+        let key = _keyContainer.keys.filter(function(obj) { return obj.Id === containerKeyIds[i]; });
+        if (key.length == 1) {
+            let keyName = key[0].Name;
+            $("#keyloadStatus_itemName").text(keyName);
+            //let keyResult = await SendKeyToRadio(key[0]);
+            let keyResult;
+            if (keyResult !== undefined) {
+                let statusText = "Succeeded";
+                let statusClass = "";
+                if (keyResult.status != 0) {
+                    statusText = OperationStatusExtensions.ToStatusString(keyResult.Status);
+                    statusClass = " class='invalid'";
+                }
+                let temp = "<li><h4>" + keyName + "</h4>";
+                temp += "<p" + statusClass + "'>" + statusText + "</p></li>";
+                $("#keyloadResultList").append(temp);
+            }
+        }
+    }
+/*
+    containerKeyIds.forEach((ckid) => {
+        let key = _keyContainer.keys.filter(function(obj) { return obj.Id === ckid; });
+        $("#keyloadStatus_itemName").text(key.Name);
+        let keyResult = await SendKeyToRadio(key);
+        if (keyResult !== undefined) {
+
+        }
+    });
+*/
+    //SendMultipleKeysToRadio(keys);
+});
 $("#action_deleteKeyFromContainer").on("click", function() {
-    let ckid = $("#popupMenuKeyOptions_list ul").data("container-key-id");
-    DeleteKeyFromContainer(ckid);
+    let containerKeyId = parseInt($("#popupMenuKeyOptions_list ul").attr("data-container-key-id"));
+    //console.log("action_deleteKeyFromContainer", containerKeyId);
+    DeleteKeyFromContainer(containerKeyId);
     $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", "");
     $("#popupMenuKeyOptions").popup("close");
 });
+$("#action_editGroupContainer").on("click", function() {
+    let containerGroupId = parseInt($("#popupMenuGroupOptions_list ul").attr("data-container-group-id"));
+    let containerGroup = _keyContainer.groups.filter(function(obj) { return obj.Id === containerGroupId; });
+    if (containerGroup.length != 1) {
+        alert("There was an error retrieving the group from the container");
+        return;
+    }
+    // Set all checkboxes to off, then loop through keys and set to true
+    let containerGroupName = containerGroup[0].Name;
+    $("#groupAction").text("Edit");
+    $("#addGroup_name").val(containerGroupName);
+    $("#originalGroup_name").val(containerGroupName);
+    $("#addGroup_id").val(containerGroupId);
+    $("#addGroupKeyList input:checkbox").prop("checked", false).checkboxradio("refresh");
+    containerGroup[0].Keys.forEach((kid) => {
+        $("#addGroupKeyList #checkbox-" + kid).prop("checked", true).checkboxradio("refresh");
+    });
+    $("#manageGroups").hide();
+    $("#addGroup").show();
+    $("#popupMenuGroupOptions_list ul").attr("data-container-group-id", "");
+    $("#popupMenuGroupOptions").popup("close");
+});
+$("#action_deleteContainerGroup").on("click", function() {
+    let containerGroupId = parseInt($("#popupMenuGroupOptions_list ul").attr("data-container-group-id"));
+    DeleteGroupFromContainer(containerGroupId);
+    $("#popupMenuGroupOptions_list ul").attr("data-container-group-id", "");
+    $("#popupMenuGroupOptions").popup("close");
+});
 
-function CreateKeyFromContainer(ckid) {
+function CreateKeyFromContainer(containerKeyId) {
     // Create a key from a container key_id
 
 }
@@ -360,7 +564,7 @@ function CreateKeyFromFields(target) {
         base = 16;
     }
     */
-    let keyItem = {};
+    let containerKeyItem = {};
     let auto = false;
     let tek = false;
     let kek = false;
@@ -368,8 +572,8 @@ function CreateKeyFromFields(target) {
     else if ($("input[name='radioKeyType']:checked").val() == "tek") tek = true;
     else if ($("input[name='radioKeyType']:checked").val() == "kek") kek = true;
     
-    keyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
-    if (keyItem.ActiveKeyset) $("#loadKeySingle_keysetId").val("1");
+    containerKeyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
+    if (containerKeyItem.ActiveKeyset) $("#loadKeySingle_keysetId").val("1");
     if ((target == "container") && ($("#loadKeySingle_name").val() == "")) {
         alert("Key name cannot be empty");
         return;
@@ -399,19 +603,19 @@ function CreateKeyFromFields(target) {
         }
     }
     */
-    keyItem.Name = $("#loadKeySingle_name").val();
-    let matchingKeys = _keyContainer.keys.filter(function(obj) { return obj.Name === keyItem.Name; });
+    containerKeyItem.Name = $("#loadKeySingle_name").val();
+    let matchingKeys = _keyContainer.keys.filter(function(obj) { return obj.Name === containerKeyItem.Name; });
     if (matchingKeys.length) {
         alert("Key name must be unique");
         return;
     }
     
-    keyItem.Id = _keyContainer.nextKeyNumber;
-    keyItem.KeysetId = parseInt($("#loadKeySingle_keysetId").val(), inputBase);
-    //keyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
-    keyItem.Sln = parseInt($("#loadKeySingle_SlnCkr").val(), inputBase);
-    keyItem.KeyId = parseInt($("#loadKeySingle_keyId").val(), inputBase);
-    keyItem.AlgorithmId = parseInt($("#loadKeySingle_algorithmOther").val(), inputBase);
+    containerKeyItem.Id = _keyContainer.nextKeyNumber;
+    containerKeyItem.KeysetId = parseInt($("#loadKeySingle_keysetId").val(), inputBase);
+    //containerKeyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
+    containerKeyItem.Sln = parseInt($("#loadKeySingle_SlnCkr").val(), inputBase);
+    containerKeyItem.KeyId = parseInt($("#loadKeySingle_keyId").val(), inputBase);
+    containerKeyItem.AlgorithmId = parseInt($("#loadKeySingle_algorithmOther").val(), inputBase);
     keyString = $("#loadKeySingle_key").val();
     if (keyString.length % 2 != 0) {
         alert("Key length is not valid");
@@ -422,58 +626,131 @@ function CreateKeyFromFields(target) {
         let pair = keyString[i] + keyString[i+1];
         keyArray.push(parseInt(pair , 16));
     }
-    keyItem.Key = keyArray;
+    containerKeyItem.Key = keyArray;
     if (auto) {
-        if (keyItem.Sln >=0 && keyItem.Sln <= 61439) tek = true;
-        else if (keyItem.Sln >= 61440 && keyItem.Sln <= 65535) kek = true;
+        if (containerKeyItem.Sln >=0 && containerKeyItem.Sln <= 61439) tek = true;
+        else if (containerKeyItem.Sln >= 61440 && containerKeyItem.Sln <= 65535) kek = true;
     }
-    keyItem.KeyTypeAuto = auto;
-    keyItem.KeyTypeTek = tek;
-    keyItem.KeyTypeKek = kek;
+    containerKeyItem.KeyTypeAuto = auto;
+    containerKeyItem.KeyTypeTek = tek;
+    containerKeyItem.KeyTypeKek = kek;
     
     
-    if ((keyItem.KeysetId < 1) || (keyItem.KeysetId > 255)) {
+    if ((containerKeyItem.KeysetId < 1) || (containerKeyItem.KeysetId > 255)) {
         alert("Keyset ID out of range");
         return;
     }
-    else if ((keyItem.Sln < 0) || (keyItem.Sln > 65535)) {
+    else if ((containerKeyItem.Sln < 0) || (containerKeyItem.Sln > 65535)) {
         alert("SLN/CKR out of range");
         return;
     }
-    else if ((keyItem.KeyId < 0) || (keyItem.KeyId > 65535)) {
+    else if ((containerKeyItem.KeyId < 0) || (containerKeyItem.KeyId > 65535)) {
         alert("Key ID out of range");
         return;
     }
     /*
-    if (keyItem.KeyTypeTek && (keyItem.Sln >= 61440)) {
+    if (containerKeyItem.KeyTypeTek && (containerKeyItem.Sln >= 61440)) {
         alert("Key type set to TEK, but SLN indicates KEK");
         return;
     }
-    else if (keyItem.KeyTypeKek && (keyItem.Sln <= 61439)) {
+    else if (containerKeyItem.KeyTypeKek && (containerKeyItem.Sln <= 61439)) {
         alert("Key type set to KEK, but SLN indicates TEK");
         return;
     }
     */
-    return keyItem;
+
+    return containerKeyItem;
 }
 
-async function SendKeysToRadio(keys) {
+async function SendKeysToRadio(keys, keyloadProtocol) {
+    // keys is an array of containerKeys
     console.log("SendKeysToRadio", keys);
     if (!connected) return;
 
-    let keyItems = [];
+    let cmdKeyItems = [];
     keys.forEach((k) => {
-        let key = new KeyItem();
         let cmdKey = new CmdKeyItem(k.ActiveKeyset, k.KeysetId, k.Sln, k.KeyTypeKek, k.KeyId, k.AlgorithmId, k.Key);
+        cmdKey.Name = k.Name;
+        cmdKeyItems.push(cmdKey);
+        /*
+        let key = new KeyItem();
         key.SLN = k.Sln;
         key.KeyId = k.KeyId;
         key.Key = k.Key;
         key.KEK = k.KeyTypeKek;
-        //keyItems.push(key);
-        keyItems.push(cmdKey);
+        //cmdKeyItems.push(key);
         //console.log(key);
         //console.log(key.ToBytes());
+        */
     });
+
+    let ap = new AdapterProtocol();
+    let mra = new ManualRekeyApplication(ap, false);
+
+    if (keyloadProtocol == "single") {
+        // Load one key at a time and show results popup
+        // Came from $("#buttonLoadMultipleKeys").on("click")
+
+        // Initialize loading widget
+        ShowLoading("key");
+        DisableKfdButtons();
+        $("#keyloadStatus .ui-slider-bg.ui-btn-active").css("width", "0%");
+        $("#keyloadStatus_itemNumber").text("1");
+        $("#keyloadStatus_itemTotal").text(cmdKeyItems.length);
+        $("#keyloadResultList").empty();
+
+        for (var i=0; i<cmdKeyItems.length; i++) {
+            let widthValue = Math.floor(i / cmdKeyItems.length).toString() + "%";
+            $("#keyloadStatus .ui-slider-bg.ui-btn-active").css("width", widthValue);
+            $("#keyloadStatus_itemName").text(cmdKeyItems[i].Name);
+            let keyResult = await mra.Keyload_single(cmdKeyItems[i]);
+            console.log(keyResult);
+            if (keyResult !== undefined) {
+                let statusText = "Succeeded";
+                let statusClass = "";
+                if (keyResult.Status != 0) {
+                    statusText = OperationStatusExtensions.ToStatusString(keyResult.Status);
+                    statusClass = " class='invalid'";
+                }
+                let temp = "<li><h4>" + cmdKeyItems[i].Name + "</h4>";
+                temp += "<p" + statusClass + "'>" + statusText + "</p></li>";
+                $("#keyloadResultList").append(temp);
+                if (canceltransferFlag) { i = mdKeyItems.length; }
+            }
+        }
+        HideLoading();
+        EnableKfdButtons();
+        
+        $("#addMultipleKeyList input:checked").prop("checked", false).checkboxradio("refresh");
+        $("#addMultipleGroupList input:checked").prop("checked", false).checkboxradio("refresh");
+        $("#popupKeyloadResults").popup("open");
+    }
+    else if (keyloadProtocol == "multiple") {
+        // Load all keys at once, with no status
+        let results;
+        try {
+            ShowLoading();
+            DisableKfdButtons();
+            results = await mra.Keyload(cmdKeyItems);
+        }
+        catch (error) {
+            console.error(error);
+        }
+        finally {
+            HideLoading();
+            EnableKfdButtons();
+        }
+        if (results !== undefined) {
+            console.log(results);
+            // Check each status to verify result[i].Status == 0
+    
+        }
+    }
+}
+
+async function SendKeyToRadio(key) {
+    console.log("SendKeyToRadio", key);
+    if (!connected) return;
 
     let ap = new AdapterProtocol();
     let mra = new ManualRekeyApplication(ap, false);
@@ -481,20 +758,23 @@ async function SendKeysToRadio(keys) {
     try {
         ShowLoading();
         DisableKfdButtons();
-        results = await mra.Keyload(keyItems);
+        results = await mra.Keyload_single(key);
     }
     catch (error) {
         console.error(error);
     }
     finally {
-        HideLoading();
-        EnableKfdButtons();
+        //HideLoading();
+        //EnableKfdButtons();
     }
     if (results !== undefined) {
         console.log(results);
-        // Check each status to verify result[i].Status == 0
-
+        return results;
     }
+}
+
+async function SendMultipleKeysToRadio() {
+
 }
 
 async function ViewKeyInformation() {
@@ -746,8 +1026,8 @@ async function EraseAllKeysFromRadio() {
         EnableKfdButtons();
     }
     if (result !== undefined) {
-        alert("Radio has been zeroized");
-        $("#table_keysets tbody").empty();
+        //alert("Radio has been zeroized");
+        $("#table_keyinfo tbody").empty();
     }
 }
 
@@ -879,7 +1159,13 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
     try {
         ShowLoading();
         DisableKfdButtons();
-        result = await mra.ChangeRsi(rsiOld, rsiNew, mnp);
+        if (rsiType == "KMF") {
+            result = await mra.LoadConfig(rsiNew, mnp);
+        }
+        else {
+            result = await mra.ChangeRsi(rsiOld, rsiNew, mnp);
+        }
+        
     }
     catch (error) {
         console.error(error);
@@ -888,14 +1174,16 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
         HideLoading();
         EnableKfdButtons();
     }
-    if (result !== undefined) {
+    console.log(result);
+    if (result instanceof RspRsiInfo) {
         if (result.Status == 0) {
             console.log("success");
             if (rsiType == "KMF") {
                 // Change the RSI and MNP in the table
+                //tr.attr("data-messagenumber")
                 $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "'] th")[1].text(rsiNew);
                 $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "'] th")[2].text(mnp);
-                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").attr("data-mnp", mnp);
+                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").attr("data-messagenumber", mnp);
                 $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").attr("data-rsiid", rsiNew);
             }
             else if ((rsiType == "Individual") || (rsiType == "Group")) {
@@ -908,7 +1196,7 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
                     // Change the RSI and MNP
                     $("#table_rsiItems tr[data-rsiid='" + rsiOld + "'] th")[1].text(rsiNew);
                     $("#table_rsiItems tr[data-rsiid='" + rsiOld + "'] th")[2].text(mnp);
-                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").attr("data-mnp", mnp);
+                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").attr("data-messagenumber", mnp);
                     $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").attr("data-rsiid", rsiNew);
                 }
             }
@@ -953,6 +1241,7 @@ function ClearKeyInfo() {
     $("#loadKeySingle_name").val("");
     $("#loadKeySingle_activeKeysetSlider").val("yes").slider("refresh");
     $("#loadKeySingle_keysetId").val("");
+    $("#loadKeySingle_keysetDiv").hide();
     $("#loadKeySingle_SlnCkr").val("");
     $("input:radio[name='radioKeyType']").prop("checked", false).checkboxradio("refresh");
     $("input:radio[id='radioKeyType_auto']").prop("checked", true).checkboxradio("refresh");
@@ -965,15 +1254,16 @@ function ClearKeyInfo() {
 $("#keyContainerKeyList").on("click", "li", function() {
     //console.log($(this).data("container-key-id"));
     //console.log($("#popupMenuKeyOptions_list ul").data("container-key-id"));
-    let ckid = $(this).data("container-key-id");
-    $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", ckid);
+    let containerKeyId = $(this).attr("data-container-key-id");
+    $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", containerKeyId);
     $("#popupMenuKeyOptions").popup("open");
 });
 $("#keyContainerGroupList").on("click", "li", function() {
     //console.log($(this).data("container-group-id"));
     //console.log($("#popupMenuGroupOptions_list ul").data("container-group-id"));
-    let cgid = $(this).data("container-group-id");
-    $("#popupMenuGroupOptions_list ul").attr("data-container-group-id", cgid);
+    let containerGroupId = $(this).attr("data-container-group-id");
+    //console.log(containerGroupId);
+    $("#popupMenuGroupOptions_list ul").attr("data-container-group-id", containerGroupId);
     $("#popupMenuGroupOptions").popup("open");
 });
 $("#createEkc").on("click", function() {
@@ -1031,6 +1321,7 @@ $(".hex-input").on("keyup", function() {
     if ($(this).hasClass("key-input")) {
         //loadKeySingleKey
         let eleId = $(this).attr("id");
+        console.log(eleId);
         let textInput = $("#" + eleId);
         //console.log(eleId);
         //console.log($("#label_" + eleId));
@@ -1056,7 +1347,7 @@ $(".dec-input").on("keyup", function() {
     $(this).val(curVal.replace(/[^0-9\n\r]+/g, ''));
 });
 $(".hexdec-input").on("keyup", function() {
-    console.log("hexdec-input keyup");
+    //console.log("hexdec-input keyup");
     // Ensure that only decimal or hexidecimal values are input
     let curVal = $(this).val();
     if (inputType == "dec") {
@@ -1121,7 +1412,7 @@ $("#addEditRsi_rsi").on("keyup", function() {
     }
 });
 $("#loadKeySingle_SlnCkr").on("keyup", function() {
-    console.log("loadKeySingle_SlnCkr keyup");
+    //console.log("loadKeySingle_SlnCkr keyup");
     if ($("#loadKeySingle_SlnCkr").val() == "") {
         $("#cryptoGroupLabel").text("");
         $("#keyTypeLabel").text("");
@@ -1129,14 +1420,21 @@ $("#loadKeySingle_SlnCkr").on("keyup", function() {
     let sln = parseInt($("#loadKeySingle_SlnCkr").val(), inputBase);
     let cg = sln >>> 12;
     //let keyNum = sln && 0x0FFF;
-    
+
     if (cg < 0xF) {
         $("#cryptoGroupLabel").text(cg);
         $("#keyTypeLabel").text("TEK");
     }
     else if (cg == 0xF) {
         $("#cryptoGroupLabel").text(cg);
-        $("#keyTypeLabel").text("KEK");
+        if (sln % 2 == 0) {
+            // UKEK are even
+            $("#keyTypeLabel").text("UKEK");
+        }
+        else {
+            // CKEK are odd
+            $("#keyTypeLabel").text("CKEK");
+        }
     }
     else {
         $("#cryptoGroupLabel").text("Invalid");
@@ -1225,6 +1523,7 @@ $("#loadKeySingle_activeKeysetSlider").on("change", function() {
     else if ($("#loadKeySingle [aria-labelledby='loadKeySingle_activeKeysetSlider-label']").attr("aria-valuenow") == "yes") {
         $("#loadKeySingle_keysetDiv").hide();
     }
+    $("#loadKeySingle_keysetId").val("")
 });
 
 //$("#loadKeySingle [aria-labelledby='loadKeySingle_HexDec-label']").attr("aria-valuenow");
@@ -1243,16 +1542,36 @@ $("#buttonDisconnectKfd").on("click", function() {
     DisconnectDevice();
 });
 
-function ShowLoading() {
+function ShowLoading(loadingType) {
     //https://stackoverflow.com/questions/6597388/jquery-mobile-disable-all-button-when-loading-overlay-is-showed
     //$("body").addClass("ui-disabled");
+    let loadingOptionsCustom = {
+        html: '<div id="keyloadStatus"><div class="ui-corner-all custom-corners"><div class="ui-bar ui-bar-a"><h3>Loading ***LOADINGTYPE***s</h3></div><div class="ui-body ui-body-a"><p>Loading ***LOADINGTYPE***: <span id="keyloadStatus_itemName">key 1</span></p><label for="slider-keyload-status" class="ui-hidden-accessible">Status:</label><input type="range" name="slider-keyload-status" id="slider-keyload-status" data-highlight="true" disabled="disabled" min="0" max="100" value="33"><p class="details left">0%</p><p class="details right">Loading ***LOADINGTYPE*** <span id="keyloadStatus_itemNumber">1</span> of <span id="keyloadStatus_itemTotal">3</span></p><button id="buttonCancelLoading" onclick="CancelTransfers()" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-delete">Cancel</button></div></div></div>',
+        textVisible: false
+    };
+    let loadingParams = {
+        text: "Processing...",
+        textVisible: true
+    }
+    if (loadingType !== undefined) {
+        if (loadingType == "connect") {
+            loadingParams.text = "Initializing connection...";
+        }
+        else {
+            loadingOptionsCustom.html = loadingOptionsCustom.html.replaceAll("***LOADINGTYPE***", loadingType);
+            loadingParams = loadingOptionsCustom;
+        }
+    }
+
     $("#pageDiv").addClass("ui-disabled");
-    $.mobile.loading("show", { text: "Processing...", textVisible: true});
+    //$.mobile.loading("show", { text: "Processing...", textVisible: true });
+    $.mobile.loading("show", loadingParams).enhanceWithin();
+    //$(".disableOnLoading").addClass("ui-disabled");
 }
 function HideLoading() {
     $.mobile.loading("hide");
-    //$("body").addClass("ui-disabled");
     $("#pageDiv").removeClass("ui-disabled");
+    //$(".disableOnLoading").removeClass("ui-disabled");
 }
 
 async function DownloadEkc(keyContainer, password, filename) {
@@ -1266,9 +1585,11 @@ async function DownloadEkc(keyContainer, password, filename) {
     link.href = URL.createObjectURL(blob);
     link.click();
     URL.revokeObjectURL(link.href);
+    _keyContainer.source = filename + ".ekc";
+    $(".keyContainerFileName").text(_keyContainer.source);
 }
 
-function ClearPopupEkc() {
+function ClearEkcFields() {
     $("#passwordEkc").val("");
     $("#inputFile").val("");
 }
@@ -1295,10 +1616,20 @@ async function ConnectDevice() {
         $("#connectionMethod").text("Web Serial API");
         connectionMethod = "ws";
         const connection = await connectSerial();
-        const reading = readUntilClosed();
-        //await connectPolyfill();
+
+        // Uncomment for readUntilClosed, comment for readWithTimeout
+        if (transferMethod == "RUC") {
+            const reading = readUntilClosed();
+        }
+        
         if (connected) {
             ShowDeviceConnected();
+            if (serialModelId == "KFD-AVR") {
+                ShowLoading("connect");
+                await new Promise(resolve => setTimeout(resolve, 6000));
+                HideLoading();
+            }
+            
             await ReadDeviceSettings();
         }
     }
@@ -1308,7 +1639,11 @@ async function ConnectDevice() {
         $("#connectionMethod").text("Web USB Polyfill");
         connectionMethod = "poly";
         const connection = await connectPolyfill();
-        //const reading = readUntilClosed();
+
+        if (transferMethod == "RUC") {
+            //const reading = readUntilClosed();
+        }
+
         if (connected) {
             ShowDeviceConnected();
             await ReadDeviceSettings();
@@ -1319,16 +1654,18 @@ async function ConnectDevice() {
 function ShowDeviceConnected() {
     $("#iconConnectionStatus").css("background-color", "#aaffaa");
     $("#buttonConnectKfd").prop("disabled", true);
-    $("#buttonDisconnectKfd").prop("disabled", false);
-    $(".button-kfd").attr("disabled", false);
+    //$("#buttonDisconnectKfd").prop("disabled", false);
+    //$(".button-kfd").attr("disabled", false);
+    EnableKfdButtons();
     $("#connectionStatus").text("Connected");
 }
 
 function ShowDeviceDisconnected() {
     $("#iconConnectionStatus").css("background-color", "#ffaaaa");
     $("#buttonConnectKfd").prop("disabled", false);
-    $("#buttonDisconnectKfd").prop("disabled", true);
-    $(".button-kfd").attr("disabled", true);
+    //$("#buttonDisconnectKfd").prop("disabled", true);
+    //$(".button-kfd").attr("disabled", true);
+    DisableKfdButtons();
     $("#connectionStatus").text("Disconnected");
     $("#deviceProperties").html("");
 }
@@ -1389,18 +1726,21 @@ async function ReadDeviceSettings() {
     }
 
     if (apVersion != undefined) device.adapterProtocolVersion = apVersion.join(".");
-    if (uniqueId != undefined) device.uniqueId = uniqueId.join("");
+    if (fwVersion != undefined) device.firmwareVersion = fwVersion.join(".");
+    if (uniqueId != undefined) device.uniqueId = BCTS(uniqueId).join("");
     if (modelId != undefined) {
         let mId = "NOT SET";
         if (modelId == 0x01) mId = "KFD100";
         else if (modelId == 0x02) mId = "KFD-AVR";
-        else mId = "UNKNOWN";
+        else mId = serialModelId;
         device.modelId = mId;
     }
-    if (hwVersion != undefined) device.hardwareVersion = hwVersion.join(".");
+    if (hwVersion != undefined) {
+        device.hardwareVersion = hwVersion.join(".");
+    }
     if (serial != undefined) {
-        let serialString = serial.map(hex => String.fromCharCode(hex));
-        device.serial = serialString.join("");
+        let serialStringArray = serial.map(hex => String.fromCharCode(hex));
+        device.serial = serialStringArray.join("");
     }
 
     //console.log("device", device);
@@ -1450,8 +1790,11 @@ function CheckKeyValidation(key) {
 }
 
 function PopulateKeys() {
+    ClearKeyFilter();
+    ClearGroupKeyFilter();
     $("#keyContainerKeyList").empty();
     $("#addGroupKeyList").empty();
+    $("#addMultipleKeyList").empty();
     //$("#addGroupKeyList").append('<div id="checkboxControls" class="ui-controlgroup-controls">');
     _keyContainer.keys.forEach(key => {
         //<li><a href="#"><h2>key 1</h2><p>AES-256, TEK, 3, 0002</p></a></li>
@@ -1468,20 +1811,17 @@ function PopulateKeys() {
         }
         
         // Add to listview
-        let keyListItem = '<li data-container-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</p></a></li>';
+        let keyListItem = '<li data-container-key-id="' + key.Id + '"><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</p></a></li>';
         $("#keyContainerKeyList").append(keyListItem);
         
-        // Add to group checkbox
-        //<label for="checkbox-1a"><p>key 1</p><p>AES-256, TEK, 3, 0002</p></label>
-        //<input type="checkbox" name="checkbox-1a" id="checkbox-1a">
-        
-        //let groupItem = '<div class="ui-checkbox"><label for="checkbox-' + key.Id + '" class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off"><p data-container-key-id=' + key.Id + '>' + key.Name + '</p><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</p></label>';
-        //groupItem += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
-        //$("#checkboxControls").append(groupItem);
-        
-        let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-container-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</span></label>';
-        groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
+        let groupCheckbox = '<div data-checkbox-id="' + key.Id + '"><label for="checkbox-' + key.Id + '"><span data-container-key-id="' + key.Id + '">' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</span></label>';
+        groupCheckbox += '<input data-container-key-id="' + key.Id + '" type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
+        //console.log(groupCheckbox);
         $("#addGroupKeyList").append(groupCheckbox);
+
+        let keyCheckbox = '<div data-checkbox-id="' + key.Id + '"><label for="checkbox-multiple-key-' + key.Id + '"><span data-container-key-id="' + key.Id + '">' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</span></label>';
+        keyCheckbox += '<input data-container-key-id="' + key.Id + '" type="checkbox" name="checkbox-multiple-key-' + key.Id + '" id="checkbox-multiple-key-' + key.Id + '"></div>';
+        $("#addMultipleKeyList").append(keyCheckbox);
     });
     //$("#addGroupKeyList").append('</div>');
     $("#keyContainerKeyList").listview("refresh");
@@ -1491,14 +1831,24 @@ function PopulateKeys() {
 }
 
 function PopulateGroups() {
+    ClearGroupFilter()
+    ClearGroupKeyFilter();
     $("#keyContainerGroupList").empty();
-    _keyContainer.groups.forEach(group => {
-        //<li><a href="#"><h2>group 1</h2><p>5 keys</p></a></li>
-        //console.log(group);
-        let groupListItem = '<li data-container-group-id=' + group.Id + '><a href="#"><h2>' + group.Name + '</h2><p>' + group.Keys.length + ' keys</p></a></li>';
+    $("#addMultipleGroupList").empty();
+    _keyContainer.groups.forEach((group) => {
+        let groupClass = "";
+        if (group.Keys.length == 0) {
+            groupClass = 'class="emptyGroup"';
+        }
+        let groupListItem = '<li data-container-group-id="' + group.Id + '"><a href="#"><h2 ' + groupClass + '>' + group.Name + '</h2><p>' + group.Keys.length + ' keys</p></a></li>';
         $("#keyContainerGroupList").append(groupListItem);
-        $("#keyContainerGroupList").listview("refresh");
+
+        let groupCheckbox = '<div data-checkbox-id="' + group.Id + '"><label for="checkbox-multiple-group-' + group.Id + '"><span data-container-group-id="' + group.Id + '">' + group.Name + '</span><br><span class="keyCheckbox-small">' + group.Keys.length + ' keys</span></label>';
+        groupCheckbox += '<input data-container-group-id="' + group.Id + '" type="checkbox" name="checkbox-multiple-group-' + group.Id + '" id="checkbox-multiple-group-' + group.Id + '"></div>';
+        $("#addMultipleGroupList").append(groupCheckbox);
     });
+    $("#keyContainerGroupList").listview("refresh");
+    $("[data-role=controlgroup]").enhanceWithin().controlgroup("refresh");
 }
 
 function AddKeyToContainer(key) {
@@ -1518,68 +1868,92 @@ function AddKeyToContainer(key) {
         if (key.KeyTypeTek) keyType = "TEK";
         else keyType = "KEK";
     }
+
+    ClearKeyFilter();
+    PopulateKeys();
+
+/*
     let keyListItem = '<li data-container-key-id=' + key.Id + '><a href="#"><h2>' + key.Name + '</h2><p>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</p></a></li>';
     $("#keyContainerKeyList").append(keyListItem);
     //let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-container-key-id=' + key.Id + '>' + key.Name + '</span><br><span>' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + '</span></label>';
     //groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
     let groupCheckbox = '<div data-checkbox-id=' + key.Id + '><label for="checkbox-' + key.Id + '"><span data-container-key-id=' + key.Id + '>' + key.Name + '</span><br><span class="keyCheckbox-small">' + LookupAlgorithmId(key.AlgorithmId) + ', ' + keyType + ', SLN ' + key.Sln + ', KID ' + key.KeyId + ', Keyset ' + (key.ActiveKeyset ? "Active" : key.KeysetId) + '</span></label>';
-    groupCheckbox += '<input type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
+    groupCheckbox += '<input data-container-key-id=' + key.Id + ' type="checkbox" name="checkbox-' + key.Id + '" id="checkbox-' + key.Id + '"></div>';
     $("#addGroupKeyList").append(groupCheckbox);
     $("#keyContainerKeyList").listview("refresh");
     $("[data-role=controlgroup]").enhanceWithin().controlgroup("refresh");
+*/
 }
 
-function AddGroup(groupItem) {
+function AddGroupToContainer(groupItem) {
     // Add key to _keyContainer as well as listviews and comboboxes
     groupItem.Id = _keyContainer.nextGroupNumber;
     _keyContainer.groups.push(groupItem);
     _keyContainer.nextGroupNumber++;
-    
-    let groupItemText = '<li data-container-group-id=' + group.Id + '><a href="#"><h2>' + group.Name + '</h2><p>' + group.Keys.length + ' keys</p></a></li>';
-    $("#keyContainerGroupList").append(groupItem);
-    $("#keyContainerGroupList").listview("refresh");
+
+    PopulateGroups();
 }
 
-function DeleteKeyFromContainer(key_id) {
+function ClearKeyFilter() {
+    $("#manageKeys .ui-input-search input").val("");
+    $("#manageKeys .ui-input-search a").addClass("ui-input-clear-hidden");
+}
+function ClearGroupFilter() {
+    $("#manageGroups .ui-input-search input").val("");
+    $("#manageGroups .ui-input-search a").addClass("ui-input-clear-hidden");
+}
+function ClearGroupKeyFilter() {
+    $("#addGroup .ui-input-search input").val("");
+    $("#addGroup .ui-input-search a").addClass("ui-input-clear-hidden");
+}
+
+function DeleteKeyFromContainer(containerKeyId) {
     // Remove key from _keyContainer as well as listviews and comboboxes and key groups
+    //console.log(containerKeyId);
     _keyContainer.keys = _keyContainer.keys.filter(function(obj) {
-        return obj.Id !== key_id;
+        return obj.Id !== containerKeyId;
     });
-    $("li[data-container-key-id='" + key_id +"']").remove();
-    $("div[data-checkbox-id='" + key_id +"']").remove();
-    RemoveKeyFromAllGroups(key_id);
+    //$("li[data-container-key-id='" + containerKeyId +"']").remove();
+    //$("div[data-checkbox-id='" + containerKeyId +"']").remove();
+    RemoveKeyFromAllGroups(containerKeyId);
+    PopulateKeys();
+    PopulateGroups();
 }
 
-function DeleteGroupFromContainer(group_id) {
+function DeleteGroupFromContainer(containerGroupId) {
     // Remove group from _keyContainer as well as listviews
     _keyContainer.groups = _keyContainer.groups.filter(function(obj) {
-        return obj.Id !== id;
+        return obj.Id !== containerGroupId;
     });
-    $("li[data-container-group-id='" + group_id +"']").remove();
+    //$("li[data-container-group-id='" + containerGroupId +"']").remove();
+    PopulateGroups();
 }
 
 function ResetKeyContainer() {
-    // Clear all pages back to default
+    // Clear all key items back to default
     _keyContainer = {
         keys: [],
         nextKeyNumber: 1,
         groups: [],
-        nextGroupNumber: 1
+        nextGroupNumber: 1,
+        source: "Memory"
     };
-    
+    $(".keyContainerFileName").text(_keyContainer.source);
     $("#keyContainerKeyList").empty();
     $("#addGroupKeyList").empty();
+    $("#addMultipleKeyList").empty();
     $("#keyContainerGroupList").empty();
+    $("#addMultipleGroupList").empty();
 }
 
-function AddKeyToGroup(key_id, group_id) {
+function AddKeyToGroup(containerKeyId, containerGroupId) {
     for (let i=0;i<_keyContainer.groups.length;i++) {
-        if (_keyContainer.groups[i].Id == group_id) {
-            if (_keyContainer.groups[i].Keys.includes(key_id)) {
+        if (_keyContainer.groups[i].Id == containerGroupId) {
+            if (_keyContainer.groups[i].Keys.includes(containerKeyId)) {
                 console.log("Key already exists in group");                
             }
             else {
-                _keyContainer.groups[i].Keys.push(key_id);
+                _keyContainer.groups[i].Keys.push(containerKeyId);
                 console.log("Key added to group");
             }
             return;
@@ -1588,26 +1962,26 @@ function AddKeyToGroup(key_id, group_id) {
     console.log("Group not found");
 }
 
-function RemoveKeyFromGroup(key_id, group_id) {
+function RemoveKeyFromGroupDEPRECATED(key_id, group_id) {
     for (let i=0;i<_keyContainer.groups.length;i++) {
         if (_keyContainer.groups[i].Id == group_id) {
             _keyContainer.groups[i].Keys = _keyContainer.groups[i].Keys.filter(function(e) { return e !== key_id; });
-            console.log("Key removed from group");
+            //console.log("Key removed from group");
             return;
         }
     }
-    console.log("Key not found in group");
+    //console.log("Key not found in group");
 }
 
-function RemoveKeyFromAllGroups(key_id) {
+function RemoveKeyFromAllGroups(containerKeyId) {
     let counter = 0;
     for (let i=0;i<_keyContainer.groups.length;i++) {
-        if (_keyContainer.groups[i].Keys.includes(key_id)) {
+        if (_keyContainer.groups[i].Keys.includes(containerKeyId)) {
             counter++;
-            _keyContainer.groups[i].Keys = _keyContainer.groups[i].Keys.filter(function(e) { return e !== key_id; });
+            _keyContainer.groups[i].Keys = _keyContainer.groups[i].Keys.filter(function(e) { return e !== containerKeyId; });
         }
     }
-    console.log("Key removed from " + counter + " groups");
+    //console.log("Key removed from " + counter + " groups");
 }
 
 
