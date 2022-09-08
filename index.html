@@ -165,8 +165,8 @@
                 	<p><a href="https://kfdtool.com/store" target="_blank">KFDtool</a> and <a href="https://store.omahacommunicationsys.com" target="_blank">KFDshield</a> hardware devices are fully supported by KFDweb</p>
 					<p><h3 id="secureContextStatus"></h3><span id="secureContextDetails"></span></p>
 					<h5><a id="linkLicensingInformation" href="#">Licensing Information</a></h5>
-					<button id="buttonTestPopupStatus">Test popup Status</button>
-					<button id="buttonTestPopupResults">Test popup Results</button>
+					<button id="buttonTestPopupStatus" style="display:none;">Test popup Status</button>
+					<button id="buttonTestPopupResults" style="display:none;">Test popup Results</button>
 					<div id="featureChecklist" data-role="collapsible">
 						<h4>Feature Status</h4>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Main page layout</button>
@@ -213,6 +213,16 @@
                 	<p><h3>Connection method:</h3><span id="connectionMethod"></span></p>
                 	<p><h3>Connection status:</h3><span id="connectionStatus">Disconnected</span></p>
                 	<p><h3>Device properties:</h3><span id="deviceProperties"></span></p>
+					<div id="featureChecklist" data-role="collapsible">
+						<h4>KFDtool Firmware Notice</h4>
+						<p>KFDtool must be running firmware v1.4.0 for proper operation.</p>
+						<ol>
+							<li>Download updated <a href="KFDtool_firmware_AP_v1_1_1.zip">beta firmware here</a>, and then decompress</li>
+							<li>Open KFDtool v1.5.0 on a Windows computer</li>
+							<li>Select Utility -> Adapter Self Test -> Enter BSL Mode</li>
+							<li>Select Utility -> Initialize Adapter, select the attached cfp file, and select the HW version (on the bottom of the KFDtool software, on the label of the KFDtool)</li>
+						</ol>
+					</div>
             	</div>
             	<div id="addGroup" class="menu_divs" style="display:none;">
                 	<h3><span id="groupAction"></span> Group</h3>

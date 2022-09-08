@@ -1829,7 +1829,10 @@ async function ReadDeviceSettings() {
         "Serial: " + device.serial + "<br>" +
         "Unique ID: " + device.uniqueId
     );
-    
+
+    if (device.adapterProtocolVersion == "1.0.0") {
+        alert("Warning: your KFDtool must be running Protocol version 1.1.0 or greater, see KFDtool Firmware Notice below");
+    }
 }
 
 function ReadFileAsync(file) {
