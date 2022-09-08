@@ -37,15 +37,22 @@ async function OpenEkc(file, password) {
     }
     let outerString = dec.decode(inflated);
     let outerXml = $.parseXML(outerString);
+    let outerContainerVersion = $(outerXml).find("OuterContainer")[0].attributes["version"].value;//1.0
     
     let cipherValue = $(outerXml).find("CipherValue").text();
     let saltB64 = $(outerXml).find("Salt").text();
     saltBytes = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
     
+    //console.log("cipherValue", cipherValue);//string
     let data = window.atob(cipherValue);
+    //console.log("data", data);//string
     data = Uint8Array.from(data, b => b.charCodeAt(0));
     let iv = data.slice(0,16);
+    //console.log(data);//Uint8Array
     let cipher_data = data.slice(16);
+
+    let temp = String.fromCharCode.apply(null, cipher_data);
+    let cipherValue_noIv = window.btoa(temp);
 
     let keyLength = 512;
     let passwordBuffer = enc.encode(password);
@@ -69,23 +76,60 @@ async function OpenEkc(file, password) {
         ["decrypt"]
     );
     let decrypted_content;
-    try {
-        decrypted_content = await window.crypto.subtle.decrypt(
-            {
-                name: "AES-CBC",
-                iv
-            },
-            derivation,
-            cipher_data
+    let decrypted_data;
+
+    if (outerContainerVersion == "1.0") {
+        console.log("decrypting using crypt-js");
+        // Use crypto-js to decrypt inner container
+        
+        let exported = await window.crypto.subtle.exportKey(
+            "raw",
+            derivation
         );
+        let exportedKeyBuffer = new Uint8Array(exported);
+
+        let cKey = CryptoJS.enc.Hex.parse(BCTS(exportedKeyBuffer).join(""));
+        let cIv = CryptoJS.enc.Hex.parse(BCTS(iv).join(""));
+
+        
+        
+        let cipherParams = CryptoJS.lib.CipherParams.create({
+            ciphertext: CryptoJS.enc.Base64.parse(cipherValue_noIv)
+        });
+        
+        let decrypted = CryptoJS.AES.decrypt(
+            cipherParams,
+            cKey,
+            {
+                iv: cIv,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Iso10126
+            }
+        );
+        decrypted_data = decrypted.toString(CryptoJS.enc.Utf8);
     }
-    catch(e) {
-        console.log(e);
-        alert("Unable to decrypt encyrpted key container. Please make sure to use a Key Container from KFDtool v1.5.1 or newer");
-        return;
+    else {
+        console.log("decrypting crypto.subtle");
+        try {
+            decrypted_content = await window.crypto.subtle.decrypt(
+                {
+                    name: "AES-CBC",
+                    iv
+                },
+                derivation,
+                cipher_data
+            );
+            decrypted_data = dec.decode(decrypted_content);
+        }
+        catch(e) {
+            console.log(e);
+            alert("Unable to decrypt encyrpted key container. Please make sure to use a Key Container from KFDtool v1.5.1 or newer");
+            return;
+        }
     }
 
-    let decrypted_data = dec.decode(decrypted_content);
+    //let decrypted_data = dec.decode(decrypted_content);
+    //console.log(decrypted_data);
     var isXml;
     try {
         isXml = $.parseXML(decrypted_data);
