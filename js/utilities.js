@@ -57,3 +57,21 @@ function LookupOptionalServiceId(osId) {
     }
     return Object.keys(OptionalServiceId).find(key => OptionalServiceId[key] === osId);
 }
+function LookupKeyTypeFromSLN(sln) {
+    let keyType = "TEK";
+    let cg = sln >>> 12;
+
+    if (cg < 0xF) {
+        keyType = "TEK";
+    }
+    else if (cg == 0xF) {
+        // UKEK are even, CKEK are odd
+        if (sln % 2 == 0) {
+            keyType = "UKEK";
+        }
+        else {
+            keyType = "CKEK";
+        }
+    }
+    return keyType;
+}

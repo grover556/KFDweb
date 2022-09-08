@@ -293,7 +293,7 @@ $("#buttonManageKeyActions").on("click", function() {
 });
 $("#buttonLoadKeyToContainer").on("click", function() {
     let containerKeyItem = CreateKeyFromFields("container");
-    
+    console.log(containerKeyItem);
     if (containerKeyItem === undefined) {
         return;
     }
@@ -302,7 +302,7 @@ $("#buttonLoadKeyToContainer").on("click", function() {
     let keys = _keyContainer.keys.filter(function(obj) { return obj.KeyId === containerKeyItem.KeyId; });
     for (var i=0; i<keys.length; i++) {
         if (keys[i].AlgorithmId == containerKeyItem.AlgorithmId) {
-            alert("Error: Key ID " + containerKeyItem.KeyId + " with Algorithm " + LookupAlgorithmId(keyItem.AlgorithmId) + " already exists");
+            alert("Error: Key ID " + containerKeyItem.KeyId + " with Algorithm " + LookupAlgorithmId(containerKeyItem.AlgorithmId) + " already exists");
             return;
         }
     }
@@ -871,7 +871,9 @@ async function ViewKeyInformation() {
         //$("#table_keyinfo tbody").empty();
         keys.forEach((keyItem) => {
             let algId = Object.keys(AlgorithmId).find(key => AlgorithmId[key] === keyItem.AlgorithmId);
-            let row = '<tr data-keysetid="' + keyItem.KeysetId + '" data-sln="' + keyItem.Sln + '" data-keyid="' + keyItem.KeyId + '" data-algorithm="' + algId + '"><th>' + keyItem.KeysetId + "</th><th>" + keyItem.Sln + "</th><th>" + keyItem.KeyId + "</th><th>" + algId + "</th><th><a class='key-delete' href='#'>Delete</a></th></tr>";
+            let keyType = LookupKeyTypeFromSLN(keyItem.Sln);
+            //let row = '<tr data-keysetid="' + keyItem.KeysetId + '" data-sln="' + keyItem.Sln + '" data-keyid="' + keyItem.KeyId + '" data-algorithm="' + algId + '"><th>' + keyItem.KeysetId + "</th><th>" + keyItem.Sln + "</th><th>" + keyItem.KeyId + "</th><th>" + algId + "</th><th><a class='key-delete' href='#'>Delete</a></th></tr>";
+            let row = '<tr data-keysetid="' + keyItem.KeysetId + '" data-sln="' + keyItem.Sln + '" data-keyid="' + keyItem.KeyId + '" data-algorithm="' + algId + '" data-keytype="' + keyType + '"><th>' + keyItem.KeysetId + "</th><th>" + keyType + "</th><th>" + keyItem.Sln + "</th><th>" + keyItem.KeyId + "</th><th>" + algId + "</th><th><a class='key-delete' href='#'>Delete</a></th></tr>";
             $("#table_keyinfo").append(row);
             $("#table_keyinfo").table("refresh");
         });
@@ -888,7 +890,7 @@ $("table thead tr th").on("click", function() {
 
 function sortTable(table, field) {
     //$("#table_keyinfo tbody tr").sort(sort_sln).appendTo("#table_keyinfo tbody");
-    console.log("sorting " + table + " by " + field);
+    //console.log("sorting " + table + " by " + field);
     if (field == "sln") {
         $("#" + table + " tbody tr").sort(sln).appendTo("#" + table + " tbody");
     }
@@ -915,6 +917,8 @@ function sortTable(table, field) {
     }
     else if (field == "messagenumber") {
         $("#" + table + " tbody tr").sort(messagenumber).appendTo("#" + table + " tbody");
+    }else if (field == "type") {
+        $("#" + table + " tbody tr").sort(keytype).appendTo("#" + table + " tbody");
     }
 
     // < is ascending, > is descending
@@ -927,6 +931,7 @@ function sortTable(table, field) {
     function activedatetime(a, b) { return ($(b).data("keysetactivedatetime")) < ($(a).data("keysetactivedatetime")) ? 1 : -1; }
     function rsiid(a, b) { return ($(b).data("rsiid")) < ($(a).data("rsiid")) ? 1 : -1; }
     function messagenumber(a, b) { return ($(b).data("messagenumber")) < ($(a).data("messagenumber")) ? 1 : -1; }
+    function keytype(a, b) { return ($(b).data("keytype")) < ($(a).data("keytype")) ? 1 : -1; }
 
     $("#tableIncidents").table("refresh");
 }
