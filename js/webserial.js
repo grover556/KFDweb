@@ -61,6 +61,10 @@ $("#buttonTestPopupStatus").on("click", function() {
 $("#buttonTestPopupResults").on("click", function() {
     $("#popupKeyloadResults").popup("open");
 });
+$("#buttonTestKeysetTagging").on("click", function() {
+    $("#popupEditKeysetTagging").popup("open");
+});
+
 
 $("buttonCancelLoading").on("click", function() {
     //console.log($(this));
@@ -139,6 +143,14 @@ $("#addEditRsiConfirm").on("click", function() {
     $("#popupAddEditRsi").popup("close");
     ClearPopupAddEditRsi();
 });
+$("#buttonEditKeysetTaggingConfirm").on("click", function() {
+    let keysetName = $("#editKeyset_name").val();
+    let keysetActivationDatetime = $("#editKeyset_activeDatetime").val();
+
+
+
+
+});
 $("#buttonCancelEkc").on("click", function() {
     $("#popupImportEkc").popup("close");
     ClearEkcFields();
@@ -207,8 +219,8 @@ $("#table_rsiItems tbody").on("click", "a.rsi-change", function() {
     //console.log($(this).parent().parent()[0].dataset);
     // This should trigger mra.???
     let tr = $(this).parent().parent();
-    let rsiOld = parseInt(tr.data("rsiid"));
-    let mnpOld = parseInt(tr.data("mnp"));
+    let rsiOld = parseInt(tr.attr("data-rsiid"));
+    let mnpOld = parseInt(tr.attr("data-messagenumber"));
     let rsiType = "Group";
     if (rsiOld < 9999999) {
         rsiType = "Individual";
@@ -216,14 +228,19 @@ $("#table_rsiItems tbody").on("click", "a.rsi-change", function() {
     $("#addEditRsi_typeOld").val(rsiType);
     $("#addEditRsi_action").val("change");
     $("#addEditRsi_rsiOld").val(rsiOld);
-    $("#addEditRsi_rsi").val(rsiOld);
-    $("#addEditRsi_mnp").val(mnpOld);
+    $("#addEditRsi_rsi").val(rsiOld.toString(inputBase).toUpperCase());
+    $("#addEditRsi_mnp").val(mnpOld.toString(inputBase).toUpperCase());
     $("#popupAddEditRsi").popup("open");
     $("#addEditRsi_rsi").focus();
 });
 $("#table_rsiItems tbody").on("click", "a.rsi-delete", function() {
-    let rsiOld = parseInt(tr.data("rsiid"));
-    let rsiOldType = tr.data("rsitype");
+    let tr = $(this).parent().parent();
+    let rsiOld = parseInt(tr.attr("data-rsiid"));
+    let rsiOldType = tr.attr("data-rsitype");
+    if (rsiOldType == "Individual") {
+        alert("Error: you cannot delete an individual RSI");
+        return;
+    }
     if (window.confirm("Warning: are you sure you want to delete " + rsiOldType + " RSI " + rsiOld + "?")) {
         ChangeRsiValues(rsiOldType, rsiOld, 0, 0);
     }
@@ -238,8 +255,8 @@ console.log("rsiOld: " + rsiOld + ", mnpOld: " + mnpOld);
     $("#addEditRsi_typeOld").val("KMF");
     $("#addEditRsi_action").val("change");
     $("#addEditRsi_rsiOld").val(rsiOld);
-    $("#addEditRsi_rsi").val(rsiOld.toString(inputBase));
-    $("#addEditRsi_mnp").val(mnpOld.toString(inputBase));
+    $("#addEditRsi_rsi").val(rsiOld.toString(inputBase).toUpperCase());
+    $("#addEditRsi_mnp").val(mnpOld.toString(inputBase).toUpperCase());
     $("#popupAddEditRsi").popup("open");
     $("#addEditRsi_rsi").focus();
 });
@@ -314,12 +331,12 @@ $("#buttonLoadKeyToRadio").on("click", function() {
 
     let validation = KeyloadValidate(keyItem.KeysetId, keyItem.Sln, keyItem.KeyTypeKek, keyItem.KeyId, keyItem.AlgorithmId, keyItem.Key);
     if (validation.status == "Success") {
-        SendKeysToRadio([keyItem], "single");
+        SendKeysToRadio([keyItem], "multiple");
         ClearKeyInfo();
     }
     else if (validation.status == "Warning") {
         if (window.confirm("Warning: " + validation.message + " - do you wish to continue anyways?")) {
-            SendKeysToRadio([keyItem], "single");
+            SendKeysToRadio([keyItem], "multiple");
             ClearKeyInfo();
         }
     }
@@ -362,10 +379,18 @@ $("#buttonAddRsi").on("click", function() {
     //ChangeRsiValues("KMF", 9999990, 0, 0);// Delete KMF RSI
 
     //ChangeRsiValues("KMF", 9999990, 9999991, 65534);// TEST
-
+/*
     $("#addEditRsi_typeOld").val("");
     $("#addEditRsi_action").val("add");
     $("#addEditRsi_rsiOld").val("0");
+    $("#popupAddEditRsi").popup("open");
+    $("#addEditRsi_rsi").focus();
+*/
+    $("#addEditRsi_typeOld").val("Group");
+    $("#addEditRsi_action").val("add");
+    $("#addEditRsi_rsiOld").val(0);
+    $("#addEditRsi_rsi").val("");
+    $("#addEditRsi_mnp").val("");
     $("#popupAddEditRsi").popup("open");
     $("#addEditRsi_rsi").focus();
 });
@@ -433,7 +458,7 @@ $("#action_loadKeyToRadio").on("click", function() {
         alert("There was an error retrieving the key from the container");
         return;
     }
-    SendKeysToRadio(containerKey, "single");
+    SendKeysToRadio(containerKey, "multiple");
     $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", "");
     $("#popupMenuKeyOptions").popup("close");
 });
@@ -666,6 +691,19 @@ function CreateKeyFromFields(target) {
     return containerKeyItem;
 }
 
+async function UpdateKeyloadStatus(keyResult) {
+    let statusText = "Succeeded";
+    let statusClass = "";
+    if (keyResult.Status != 0) {
+        statusText = OperationStatusExtensions.ToStatusString(keyResult.Status);
+        statusClass = "keyError ";
+    }
+    // Get the key name by looking up the Key ID and Alg Id
+    let keyName = keys.filter(function(obj) { return (obj.AlgorithmId === keyResult.AlgorithmId) && (obj.KeyId === keyResult.KeyId); });
+    let temp = "<li><a class='" + statusClass + "ui-btn ui-btn-icon-left ui-icon-" + (keyResult.Status == 0 ? "check":"delete") + "'>" + keyName[0].Name + "</a></li>";
+    $("#keyloadResultList").append(temp);
+}
+
 async function SendKeysToRadio(keys, keyloadProtocol) {
     // keys is an array of containerKeys
     console.log("SendKeysToRadio", keys);
@@ -702,6 +740,14 @@ async function SendKeysToRadio(keys, keyloadProtocol) {
         $("#keyloadStatus_itemNumber").text("1");
         $("#keyloadStatus_itemTotal").text(cmdKeyItems.length);
         $("#keyloadResultList").empty();
+/*
+        try {
+            results = await mra.Keyload_individual(cmdKeyItems);
+        }
+        catch (error) {
+
+        }
+*/
 
         for (var i=0; i<cmdKeyItems.length; i++) {
             let widthValue = Math.floor(i / cmdKeyItems.length).toString() + "%";
@@ -717,17 +763,16 @@ async function SendKeysToRadio(keys, keyloadProtocol) {
                     statusClass = " class='invalid'";
                 }
                 let temp = "<li><h4>" + cmdKeyItems[i].Name + "</h4>";
-                temp += "<p" + statusClass + "'>" + statusText + "</p></li>";
+                temp += "<p" + statusClass + ">" + statusText + "</p></li>";
+                console.log(temp);
                 $("#keyloadResultList").append(temp);
                 if (canceltransferFlag) { i = mdKeyItems.length; }
             }
         }
+
+
         HideLoading();
         EnableKfdButtons();
-        
-        $("#addMultipleKeyList input:checked").prop("checked", false).checkboxradio("refresh");
-        $("#addMultipleGroupList input:checked").prop("checked", false).checkboxradio("refresh");
-        $("#popupKeyloadResults").popup("open");
     }
     else if (keyloadProtocol == "multiple") {
         // Load all keys at once, with no status
@@ -735,7 +780,9 @@ async function SendKeysToRadio(keys, keyloadProtocol) {
         try {
             ShowLoading();
             DisableKfdButtons();
+            $("#keyloadResultList").empty();
             results = await mra.Keyload(cmdKeyItems);
+            //results = await mra.Keyload_individual(cmdKeyItems);
         }
         catch (error) {
             console.error(error);
@@ -747,9 +794,30 @@ async function SendKeysToRadio(keys, keyloadProtocol) {
         if (results !== undefined) {
             console.log(results);
             // Check each status to verify result[i].Status == 0
-    
+            results.forEach((keyResult) => {
+                console.log(keyResult);
+                let statusText = "Succeeded";
+                let statusClass = "";
+                if (keyResult.Status != 0) {
+                    statusText = OperationStatusExtensions.ToStatusString(keyResult.Status);
+                    //statusClass = " class='invalid'";
+                    statusClass = "keyError ";
+                }
+                // Get the key name by looking up the Key ID and Alg Id
+                let keyName = keys.filter(function(obj) { return (obj.AlgorithmId === keyResult.AlgorithmId) && (obj.KeyId === keyResult.KeyId); });
+                let temp = "<li><h4>" + keyName[0].Name + "</h4>";
+                temp += "<p" + statusClass + ">" + statusText + "</p></li>";
+                //console.log(temp);
+                //$("#keyloadResultList").append("<li><a href='#' class='ui-btn ui-btn-icon-left ui-icon-check'>PD 15</a></li>");
+                temp = "<li><a class='" + statusClass + "ui-btn ui-btn-icon-left ui-icon-" + (keyResult.Status == 0 ? "check":"delete") + "'>" + keyName[0].Name + "</a></li>";
+                $("#keyloadResultList").append(temp);
+            });
         }
     }
+    $("#addMultipleKeyList input:checked").prop("checked", false).checkboxradio("refresh");
+    $("#addMultipleGroupList input:checked").prop("checked", false).checkboxradio("refresh");
+    $("#keyloadResultList").listview("refresh");
+    $("#popupKeyloadResults").popup("open");
 }
 
 async function SendKeyToRadio(key) {
@@ -1169,7 +1237,6 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
         else {
             result = await mra.ChangeRsi(rsiOld, rsiNew, mnp);
         }
-        
     }
     catch (error) {
         console.error(error);
@@ -1181,27 +1248,32 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
     console.log(result);
     if (result instanceof RspRsiInfo) {
         if (result.Status == 0) {
-            console.log("success");
             if (rsiType == "KMF") {
                 // Change the RSI and MNP in the table
                 //tr.attr("data-messagenumber")
-                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "'] th")[1].text(rsiNew);
-                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "'] th")[2].text(mnp);
-                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").attr("data-messagenumber", mnp);
-                $("#table_kmfRsi tr[data-rsiid='" + rsiOld + "']").attr("data-rsiid", rsiNew);
+                $("#table_kmfRsi tbody tr[data-rsiid='" + rsiOld + "'] th").first().next().text(rsiNew);
+                $("#table_kmfRsi tbody tr[data-rsiid='" + rsiOld + "'] th").first().next().next().text(mnp);
+                $("#table_kmfRsi tbody tr[data-rsiid='" + rsiOld + "']").attr("data-messagenumber", mnp);
+                $("#table_kmfRsi tbody tr[data-rsiid='" + rsiOld + "']").attr("data-rsiid", rsiNew);
             }
             else if ((rsiType == "Individual") || (rsiType == "Group")) {
                 // Add/remove/change the table rows
                 if (rsiNew == 0) {
                     // Delete the RSI
-                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").remove();
+                    $("#table_rsiItems tbody tr[data-rsiid='" + rsiOld + "']").remove();
+                }
+                else if (rsiOld == 0) {
+                    // Add new RSI
+                    let rowInfo = '<tr data-rsiid="' + result.RSI + '" data-messagenumber="' + mnp + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + result.RSI + "</th><th>" + mnp + "</th><th><a class='rsi-change' href='#'>Change</a><a class='rsi-delete' href='#'>Delete</a></th></tr>";
+                    $("#table_rsiItems").append(rowInfo);
+                    $("#table_rsiItems").table("refresh");
                 }
                 else {
                     // Change the RSI and MNP
-                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "'] th")[1].text(rsiNew);
-                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "'] th")[2].text(mnp);
-                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").attr("data-messagenumber", mnp);
-                    $("#table_rsiItems tr[data-rsiid='" + rsiOld + "']").attr("data-rsiid", rsiNew);
+                    $("#table_rsiItems tbody tr[data-rsiid='" + rsiOld + "'] th").first().next().text(rsiNew);
+                    $("#table_rsiItems tbody tr[data-rsiid='" + rsiOld + "'] th").first().next().next().text(mnp);
+                    $("#table_rsiItems tbody tr[data-rsiid='" + rsiOld + "']").attr("data-messagenumber", mnp);
+                    $("#table_rsiItems tbody tr[data-rsiid='" + rsiOld + "']").attr("data-rsiid", rsiNew);
                 }
             }
         }

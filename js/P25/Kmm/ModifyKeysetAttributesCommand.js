@@ -1,7 +1,5 @@
 // ModifyKeysetAttributesCommand
 
-const { ENGINE_METHOD_PKEY_ASN1_METHS } = require("constants");
-
 class ModifyKeysetAttributesCommand extends KmmBody {
     KeysetType;
     DateTime;
@@ -81,19 +79,13 @@ class ModifyKeysetAttributesCommand extends KmmBody {
             let dateTimeString = dateString + timeString;
             let dateTimeArray = Array.from(dateTimeString);
 
-            for (var i=0; i<contents.length; i++) {
+            while (dateTimeArray.length > 0) {
                 contents.push(parseInt(dateTimeArray.splice(0, 8).join(""), 2));
             }
         }
-/*
-        let keysetNameArray = [this.Name.length];
-        for (var i=0; i< this.Name.length; i++) {
-            keysetNameArray[i] = this.Name.charCodeAt(i);
-        }
-*/
         if (this.Name !== undefined) {
             for (var i=0; i< this.Name.length; i++) {
-                contents.push(this.Name.charCodeAt(i))
+                contents.push(this.Name.charCodeAt(i));
             }
         }
 

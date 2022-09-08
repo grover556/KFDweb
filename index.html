@@ -180,7 +180,6 @@
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Key Partitioner</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Radio</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Keyload error on inactive keyset</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Single Key return fields to default (keylen, KSID)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Key Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Load Multiple Keys</button>
@@ -197,9 +196,9 @@
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: View Key Information Sorting</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View Keyset Information</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View RSI Items</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: Edit RSI Items</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: Edit RSI Items</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View KMF Information</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Radio: Edit KMF Information</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: Edit KMF Information</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Outer Layer Encryption</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">DLI</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">MR Emulator</button>
@@ -559,24 +558,34 @@
 					</div>
             	</div>
 				<div data-role="popup" id="popupAddEditRsi" data-dismissible="false">
-					<form>
-						<div style="padding:10px 20px;">
-							<select id="addEditRsi_HexDec" data-role="slider" data-mini="true">
-								<option value="dec">Dec</option>
-								<option value="hex">Hex</option>
-							</select>
-							<input type="hidden" id="addEditRsi_typeOld" value="">
-							<input type="hidden" id="addEditRsi_action" value="">
-							<input type="hidden" id="addEditRsi_rsiOld" value="">
-							<label for="un" class="ui-hidden-accessible">RSI</label>
-							<input type="text" id="addEditRsi_rsi" class="hexdec-input" value="" placeholder="RSI" data-min-value="1" data-max-value="16777215">
-							<label for="pw" class="ui-hidden-accessible">Message Number</label>
-							<input type="text" id="addEditRsi_mnp" class="hexdec-input" value="" placeholder="Message Number" data-min-value="0" data-max-value="65535">
-							<span id="addEditRsi_rsiType"></span>
-							<button id="addEditRsiCancel" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-delete">Cancel</button>
-							<button id="addEditRsiConfirm" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-check">Confirm</button>
-						</div>
-					</form>
+					<div style="padding:10px 20px;">
+						<select id="addEditRsi_HexDec" data-role="slider" data-mini="true">
+							<option value="dec">Dec</option>
+							<option value="hex">Hex</option>
+						</select>
+						<input type="hidden" id="addEditRsi_typeOld" value="">
+						<input type="hidden" id="addEditRsi_action" value="">
+						<input type="hidden" id="addEditRsi_rsiOld" value="">
+						<label for="un" class="ui-hidden-accessible">RSI</label>
+						<input type="text" id="addEditRsi_rsi" class="hexdec-input" value="" placeholder="RSI" data-min-value="1" data-max-value="16777215">
+						<label for="pw" class="ui-hidden-accessible">Message Number</label>
+						<input type="text" id="addEditRsi_mnp" class="hexdec-input" value="" placeholder="Message Number" data-min-value="0" data-max-value="65535">
+						<span id="addEditRsi_rsiType"></span>
+						<button id="addEditRsiCancel" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-delete">Cancel</button>
+						<button id="addEditRsiConfirm" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-check">Confirm</button>
+					</div>
+				</div>
+				<div data-role="popup" id="popupEditKeysetTagging" data-dismissible="true">
+					<div style="padding:10px 20px;">
+						<input type="hidden" id="editKeyset_nameOld" value="">
+						<input type="hidden" id="editKeyset_activeDatetimeOld" value="">
+						<label for="editKeyset_name">Keyset Name</label>
+						<input type="text" id="editKeyset_name" value="" placeholder="" maxlength="31">
+						<label for="editKeyset_activeDatetime">Activation Date/Time</label>
+						<input type="datetime-local" id="editKeyset_activeDatetime" value="2018-06-12T19:30">
+						<button id="buttonEditKeysetTaggingCancel" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-delete">Cancel</button>
+						<button id="buttonEditKeysetTaggingConfirm" class="ui-btn ui-corner-all ui-shadow ui-btn-icon-left ui-icon-check">Confirm</button>
+					</div>
 				</div>
             	<div data-role="popup" id="popupKeyloadStatus" data-dismissible="false">
 					<div id="keyloadStatusDEPRECATED" style="width:300px;">

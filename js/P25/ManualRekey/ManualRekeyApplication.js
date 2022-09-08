@@ -124,6 +124,92 @@ class ManualRekeyApplication {
         await this.End();
         return activeKeysetId;
     }
+
+    async Keyload_individual(keyItems) {
+        //let keyGroups = KeyPartitioner.PartitionKeys(keyItems);
+        let keyStatuses = [];
+        await this.Begin();
+
+        try {
+            let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
+            let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
+            let activeKeysetId = 0;
+            if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {
+                let kmm = rspKmmBody1;
+                if (kmm.KsetIds.length > 0) activeKeysetId = kmm.KsetIds[0];
+                else activeKeysetId = 1;
+            }
+            else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
+                let statusDescr = OperationStatusExtensions.ToStatusString(rspKmmBody1.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(rspKmmBody1.Status);
+                throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
+            }
+            else throw "unexpected kmm";
+            
+            for (var i=0;i<keyItems.length;i++) {
+                let modifyKeyCommand = new ModifyKeyCommand();
+                if (keyItems[i].UseActiveKeyset && !keyItems[i].IsKek) {
+                    modifyKeyCommand.KeysetId = activeKeysetId;
+                }
+                else if (keyItems[i].UseActiveKeyset && keyItems[i].IsKek) {
+                    modifyKeyCommand.KeysetId = 0xFF; // to match KFL3000+ R3.53.03 behavior
+                }
+                else {
+                    modifyKeyCommand.KeysetId = keyItems[i].KeysetId;
+                }
+
+                modifyKeyCommand.AlgorithmId = keyItems[i].AlgorithmId;
+                let keyItem = new KeyItem();
+                keyItem.SLN = keyItems[i].Sln;
+                keyItem.KeyId = keyItems[i].KeyId;
+                keyItem.Key = keyItems[i].Key;
+                keyItem.KEK = keyItems[i].IsKek;
+                keyItem.Erase = false;
+                modifyKeyCommand.KeyItems.push(keyItem);
+                console.log(modifyKeyCommand);
+
+                let rspKmmBody2 = await this.TxRxKmm(modifyKeyCommand);
+                if (rspKmmBody2 instanceof RekeyAcknowledgment) {
+                    for (var k=0; k<rspKmmBody2.Keys.length; k++) {
+                        let status = rspKmmBody2.Keys[k];
+                        keyStatuses.push(status);
+                        //UpdateKeyloadStatus(status);
+
+                        console.log("* key status index " + k + " *");
+                        console.log("algorithm id: " + status.AlgorithmId);
+                        console.log("key id: " + status.KeyId);
+                        console.log("status: " + status.Status);
+
+                        if (status.Status != 0) {
+                            let statusDescr = OperationStatusExtensions.ToStatusString(status.Status);
+                            let statusReason = OperationStatusExtensions.ToReasonString(status.Status);
+                            console.error("received unexpected key status " + "algorithm id: " + status.AlgorithmId + " key id: " + status.KeyId + " status: " + status.Status + " status description: " + statusDescr + " status reason: " + statusReason);
+                            //throw "received unexpected key status" + "algorithm id: " + status.AlgorithmId + "key id: " + status.KeyId + "status: " + status.Status + "status description: " + statusDescr + "status reason: " + statusReason;
+                        }
+                    }
+                }
+                else if (rspKmmBody2 instanceof NegativeAcknowledgment) {
+                    //let kmm = (NegativeAcknowledgment)(rspKmmBody2);
+                    let kmm = rspKmmBody2;
+
+                    let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                    let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                    throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
+                }
+                else {
+                    throw "received uxexpected kmm";
+                }
+                console.log(i);
+            }
+        }
+        catch {
+            await this.End();
+            throw "";
+        }
+        await this.End();
+        return keyStatuses;
+    }
+
     async Keyload(keyItems) {
         let keyGroups = KeyPartitioner.PartitionKeys(keyItems);
         //console.log(keyGroups);
@@ -164,12 +250,8 @@ class ManualRekeyApplication {
                 throw "unexpected kmm";
             }
             
-
-
-
-
-            
             for (var i=0;i<keyGroups.length;i++) {
+                console.log(i);
                 console.log(keyGroups[i]);
                 let modifyKeyCommand = new ModifyKeyCommand();
                 
@@ -199,6 +281,7 @@ class ManualRekeyApplication {
                 });
 */
                 for (var j=0; j<keyGroups[i].length; j++) {
+                    console.log(j);
                     let keyItem = new KeyItem();
                     keyItem.SLN = keyGroups[i][j].Sln;
                     keyItem.KeyId = keyGroups[i][j].KeyId;
@@ -218,11 +301,11 @@ class ManualRekeyApplication {
 
                     console.log("number of key status: " + kmm.Keys.length);
 
-                    for (var i=0; i<kmm.Keys.length; i++) {
-                        let status = kmm.Keys[i];
+                    for (var k=0; k<kmm.Keys.length; k++) {
+                        let status = kmm.Keys[k];
                         keyStatuses.push(status);
 
-                        console.log("* key status index " + i + " *");
+                        console.log("* key status index " + k + " *");
                         console.log("algorithm id: " + status.AlgorithmId);
                         console.log("key id: " + status.KeyId);
                         console.log("status: " + status.Status);
@@ -246,6 +329,7 @@ class ManualRekeyApplication {
                 else {
                     throw "received uxexpected kmm";
                 }
+                console.log(i);
             }
         }
         catch {
@@ -687,7 +771,6 @@ class ManualRekeyApplication {
     }
     async ChangeRsi(rsiOld, rsiNew, mnp) {
         let result = new RspRsiInfo();
-console.log("rsiOld:" + rsiOld + " rsiNew:" + rsiNew + " mnp:" + mnp);
         await this.Begin();
 
         try {
@@ -695,10 +778,10 @@ console.log("rsiOld:" + rsiOld + " rsiNew:" + rsiNew + " mnp:" + mnp);
             cmdKmmBody.RsiOld = rsiOld;
             cmdKmmBody.RsiNew = rsiNew;
             cmdKmmBody.MessageNumber = mnp;
-console.log(cmdKmmBody);
+            
             let responseKmmBody = await this.TxRxKmm(cmdKmmBody);
-console.log(responseKmmBody);
-            if (responseKmmBody instanceof ChangeRsiRepsonse) {
+
+            if (responseKmmBody instanceof ChangeRsiResponse) {
                 result.RSI = rsiNew;
                 result.MN = mnp;
                 result.Status = responseKmmBody.Status;
@@ -866,7 +949,7 @@ console.log(res);
         try {
             let cmdKmmBody = new SetDateTimeCommand();
             cmdKmmBody.DateTime = new Date();
-            
+            console.log(cmdKmmBody);
             let responseKmmBody = await this.TxRxKmm(cmdKmmBody);
             console.log(responseKmmBody);
             // There shouldn't be any response
