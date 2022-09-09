@@ -47,7 +47,7 @@ async function OpenEkc(file, password) {
     }
     let outerString = dec.decode(inflated);
     let outerXml = $.parseXML(outerString);
-    let outerContainerVersion = $(outerXml).find("OuterContainer")[0].attributes["version"].value;//1.0
+    let outerContainerVersion = new Version($(outerXml).find("OuterContainer")[0].attributes["version"].value);//1.0
     
     let cipherValue = $(outerXml).find("CipherValue").text();
     let saltB64 = $(outerXml).find("Salt").text();
@@ -87,8 +87,10 @@ async function OpenEkc(file, password) {
     );
     let decrypted_content;
     let decrypted_data;
-
-    if (outerContainerVersion == "1.0") {
+    
+    let minimumVersion = new Version("1.0");
+    //if (outerContainerVersion == "1.0")
+    if (!outerContainerVersion.IsGreaterThan(minimumVersion)) {
         console.log("decrypting using crypt-js");
         // Use crypto-js to decrypt inner container
         
@@ -360,7 +362,7 @@ async function CreateOuterContainer(cipherValue, params) {
     let oc = document.implementation.createDocument("", "", null);
     
     let ocEle = oc.createElement("OuterContainer");
-    ocEle.setAttribute("version", "1.0");
+    ocEle.setAttribute("version", "1.1");
     oc.appendChild(ocEle);
     
     // Create KeyDerivation
