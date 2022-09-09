@@ -213,19 +213,21 @@
                 	<button id="buttonConnectKfd">Connect KFD</button>
                 	<button id="buttonDisconnectKfd" class="button-kfd">Disconnect KFD</button>
 					<button id="buttonCheckConnection" class="button-kfd">Check MR Connection</button>
-                	<p><h3>Connection method:</h3><span id="connectionMethod"></span></p>
-                	<p><h3>Connection status:</h3><span id="connectionStatus">Disconnected</span></p>
-                	<p><h3>Device properties:</h3><span id="deviceProperties"></span></p>
-					<div id="featureChecklist" data-role="collapsible">
+                	<div id="firmwareNotice" data-role="collapsible">
 						<h4>KFDtool Firmware Notice</h4>
-						<p>KFDtool must be running firmware v1.4.0 for proper operation.</p>
+						<p>KFDtool must be running firmware <strong>v1.4.0</strong> for proper operation</p>
 						<ol>
-							<li>Download updated <a href="KFDtool_firmware_AP_v1_1_1.zip">beta firmware here</a>, and then decompress</li>
+							<li>*WHEN PUBLISHED* Download <a href="https://kfdtool.com/download#1.3.0" target="_blank">current firmware here</a>, then decompress</li>
+							<li>*ONLY FOR TESTING* Download <a href="KFDtool_firmware_AP_v1_1_1.zip" download>beta firmware here</a>, then decompress</li>
 							<li>Open KFDtool v1.5.0 on a Windows computer</li>
 							<li>Select Utility -> Adapter Self Test -> Enter BSL Mode</li>
-							<li>Select Utility -> Initialize Adapter, select the attached cfp file, and select the HW version (on the bottom of the KFDtool software, on the label of the KFDtool)</li>
+							<li>Select Utility -> Initialize Adapter, choose the decompressed cfp file, select the HW version (on the bottom of the KFDtool software, or on the KFDtool label)</li>
 						</ol>
 					</div>
+					<p><h3>Connection method:</h3><span id="connectionMethod"></span></p>
+                	<p><h3>Connection status:</h3><span id="connectionStatus">Disconnected</span></p>
+                	<p><h3>Device properties:</h3><span id="deviceProperties"></span></p>
+					
             	</div>
             	<div id="addGroup" class="menu_divs" style="display:none;">
                 	<h3><span id="groupAction"></span> Group</h3>

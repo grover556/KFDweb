@@ -1997,6 +1997,7 @@ async function ReadDeviceSettings() {
 
     if (device.adapterProtocolVersion == "1.0.0") {
         alert("Warning: your KFDtool must be running Protocol version 1.1.0 or greater, see KFDtool Firmware Notice below");
+        $("#firmwareNotice").collapsible("expand");
     }
 }
 
