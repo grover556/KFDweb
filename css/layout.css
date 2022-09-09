@@ -83,3 +83,8 @@ a+a {
 a.keyError {
     background-color: rgba(255,0,0,0.3) !important;
 }
+a.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: default;
+}

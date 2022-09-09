@@ -6,6 +6,17 @@ let _keyContainer = {
     source: "Memory"
 };
 
+/*
+const keyContainerOnChange = {
+    set(target, property, value) {
+        //console.log(target);
+        //console.log(property);
+        //console.log(value);
+    }
+};
+const _keyContainer = new Proxy(_keyContainerActual, keyContainerOnChange);
+*/
+
 async function CreateEkc(keyContainer, password) {
     let innerContainer, innerContainerEncrypted, outerContainer, outerContainerCompressed;
     
@@ -20,8 +31,7 @@ async function CreateEkc(keyContainer, password) {
 async function OpenEkc(file, password) {
     ResetKeyContainer();
     _keyContainer.source = file.name;
-    $(".keyContainerFileName").text(_keyContainer.source);
-
+    
     let fileContents = await ReadFileAsync(file);//ArrayBuffer
     
     let enc = new TextEncoder("utf-8");
@@ -33,7 +43,7 @@ async function OpenEkc(file, password) {
     
     if (inflated.length != dataLength) {
         alert("File size mismatch - file may be corrupt.");
-        return;
+        return false;
     }
     let outerString = dec.decode(inflated);
     let outerXml = $.parseXML(outerString);
@@ -106,7 +116,13 @@ async function OpenEkc(file, password) {
                 padding: CryptoJS.pad.Iso10126
             }
         );
-        decrypted_data = decrypted.toString(CryptoJS.enc.Utf8);
+        try {
+            decrypted_data = decrypted.toString(CryptoJS.enc.Utf8);
+        }
+        catch (error) {
+            alert("Invalid password for selected file");
+            return false;
+        }
     }
     else {
         console.log("decrypting crypto.subtle");
@@ -124,7 +140,7 @@ async function OpenEkc(file, password) {
         catch(e) {
             console.log(e);
             alert("Unable to decrypt encyrpted key container. Please make sure to use a Key Container from KFDtool v1.5.1 or newer");
-            return;
+            return false;
         }
     }
 
@@ -139,7 +155,7 @@ async function OpenEkc(file, password) {
     }
     if (!isXml) {
         alert("Invalid password for selected file");
-        return;
+        return false;
     }
     else {
         var innerXml = $.parseXML(decrypted_data);
@@ -153,6 +169,7 @@ async function OpenEkc(file, password) {
         PopulateKeys();
         PopulateGroups();
         
+        return true;
         //$(".menu_divs").hide();
         //$("#manageKeys").show();
     }

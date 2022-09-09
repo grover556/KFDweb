@@ -183,11 +183,11 @@
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Key Partitioner</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Single Key to Radio</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Single Key return fields to default (keylen, KSID)</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Single Key return fields to default (keylen, KSID)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Load Key Container</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-alert">Load Multiple Keys</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Create Multiple Keys</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Manage Keys</button>
-						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-forbidden">Container: Edit Key (name, key id, key)</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Edit Key (name, key id, key)</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Load Key to Radio</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Load Group to Radio</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Manage Groups</button>
@@ -242,6 +242,8 @@
             	</div>
             	<div id="loadKeySingle" class="menu_divs" style="display:none;">
                 	<h3>Load Single Key</h3>
+					<input type="hidden" id="loadKeySingle_containerKeyIdOld" value="">
+					<input type="hidden" id="loadKeySingle_keyIdOld" value="">
                 	<div class="ui-field-contain" id="hexDecSlider">
                     	<select id="loadKeySingle_HexDec" data-role="slider" data-mini="true">
                         	<option value="dec">Dec</option>
@@ -320,9 +322,13 @@
                         	<option value="show">Show</option>
                     	</select>
                 	</div>
-                	<div class="ui-field-contain">
+                	<div id="loadKeySingle_add" class="ui-field-contain">
                     	<button id="buttonLoadKeyToRadio" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfd">Load Key to Radio</button>
                     	<button id="buttonLoadKeyToContainer" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Load Key to Container</button>
+                	</div>
+					<div id="loadKeySingle_edit" class="ui-field-contain" style="display:none;">
+                    	<button id="buttonCancelKeyChanges" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-right ui-icon-delete">Cancel Key Changes</button>
+                    	<button id="buttonSaveKeyChanges" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-right ui-icon-check">Save Key Changes</button>
                 	</div>
             	</div>
             	<div id="loadKeyMultiple" class="menu_divs" style="display:none;">
@@ -529,7 +535,7 @@
             	<div data-role="popup" id="popupMenuKeyOptions">
                 	<div id="popupMenuKeyOptions_list">
                     	<ul data-role="listview" data-inset="true" style="min-width:210px;" data-container-key-id="">
-                        	<li><a id="action_loadKeyToRadio" href="#">Load Key to Radio</a></li>
+                        	<li><a id="action_loadKeyToRadio" class="href-kfd" href="#">Load Key to Radio</a></li>
 							<li><a id="action_editKeyInContainer" href="#">Edit Container Key</a></li>
                         	<li><a id="action_deleteKeyFromContainer" href="#">Delete Key from Container</a></li>
                         	<li><a href="#popupMenuKeyOptions_sort" data-rel="dialog" data-transition="slide" style="display:none;">Sort</a></li>
@@ -551,7 +557,7 @@
 				<div data-role="popup" id="popupMenuGroupOptions">
 					<div id="popupMenuGroupOptions_list">
                     	<ul data-role="listview" data-inset="true" style="min-width:210px;" data-container-group-id="">
-                        	<li><a id="action_loadGroupToRadio" href="#">Load Key Group to Radio</a></li>
+                        	<li><a id="action_loadGroupToRadio" class="href-kfd" href="#">Load Key Group to Radio</a></li>
                         	<li><a id="action_editGroupContainer" href="#">Edit Key Group</a></li>
 							<li><a id="action_deleteContainerGroup" href="#">Delete Key Group</a></li>
                     	</ul>

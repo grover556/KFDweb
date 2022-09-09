@@ -49,6 +49,7 @@ $(document).ready(function() {
         $("#connectionMethod").text("Web USB Polyfill");
     }
     DisableKfdButtons();
+    
 });
 $("#downloadSampleEkc").on("click", function(e) {
     e.preventDefault();
@@ -70,6 +71,11 @@ $("buttonCancelLoading").on("click", function() {
     //console.log($(this));
     //HideLoading();
 });
+
+function ModifyKeyContainerHeader() {
+    if (_keyContainer.source == "Memory") return;
+    $(".keyContainerFileName").text(_keyContainer.source + " (modified)");
+}
 
 function CancelTransfers() {
     //$("#keyloadStatus input[type=number]");
@@ -151,10 +157,6 @@ $("#buttonEditKeysetTaggingConfirm").on("click", function() {
 
 
 });
-$("#buttonCancelEkc").on("click", function() {
-    $("#popupImportEkc").popup("close");
-    ClearEkcFields();
-});
 $("#buttonOpenEkc").on("click", function() {
     if ($("#passwordEkc").val() == "") {
         alert("Please enter a password");
@@ -164,11 +166,7 @@ $("#buttonOpenEkc").on("click", function() {
         alert("Please select a valid EKC file");
         return;
     }
-    $("#popupImportEkc").popup("close");
-    //importFile($("#passwordEkc").val());
-    OpenEkc(fileInputElement.files[0], $("#passwordEkc").val());
-    //loadFile();
-    ClearEkcFields();
+    ImportEkc();
 });
 $("#table_keyinfo tbody").on("click", "a.key-delete", function() {
     let tr = $(this).parent().parent();
@@ -291,20 +289,74 @@ $("#buttonManageKeyActions").on("click", function() {
     //DEPRECATED
     $("#popupMenuKeyOptions").popup("open");
 });
+$("#buttonCancelKeyChanges").on("click", function() {
+    SetKeyInfoFieldsForNew();
+    ClearKeyInfo();
+    $("#loadKeySingle").hide();
+    $("#manageKeys").show();
+});
+$("#buttonSaveKeyChanges").on("click", function() {
+    let keyIdOld = parseInt($("#loadKeySingle_keyIdOld").val());
+    let containerKeyItem = CreateKeyFromFields("container");
+    if (containerKeyItem == undefined) return;
+    containerKeyItem.Id = parseInt($("#loadKeySingle_containerKeyIdOld").val());
+    let matchingKeys = _keyContainer.keys.filter(function(obj) { return ((obj.KeyId === containerKeyItem.KeyId) && (obj.AlgorithmId === containerKeyItem.AlgorithmId) && (obj.KeysetId === containerKeyItem.KeysetId) && (obj.ActiveKeyset === containerKeyItem.ActiveKeyset) && (keyIdOld !== containerKeyItem.KeyId)); });
+    if (matchingKeys.length) {
+        //console.log(matchingKeys);
+        //if  (keyIdOld == containerKeyItem.KeyId) return;
+        let keysetLabel = containerKeyItem.KeysetId;
+        if (containerKeyItem.ActiveKeyset) keysetLabel = "active";
+        alert("Key with same Algorithm and Key ID already exists in keyset " + keysetLabel);
+        $("#loadKeySingle_keyId").focus();
+        return;
+    }
+    let validation = KeyloadValidate(containerKeyItem.KeysetId, containerKeyItem.Sln, containerKeyItem.KeyTypeKek, containerKeyItem.KeyId, containerKeyItem.AlgorithmId, containerKeyItem.Key);
+    if (validation.status == "Error") {
+        alert("Error: " + validation.message);
+        return;
+    }
+    else if (validation.status == "Warning") {
+        if (!window.confirm("Warning: " + validation.message + " - do you wish to continue anyways?")) {
+            return;
+        }
+    }
+
+    EditKeyInContainer(containerKeyItem);
+    SetKeyInfoFieldsForNew();
+    ClearKeyInfo();
+    $("#loadKeySingle").hide();
+    $("#manageKeys").show();
+});
 $("#buttonLoadKeyToContainer").on("click", function() {
     let containerKeyItem = CreateKeyFromFields("container");
-    console.log(containerKeyItem);
+    //console.log(containerKeyItem);
     if (containerKeyItem === undefined) {
         return;
     }
     
     // Check for identical Algorithm and Key ID combination
+    /*
     let keys = _keyContainer.keys.filter(function(obj) { return obj.KeyId === containerKeyItem.KeyId; });
     for (var i=0; i<keys.length; i++) {
         if (keys[i].AlgorithmId == containerKeyItem.AlgorithmId) {
             alert("Error: Key ID " + containerKeyItem.KeyId + " with Algorithm " + LookupAlgorithmId(containerKeyItem.AlgorithmId) + " already exists");
             return;
         }
+    }
+    */
+
+    let matchingKeys = _keyContainer.keys.filter(function(obj) { return obj.Name === containerKeyItem.Name; });
+    if (matchingKeys.length) {
+        alert("Key with same name already exists in container");
+        return;
+    }
+
+    matchingKeys = _keyContainer.keys.filter(function(obj) { return ((obj.KeyId === containerKeyItem.KeyId) && (obj.AlgorithmId === containerKeyItem.AlgorithmId) && (obj.KeysetId === containerKeyItem.KeysetId) && (obj.ActiveKeyset === containerKeyItem.ActiveKeyset)); });
+    if (matchingKeys.length) {
+        let keysetLabel = containerKeyItem.KeysetId;
+        if (containerKeyItem.ActiveKeyset) keysetLabel = "active";
+        alert("Key with same Algorithm and Key ID already exists in keyset " + keysetLabel);
+        return;
     }
 
     let validation = KeyloadValidate(containerKeyItem.KeysetId, containerKeyItem.Sln, containerKeyItem.KeyTypeKek, containerKeyItem.KeyId, containerKeyItem.AlgorithmId, containerKeyItem.Key);
@@ -442,6 +494,8 @@ $("#buttonSaveGroupChanges").on("click", function() {
             }
         }
     }
+
+    ModifyKeyContainerHeader();
     PopulateGroups();
     // Go back to group page
     $("#addGroup").hide();
@@ -551,6 +605,17 @@ $("#action_deleteKeyFromContainer").on("click", function() {
     $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", "");
     $("#popupMenuKeyOptions").popup("close");
 });
+$("#action_editKeyInContainer").on("click", function() {
+    let containerKeyId = parseInt($("#popupMenuKeyOptions_list ul").attr("data-container-key-id"));
+    let containerKey = _keyContainer.keys.filter(function(obj) { return obj.Id === containerKeyId; });
+    PopulateKeyInfoFieldsForEdit(containerKey[0]);
+    SetKeyInfoFieldsForEdit();
+    $("#popupMenuKeyOptions_list ul").attr("data-container-key-id", "");
+    $("#popupMenuKeyOptions").popup("close");
+    $(".menu_divs").hide();
+    $("#loadKeySingle").show();
+});
+
 $("#action_editGroupContainer").on("click", function() {
     let containerGroupId = parseInt($("#popupMenuGroupOptions_list ul").attr("data-container-group-id"));
     let containerGroup = _keyContainer.groups.filter(function(obj) { return obj.Id === containerGroupId; });
@@ -632,14 +697,18 @@ function CreateKeyFromFields(target) {
         }
     }
     */
-    containerKeyItem.Name = $("#loadKeySingle_name").val();
+    containerKeyItem.Name = $("#loadKeySingle_name").val().trim();
+
+    // VALIDATION
+/*
     let matchingKeys = _keyContainer.keys.filter(function(obj) { return obj.Name === containerKeyItem.Name; });
     if (matchingKeys.length) {
-        alert("Key name must be unique");
+        alert("Key with same name already exists in container");
         return;
     }
+*/
     
-    containerKeyItem.Id = _keyContainer.nextKeyNumber;
+    //containerKeyItem.Id = _keyContainer.nextKeyNumber;
     containerKeyItem.KeysetId = parseInt($("#loadKeySingle_keysetId").val(), inputBase);
     //containerKeyItem.ActiveKeyset = $("#loadKeySingle_activeKeysetSlider").val() == "yes" ? true : false;
     containerKeyItem.Sln = parseInt($("#loadKeySingle_SlnCkr").val(), inputBase);
@@ -664,7 +733,7 @@ function CreateKeyFromFields(target) {
     containerKeyItem.KeyTypeTek = tek;
     containerKeyItem.KeyTypeKek = kek;
     
-    
+    // VALIDATION
     if ((containerKeyItem.KeysetId < 1) || (containerKeyItem.KeysetId > 255)) {
         alert("Keyset ID out of range");
         return;
@@ -1319,6 +1388,7 @@ async function DeleteKeysFromRadio(keyInfos) {
 
 function ClearKeyInfo() {
     // Reset all key fields to default
+    $("#loadKeySingle_containerKeyIdOld").val();
     $("#loadKeySingle_name").val("");
     $("#loadKeySingle_activeKeysetSlider").val("yes").slider("refresh");
     $("#loadKeySingle_keysetId").val("");
@@ -1326,11 +1396,80 @@ function ClearKeyInfo() {
     $("#loadKeySingle_SlnCkr").val("");
     $("input:radio[name='radioKeyType']").prop("checked", false).checkboxradio("refresh");
     $("input:radio[id='radioKeyType_auto']").prop("checked", true).checkboxradio("refresh");
+    $("#loadKeySingle_keyIdOld").val("");
     $("#loadKeySingle_keyId").val("");
-    $("#loadKeySingle_algorithm").val("132");
-    $("#loadKeySingle_algorithm").selectmenu("refresh");
+    $("#loadKeySingle_algorithm").val("132").selectmenu("refresh");
     $("#loadKeySingle_algorithmOther").val("132");
+    $("#loadKeySingle_algorithm").trigger("change");
     $("#loadKeySingle_key").val("");
+}
+function SetKeyInfoFieldsForEdit() {
+    // Disable all fields except name, key id and key
+    // Text fields also need .addClass("ui-state-disabled");
+    //$("#loadKeySingle_name").prop("disabled", true);
+    $("#loadKeySingle_activeKeysetSlider").slider("disable");
+    $("#loadKeySingle_keysetId").prop("disabled", true);
+    $("#loadKeySingle_keysetId").addClass("ui-state-disabled");
+    $("#loadKeySingle_SlnCkr").prop("disabled", true);
+    $("#loadKeySingle_SlnCkr").addClass("ui-state-disabled");
+    //$("#loadKeySingle_keyId").prop("disabled", true);
+    $("#loadKeySingle_algorithm").prop("disabled", true);
+    $("#loadKeySingle_algorithm").addClass("ui-state-disabled");
+    $("#loadKeySingle_algorithmOther").prop("disabled", true);
+    $("#loadKeySingle_algorithmOther").addClass("ui-state-disabled");
+    //$("#loadKeySingle_key").prop("disabled", true);
+
+    // Change title and button text
+    $("#loadKeySingle h3").html("Edit Container Key");
+    $("#loadKeySingle_add").hide();
+    $("#loadKeySingle_edit").show();
+}
+function SetKeyInfoFieldsForNew() {
+    // Enable all fields
+    // Text fields also need .removeClass("ui-state-disabled");
+    $("#loadKeySingle_containerKeyIdOld").val();
+    //$("#loadKeySingle_name").prop("disabled", false);
+    $("#loadKeySingle_activeKeysetSlider").slider("enable");
+    $("#loadKeySingle_keysetId").prop("disabled", false);
+    $("#loadKeySingle_keysetId").removeClass("ui-state-disabled");
+    $("#loadKeySingle_SlnCkr").prop("disabled", false);
+    $("#loadKeySingle_SlnCkr").removeClass("ui-state-disabled");
+    $("#loadKeySingle_SlnCkr").trigger("keyup");
+    //$("#loadKeySingle_keyId").prop("disabled", false);
+    $("#loadKeySingle_algorithm").prop("disabled", false);
+    $("#loadKeySingle_algorithm").removeClass("ui-state-disabled");
+    $("#loadKeySingle_algorithmOther").prop("disabled", false);
+    $("#loadKeySingle_algorithmOther").removeClass("ui-state-disabled");
+    //$("#loadKeySingle_key").prop("disabled", false);
+
+    // Change title and button text
+    $("#loadKeySingle h3").html("Load Single Key");
+    $("#loadKeySingle_edit").hide();
+    $("#loadKeySingle_add").show();
+}
+function PopulateKeyInfoFieldsForEdit(key) {
+    // Set values
+    $("#loadKeySingle_containerKeyIdOld").val(key.Id);
+    $("#loadKeySingle_name").val(key.Name);
+    if (key.ActiveKeyset) {
+        $("#loadKeySingle_activeKeysetSlider").val("yes").slider("refresh");
+        $("#loadKeySingle_keysetId").val("");
+        $("#loadKeySingle_keysetDiv").hide();
+    }
+    else {
+        $("#loadKeySingle_activeKeysetSlider").val("no").slider("refresh");
+        $("#loadKeySingle_keysetId").val(key.KeysetId);
+        $("#loadKeySingle_keysetDiv").show();
+    }
+    $("#loadKeySingle_SlnCkr").val(key.Sln);
+    $("#loadKeySingle_SlnCkr").trigger("keyup");
+    $("#loadKeySingle_keyIdOld").val(key.KeyId);
+    $("#loadKeySingle_keyId").val(key.KeyId);
+    $("#loadKeySingle_algorithm").val(key.AlgorithmId).selectmenu("refresh");
+    $("#loadKeySingle_algorithmOther").val(key.AlgorithmId);
+    $("#loadKeySingle_algorithm").trigger("change");
+    $("#loadKeySingle_key").val(BCTS(key.Key).join(""));
+    $("#loadKeySingle_key").trigger("keyup");// DOES THIS WORK? or do I need $(".hex-input").trigger("keyup");
 }
 $("#keyContainerKeyList").on("click", "li", function() {
     //console.log($(this).data("container-key-id"));
@@ -1352,9 +1491,18 @@ $("#createEkc").on("click", function() {
         alert("Passwords do not match, please verify password");
         return;
     }
+    if ($("#exportKeyContainer_password").val() == "") {
+        alert("Please enter a password");
+        return;
+    }
     if ($("#exportKeyContainer_filename").val() == "") {
         alert("Please enter a valid file name");
         return;
+    }
+    if ($("#exportKeyContainer_password").val().length < 16) {
+        if (!window.confirm("This password is weak (under 16 characters in length) - use anyways?")) {
+            return;
+        }
     }
     //if ($("#exportKeyContainer_filename").val().includes('[\\/:"*?<>|]+')) { }
     //ExportEkc(_keyContainer, $("#exportKeyContainer_passwordVerify").val(), $("#exportKeyContainer_filename").val());
@@ -1400,12 +1548,9 @@ $("#loadKeySingle_name").on("keyup", function(event) {
 $(".hex-input").on("keyup", function() {
     // Ensure that only hexidecimal values are input
     if ($(this).hasClass("key-input")) {
-        //loadKeySingleKey
         let eleId = $(this).attr("id");
-        console.log(eleId);
         let textInput = $("#" + eleId);
-        //console.log(eleId);
-        //console.log($("#label_" + eleId));
+        
         let maxKeylenBytes = parseInt($("#loadKeySingle_algorithm option:selected").data("length")*2);
         if (maxKeylenBytes == 0) maxKeylenBytes = 512;
         //$("#label_" + eleId).text("Key (hex): (" + $(this).val().length + "/" + maxKeylenBytes + ") bytes");
@@ -1416,6 +1561,8 @@ $(".hex-input").on("keyup", function() {
             textInput.val(textInput.val().slice(0, maxKeylenBytes));
         }
         */
+        
+        if (maxKeylenBytes == 512) return;
         $("#label_" + eleId).text("Key (hex): (" + textInput.val().length + "/" + maxKeylenBytes + " digits)");
     }
     else {
@@ -1655,6 +1802,17 @@ function HideLoading() {
     //$(".disableOnLoading").removeClass("ui-disabled");
 }
 
+async function ImportEkc() {
+    let success = await OpenEkc(fileInputElement.files[0], $("#passwordEkc").val());
+    if (success) {
+        ClearEkcFields();
+        $(".keyContainerFileName").text(_keyContainer.source);
+    }
+    else {
+        $("#passwordEkc").val("");
+    }
+}
+
 async function DownloadEkc(keyContainer, password, filename) {
     ShowLoading();
     let outerContainerCompressed = await CreateEkc(keyContainer, password);
@@ -1753,9 +1911,11 @@ function ShowDeviceDisconnected() {
 
 function EnableKfdButtons() {
     $(".button-kfd").attr("disabled", false);
+    $(".href-kfd").removeClass("disabled");
 }
 function DisableKfdButtons() {
     $(".button-kfd").attr("disabled", true);
+    $(".href-kfd").addClass("disabled");
 }
 
 async function ReadDeviceSettings() {
@@ -1852,7 +2012,7 @@ function ReadFileAsync(file) {
 }
 
 function CheckKeyValidation(key) {
-    //console.log(key);
+    console.log(key);
     let returnVal = {
         valid: true,
         reason: ""
@@ -1861,6 +2021,12 @@ function CheckKeyValidation(key) {
     if (matchingKeys.length) {
         returnVal.valid = false;
         returnVal.reason = "Key name must be unique";
+    }
+    matchingKeys = _keyContainer.keys.filter(function(obj) { return ((obj.KeyId === key.KeyId) && (obj.AlgorithmId === key.AlgorithmId) && (obj.KeysetId === key.KeysetId)); });
+    if (matchingKeys.length) {
+        console.log(matchingKeys);
+        returnVal.valid = false;
+        returnVal.reason = "Key with same Algorithm and Key ID already exists in keyset " + key.KeysetId;
     }
     if (key.KeyTypeTek && (key.Sln >= 61440)) {
         returnVal.valid = false;
@@ -1935,6 +2101,20 @@ function PopulateGroups() {
     $("[data-role=controlgroup]").enhanceWithin().controlgroup("refresh");
 }
 
+function EditKeyInContainer(key) {
+    for (let i=0;i<_keyContainer.keys.length;i++) {
+        if (_keyContainer.keys[i].Id == key.Id) {
+            _keyContainer.keys[i].Name = key.Name;
+            _keyContainer.keys[i].KeyId = key.KeyId;
+            _keyContainer.keys[i].Key = key.Key;
+            break;
+        }
+    }
+    ModifyKeyContainerHeader();
+    PopulateKeys();
+    PopulateGroups();
+}
+
 function AddKeyToContainer(key) {
     //console.log(key);
     // Add key to _keyContainer as well as listviews and comboboxes
@@ -1953,6 +2133,7 @@ function AddKeyToContainer(key) {
         else keyType = "KEK";
     }
 
+    ModifyKeyContainerHeader();
     ClearKeyFilter();
     PopulateKeys();
 
@@ -1975,6 +2156,7 @@ function AddGroupToContainer(groupItem) {
     _keyContainer.groups.push(groupItem);
     _keyContainer.nextGroupNumber++;
 
+    ModifyKeyContainerHeader();
     PopulateGroups();
 }
 
@@ -1999,6 +2181,8 @@ function DeleteKeyFromContainer(containerKeyId) {
     });
     //$("li[data-container-key-id='" + containerKeyId +"']").remove();
     //$("div[data-checkbox-id='" + containerKeyId +"']").remove();
+
+    ModifyKeyContainerHeader();
     RemoveKeyFromAllGroups(containerKeyId);
     PopulateKeys();
     PopulateGroups();
@@ -2010,11 +2194,14 @@ function DeleteGroupFromContainer(containerGroupId) {
         return obj.Id !== containerGroupId;
     });
     //$("li[data-container-group-id='" + containerGroupId +"']").remove();
+
+    ModifyKeyContainerHeader();
     PopulateGroups();
 }
 
 function ResetKeyContainer() {
     // Clear all key items back to default
+/*
     _keyContainer = {
         keys: [],
         nextKeyNumber: 1,
@@ -2022,6 +2209,12 @@ function ResetKeyContainer() {
         nextGroupNumber: 1,
         source: "Memory"
     };
+*/
+    _keyContainer.keys = [];
+    _keyContainer.nextKeyNumber = 1;
+    _keyContainer.groups = [];
+    _keyContainer.nextGroupNumber = 1;
+    _keyContainer.source = "Memory";
     $(".keyContainerFileName").text(_keyContainer.source);
     $("#keyContainerKeyList").empty();
     $("#addGroupKeyList").empty();
