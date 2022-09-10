@@ -32,7 +32,8 @@ class ManualRekeyApplication {
         console.log("MRA.TxRxKmm fromRadio", BCTS(fromRadio).join("-"));
         let responseKmmFrame = new KmmFrame(this.WithPreamble, fromRadio);
         console.log("MRA.TxRxKmm responseKmmFrame", responseKmmFrame);
-        return responseKmmFrame.KmmBody;
+        //return responseKmmFrame.KmmBody;
+        return responseKmmFrame;
     }
     async End() {
         await this.DeviceProtocol.EndSession();
@@ -47,9 +48,9 @@ class ManualRekeyApplication {
             console.log("rspKmmBody1", rspKmmBody1);
             let activeKeysetId = 0;
 
-            if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {
+            if (rspKmmBody1.KmmBody instanceof InventoryResponseListActiveKsetIds) {
                 //let kmm = (InventoryResponseListActiveKsetIds)(rspKmmBody1);
-                let kmm = rspKmmBody1;
+                let kmm = rspKmmBody1.KmmBody;
                 console.log(kmm);
                 for (var i=0; i<kmm.KsetIds.length; i++) {
                     console.log("* keyset id index " + i + " *");
@@ -64,8 +65,8 @@ class ManualRekeyApplication {
                     activeKeysetId = 1; // to match KVL3000+ R3.53.03 behavior
                 }
             }
-            else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
-                let kmm = (NegativeAcknowledgment)(rspKmmBody1);
+            else if (rspKmmBody1.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = rspKmmBody1.KmmBody;
 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -89,8 +90,8 @@ class ManualRekeyApplication {
             let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
             //let activeKeysetId = 0;
 
-            if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {
-                let kmm = rspKmmBody1;
+            if (rspKmmBody1.KmmBody instanceof InventoryResponseListActiveKsetIds) {
+                let kmm = rspKmmBody1.KmmBody;
 
                 for (var i=0; i<kmm.KsetIds.length; i++) {
                     console.log("* keyset id index " + i + " *");
@@ -105,9 +106,9 @@ class ManualRekeyApplication {
                     activeKeysetId = 1; // to match KVL3000+ R3.53.03 behavior
                 }
             }
-            else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
+            else if (rspKmmBody1.KmmBody instanceof NegativeAcknowledgment) {
                 //let kmm = (NegativeAcknowledgment)(rspKmmBody1);
-                let kmm = rspKmmBody1;
+                let kmm = rspKmmBody1.KmmBody;
                 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -134,14 +135,15 @@ class ManualRekeyApplication {
             let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
             let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
             let activeKeysetId = 0;
-            if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {
-                let kmm = rspKmmBody1;
+            if (rspKmmBody1.KmmBody instanceof InventoryResponseListActiveKsetIds) {
+                let kmm = rspKmmBody1.KmmBody;
                 if (kmm.KsetIds.length > 0) activeKeysetId = kmm.KsetIds[0];
                 else activeKeysetId = 1;
             }
-            else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
-                let statusDescr = OperationStatusExtensions.ToStatusString(rspKmmBody1.Status);
-                let statusReason = OperationStatusExtensions.ToReasonString(rspKmmBody1.Status);
+            else if (rspKmmBody1.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = rspKmmBody1.KmmBody;
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
                 throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
             }
             else throw "unexpected kmm";
@@ -169,9 +171,10 @@ class ManualRekeyApplication {
                 console.log(modifyKeyCommand);
 
                 let rspKmmBody2 = await this.TxRxKmm(modifyKeyCommand);
-                if (rspKmmBody2 instanceof RekeyAcknowledgment) {
-                    for (var k=0; k<rspKmmBody2.Keys.length; k++) {
-                        let status = rspKmmBody2.Keys[k];
+                if (rspKmmBody2.KmmBody instanceof RekeyAcknowledgment) {
+                    let kmm = rspKmmBody2.KmmBody;
+                    for (var k=0; k<kmm.Keys.length; k++) {
+                        let status = kmm.Keys[k];
                         keyStatuses.push(status);
                         //UpdateKeyloadStatus(status);
 
@@ -188,9 +191,8 @@ class ManualRekeyApplication {
                         }
                     }
                 }
-                else if (rspKmmBody2 instanceof NegativeAcknowledgment) {
-                    //let kmm = (NegativeAcknowledgment)(rspKmmBody2);
-                    let kmm = rspKmmBody2;
+                else if (rspKmmBody2.KmmBody instanceof NegativeAcknowledgment) {
+                    let kmm = rspKmmBody2.KmmBody;
 
                     let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                     let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -223,8 +225,8 @@ class ManualRekeyApplication {
             let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
             let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
             let activeKeysetId = 0;
-            if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {
-                let kmm = rspKmmBody1;
+            if (rspKmmBody1.KmmBody instanceof InventoryResponseListActiveKsetIds) {
+                let kmm = rspKmmBody.KmmBody1;
 
                 for (var i=0; i<kmm.KsetIds.length; i++) {
                     console.log("* keyset id index " + i + " *");
@@ -239,8 +241,8 @@ class ManualRekeyApplication {
                     activeKeysetId = 1; // to match KVL3000+ R3.53.03 behavior
                 }
             }
-            else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
-                let kmm = rspKmmBody1;
+            else if (rspKmmBody1.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = rspKmmBody1.KmmBody;
                 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -294,10 +296,8 @@ class ManualRekeyApplication {
 
                 console.log(modifyKeyCommand);
                 let rspKmmBody2 = await this.TxRxKmm(modifyKeyCommand);
-
-                if (rspKmmBody2 instanceof RekeyAcknowledgment) {
-                    //let kmm = (RekeyAcknowledgment)(rspKmmBody2);
-                    let kmm = rspKmmBody2;
+                if (rspKmmBody2.KmmBody instanceof RekeyAcknowledgment) {
+                    let kmm = rspKmmBody2.KmmBody;
 
                     console.log("number of key status: " + kmm.Keys.length);
 
@@ -318,9 +318,8 @@ class ManualRekeyApplication {
                         }
                     }
                 }
-                else if (rspKmmBody2 instanceof NegativeAcknowledgment) {
-                    //let kmm = (NegativeAcknowledgment)(rspKmmBody2);
-                    let kmm = rspKmmBody2;
+                else if (rspKmmBody2.KmmBody instanceof NegativeAcknowledgment) {
+                    let kmm = rspKmmBody2.KmmBody;
 
                     let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                     let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -349,8 +348,8 @@ class ManualRekeyApplication {
                 // Get active keyset if needed
                 let cmdKmmBody1 = new InventoryCommandListActiveKsetIds();
                 let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
-                if (rspKmmBody1 instanceof InventoryResponseListActiveKsetIds) {
-                    let kmm = rspKmmBody1;
+                if (rspKmmBody1.KmmBody instanceof InventoryResponseListActiveKsetIds) {
+                    let kmm = rspKmmBody1.KmmBody;
     
                     for (var i=0; i<kmm.KsetIds.length; i++) {
                         console.log("* keyset id index " + i + " *");
@@ -365,9 +364,9 @@ class ManualRekeyApplication {
                         key.KeysetId = 1; // to match KVL3000+ R3.53.03 behavior
                     }
                 }
-                else if (rspKmmBody1 instanceof NegativeAcknowledgment) {
+                else if (rspKmmBody1.KmmBody instanceof NegativeAcknowledgment) {
                     //let kmm = (NegativeAcknowledgment)(rspKmmBody1);
-                    let kmm = rspKmmBody1;
+                    let kmm = rspKmmBody1.KmmBody;
                     
                     let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                     let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -402,9 +401,8 @@ class ManualRekeyApplication {
 
             console.log(modifyKeyCommand);
             let rspKmmBody2 = await this.TxRxKmm(modifyKeyCommand);
-            
-            if (rspKmmBody2 instanceof RekeyAcknowledgment) {
-                let kmm = rspKmmBody2;
+            if (rspKmmBody2.KmmBody instanceof RekeyAcknowledgment) {
+                let kmm = rspKmmBody2.KmmBody;
 
                 console.log("number of key status: " + kmm.Keys.length);
                 
@@ -430,9 +428,8 @@ class ManualRekeyApplication {
                 }
                 console.log(keyStatus);
             }
-            else if (rspKmmBody2 instanceof NegativeAcknowledgment) {
-                //let kmm = (NegativeAcknowledgment)(rspKmmBody2);
-                let kmm = rspKmmBody2;
+            else if (rspKmmBody2.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = rspKmmBody2.KmmBody;
 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -524,10 +521,9 @@ class ManualRekeyApplication {
                     modifyKeyCommand.KeyItems.push(keyItem);
                 }
                 let rspKmmBody2 = await this.TxRxKmm(modifyKeyCommand);
-
-                if (rspKmmBody2 instanceof RekeyAcknowledgment) {
-                    let kmm = rspKmmBody2;
-                    result = rspKmmBody2;
+                if (rspKmmBody2.KmmBody instanceof RekeyAcknowledgment) {
+                    let kmm = rspKmmBody2.KmmBody;
+                    result = kmm;
                     //console.log("number of key status: " + kmm.Keys.length);
 
                     /*
@@ -547,8 +543,8 @@ class ManualRekeyApplication {
                     }
                     */
                 }
-                else if (rspKmmBody2 instanceof NegativeAcknowledgment) {
-                    let kmm = rspKmmBody2;
+                else if (rspKmmBody2.KmmBody instanceof NegativeAcknowledgment) {
+                    let kmm = rspKmmBody2.KmmBody;
     
                     let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                     let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -574,13 +570,12 @@ class ManualRekeyApplication {
             let commandKmmBody = new ZeroizeCommand();
 
             let responseKmmBody = await this.TxRxKmm(commandKmmBody);
-
-            if (responseKmmBody instanceof ZeroizeResponse) {
+            if (responseKmmBody.KmmBody instanceof ZeroizeResponse) {
                 result = "zeroized";
                 console.log("zeroized");
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
     
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -613,10 +608,9 @@ class ManualRekeyApplication {
                 commandKmmBody.MaxKeysRequested = 78;
 
                 let responseKmmBody = await this.TxRxKmm(commandKmmBody);
-
-                if (responseKmmBody instanceof InventoryResponseListActiveKeys) {
-                    let kmm = responseKmmBody;
-                    console.log(responseKmmBody);
+                if (responseKmmBody.KmmBody instanceof InventoryResponseListActiveKeys) {
+                    let kmm = responseKmmBody.KmmBody;
+                    console.log(kmm);
                     marker = kmm.InventoryMarker;
 
                     console.log("inventory marker: " + marker);
@@ -646,8 +640,8 @@ class ManualRekeyApplication {
                     }
                     console.log(result);
                 }
-                else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                    let kmm = responseKmmBody;
+                else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                    let kmm = responseKmmBody.KmmBody;
         
                     let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                     let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -675,14 +669,13 @@ class ManualRekeyApplication {
             let commandKmmBody = new InventoryCommandListKmfRsi();
 
             let responseKmmBody = await this.TxRxKmm(commandKmmBody);
-            console.log(responseKmmBody);
-            if (responseKmmBody instanceof InventoryResponseListKmfRsi) {
-                let kmm = responseKmmBody;
+            if (responseKmmBody.KmmBody instanceof InventoryResponseListKmfRsi) {
+                let kmm = responseKmmBody.KmmBody;
 
                 result = kmm.KmfRsi;
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
     
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -710,14 +703,13 @@ class ManualRekeyApplication {
             let commandKmmBody = new InventoryCommandListMnp();
 
             let responseKmmBody = await this.TxRxKmm(commandKmmBody);
-
-            if (responseKmmBody instanceof InventoryResponseListMnp) {
-                let kmm = responseKmmBody;
+            if (responseKmmBody.KmmBody instanceof InventoryResponseListMnp) {
+                let kmm = responseKmmBody.KmmBody;
 
                 result = kmm.MessageNumberPeriod;
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
     
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -746,13 +738,14 @@ class ManualRekeyApplication {
             cmdKmmBody.KmfRsi = kmfRsi;
             cmdKmmBody.MessageNumberPeriod = mnp;
             let responseKmmBody = await this.TxRxKmm(cmdKmmBody);
-            if (responseKmmBody instanceof LoadConfigResponse) {
+            if (responseKmmBody.KmmBody instanceof LoadConfigResponse) {
+                let kmm = responseKmmBody.KmmBody;
                 result.RSI = kmfRsi;
                 result.MN = mnp;
-                result.Status = responseKmmBody.Status;
+                result.Status = kmm.Status;
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
     
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -780,14 +773,14 @@ class ManualRekeyApplication {
             cmdKmmBody.MessageNumber = mnp;
             
             let responseKmmBody = await this.TxRxKmm(cmdKmmBody);
-
-            if (responseKmmBody instanceof ChangeRsiResponse) {
+            if (responseKmmBody.KmmBody instanceof ChangeRsiResponse) {
+                let kmm = responseKmmBody.KmmBody;
                 result.RSI = rsiNew;
                 result.MN = mnp;
-                result.Status = responseKmmBody.Status;
+                result.Status = kmm.Status;
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
     
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -815,11 +808,14 @@ class ManualRekeyApplication {
 
             while(more) {
                 let commandKmmBody = new InventoryCommandListRsiItems();
-
                 let responseKmmBody = await this.TxRxKmm(commandKmmBody);
+                if (responseKmmBody.KmmBody instanceof InventoryResponseListRsiItems) {
+                    let kmm = responseKmmBody.KmmBody;
 
-                if (responseKmmBody instanceof InventoryResponseListRsiItems) {
-                    let kmm = responseKmmBody;
+                    let selfRsi = new RspRsiInfo();
+                    selfRsi.RSI = responseKmmBody.RsiSource;
+                    selfRsi.Mr = true;
+                    result.push(selfRsi);
 
                     console.log("inventory marker: " + marker);
 
@@ -845,8 +841,8 @@ class ManualRekeyApplication {
                         result.push(res);
                     }
                 }
-                else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                    let kmm = responseKmmBody;
+                else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                    let kmm = responseKmmBody.KmmBody;
         
                     let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                     let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -870,9 +866,8 @@ class ManualRekeyApplication {
         try {
             let commandKmmBody = new InventoryCommandListKeysetTaggingInfo();
             let responseKmmBody = await this.TxRxKmm(commandKmmBody);
-
-            if (responseKmmBody instanceof InventoryResponseListKeysetTaggingInfo) {
-                let kmm = responseKmmBody;
+            if (responseKmmBody.KmmBody instanceof InventoryResponseListKeysetTaggingInfo) {
+                let kmm = responseKmmBody.KmmBody;
                 console.log(kmm);
                 for (var i=0; i<kmm.KeysetItems.length; i++) {
                     let item = kmm.KeysetItems[i];
@@ -888,8 +883,8 @@ console.log(res);
                     result.push(res);
                 }
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -918,15 +913,15 @@ console.log(res);
             cmdKmmBody.KeysetIdSuperseded = keysetSuperseded;
             cmdKmmBody.KeysetIdActivated = keysetActivated;
             let responseKmmBody = await this.TxRxKmm(cmdKmmBody);
-            console.log(responseKmmBody);
-            if (responseKmmBody instanceof ChangeoverResponse) {
-                let kmm = responseKmmBody;
+            console.log(responseKmmBody.KmmBody);
+            if (responseKmmBody.KmmBody instanceof ChangeoverResponse) {
+                let kmm = responseKmmBody.KmmBody;
 
                 result.KeysetIdSuperseded = kmm.KeysetIdSuperseded;
                 result.KeysetIdActivated = kmm.KeysetIdActivated;
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -951,10 +946,10 @@ console.log(res);
             cmdKmmBody.DateTime = new Date();
             console.log(cmdKmmBody);
             let responseKmmBody = await this.TxRxKmm(cmdKmmBody);
-            console.log(responseKmmBody);
+            console.log(responseKmmBody.KmmBody);
             // There shouldn't be any response
-            if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -979,13 +974,12 @@ console.log(res);
             let cmdKmmBody = new CapabilitiesCommand();
             
             let responseKmmBody = await this.TxRxKmm(cmdKmmBody);
-            
-            if (responseKmmBody instanceof CapabilitiesResponse) {
-                let kmm = responseKmmBody;
+            if (responseKmmBody.KmmBody instanceof CapabilitiesResponse) {
+                let kmm = responseKmmBody.KmmBody;
                 result = kmm;
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
@@ -1009,7 +1003,6 @@ console.log(res);
 
         try {
             let cmdKmmBody = new DeleteKeyCommand();
-
             keyInfos.forEach((info) => {
                 let stemp = new KeyStatus();
                 stemp.AlgorithmId = info.algorithmId;
@@ -1018,14 +1011,13 @@ console.log(res);
             });
 
             let responseKmmBody = await this.TxRxKmm(cmdKmmBody);
-            
-            if (responseKmmBody instanceof DeleteKeyResponse) {
-                let kmm = responseKmmBody;
+            if (responseKmmBody.KmmBody instanceof DeleteKeyResponse) {
+                let kmm = responseKmmBody.KmmBody;
                 result = kmm;
                 console.log(kmm);
             }
-            else if (responseKmmBody instanceof NegativeAcknowledgment) {
-                let kmm = responseKmmBody;
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
 
                 let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
                 let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);

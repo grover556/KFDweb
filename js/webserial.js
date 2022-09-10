@@ -1108,14 +1108,17 @@ async function ViewRsiInformation() {
         rsiItems.forEach((rsi) => {
             let rsiType = "Unknown";
             let rsiTypeCode = "unk";
-            if ((rsi.RSI > 0) && (rsi.RSI < 9999999)) {
+            if (rsi.Self) {
+                rsiType = "Self";
+            }
+            else if ((rsi.RSI > 0) && (rsi.RSI < 9999999)) {
                 rsiType = "Individual";
             }
             else if ((rsi.RSI > 9999999) && (rsi.RSI < 16777216)) {
                 rsiType = "Group";
             }
             //<tr data-keysetid="1" data-active="true"><th>Yes</th><th>1</th><th>SET 01</th><th>TEK</th><th>2022-08-01 07:00</th><th></th></tr>
-            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + rsi.MN + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change' href='#'>Change</a><a class='rsi-delete' href='#'>Delete</a></th></tr>";
+            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + (rsi.Self ? "" : rsi.MN) + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + (rsi.Self ? "" : rsi.MN) + "</th><th>" +  (rsi.Self ? "" : "<a class='rsi-change' href='#'>Change</a><a class='rsi-delete' href='#'>Delete</a>") + "</th></tr>";
             $("#table_rsiItems").append(row);
             $("#table_rsiItems").table("refresh");
         });
@@ -1399,7 +1402,7 @@ function ClearKeyInfo() {
     $("#loadKeySingle_keyIdOld").val("");
     $("#loadKeySingle_keyId").val("");
     $("#loadKeySingle_algorithm").val("132").selectmenu("refresh");
-    $("#loadKeySingle_algorithmOther").val("132");
+    $("#loadKeySingle_algorithmOther").val((132).toString(inputBase).toUpperCase());
     $("#loadKeySingle_algorithm").trigger("change");
     $("#loadKeySingle_key").val("");
 }
@@ -1466,7 +1469,7 @@ function PopulateKeyInfoFieldsForEdit(key) {
     $("#loadKeySingle_keyIdOld").val(key.KeyId);
     $("#loadKeySingle_keyId").val(key.KeyId);
     $("#loadKeySingle_algorithm").val(key.AlgorithmId).selectmenu("refresh");
-    $("#loadKeySingle_algorithmOther").val(key.AlgorithmId);
+    $("#loadKeySingle_algorithmOther").val(key.AlgorithmId.toString(inputBase).toUpperCase());
     $("#loadKeySingle_algorithm").trigger("change");
     $("#loadKeySingle_key").val(BCTS(key.Key).join(""));
     $("#loadKeySingle_key").trigger("keyup");// DOES THIS WORK? or do I need $(".hex-input").trigger("keyup");
@@ -1696,7 +1699,7 @@ $("#loadKeySingle_algorithm").on("change", function() {
     }
     else {
         $("#loadKeySingle_algorithmOtherDiv").hide();
-        $("#loadKeySingle_algorithmOther").val($("#loadKeySingle_algorithm").val());
+        $("#loadKeySingle_algorithmOther").val(parseInt($("#loadKeySingle_algorithm").val()).toString(inputBase).toUpperCase());
     }
     if ($("#loadKeySingle_algorithm option:selected").data("length") != "") {
         maxKeylenBytes = parseInt($("#loadKeySingle_algorithm option:selected").data("length")*2);

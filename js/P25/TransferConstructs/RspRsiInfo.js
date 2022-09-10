@@ -4,6 +4,7 @@ class RspRsiInfo {
     #_rsi;
     #_mn;
     #_status;
+    Mr = false;
     get RSI() {
         return this.#_rsi;
     }

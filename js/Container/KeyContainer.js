@@ -3,6 +3,14 @@ let _keyContainer = {
     nextKeyNumber: 1,
     groups: [],
     nextGroupNumber: 1,
+    cryptoNets: [{
+        Id: 1,
+        Rsi: [9999990, 9999991, 9999992, 9999993],
+        Ckek: 1
+    }],
+    nextKmGroupNumber: 2,
+    kmfRsi: 9999999,
+    kmfMn: 1000,
     source: "Memory"
 };
 
@@ -103,8 +111,6 @@ async function OpenEkc(file, password) {
         let cKey = CryptoJS.enc.Hex.parse(BCTS(exportedKeyBuffer).join(""));
         let cIv = CryptoJS.enc.Hex.parse(BCTS(iv).join(""));
 
-        
-        
         let cipherParams = CryptoJS.lib.CipherParams.create({
             ciphertext: CryptoJS.enc.Base64.parse(cipherValue_noIv)
         });

@@ -42,6 +42,9 @@ const filterKfdTool = {//
 const filterKfdAvr = {
     usbVendorId: 0x2341
 };
+const filterMotorolaApx = {
+    usbVendorId: 0x0CAD
+};
 
 let serialModelId;
 
