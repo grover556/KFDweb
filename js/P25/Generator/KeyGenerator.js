@@ -1,5 +1,6 @@
 //https://bradyjoslin.com/blog/hmac-sig-webcrypto/
 //https://medium.com/gft-engineering/mac-and-hmac-simply-explained-with-javascript-snippets-555e2bf82de8
+//http://www.batlabs.com/encrypt.html
 
 function generateRandomKey(len, fixParity) {
     let keychars = "";

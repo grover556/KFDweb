@@ -36,8 +36,11 @@ let reader;
 let writer;
 let exports = {};
 let connected = false;
+
+//http://www.linux-usb.org/usb.ids
 const filterKfdTool = {//
-    usbVendorId: 0x2047
+    usbVendorId: 0x2047,
+    usbProductId: 0x0A7C
 };
 const filterKfdAvr = {
     usbVendorId: 0x2341
@@ -320,6 +323,7 @@ async function connectPolyfill() {
         }
         console.log("Connected to " + serialModelId);
 
+        /*
         port.addEventListener("connect", (event) => {
             // Device has been connected
             console.log(event);
@@ -339,6 +343,7 @@ async function connectPolyfill() {
             }
             DisconnectDevice();
         });
+        */
 
         //https://bugs.chromium.org/p/chromium/issues/detail?id=1099521
         await port.open(serialPortSettings);

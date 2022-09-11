@@ -4,6 +4,7 @@ class KeyItem {
     #_sln;
     #_keyId;
     #_key;
+    #_name;
     get SLN() {
         return this.#_sln;
     }
@@ -30,6 +31,18 @@ class KeyItem {
             throw "ArgumentNullException";
         }
         this.#_key = value;
+    }
+    get Name() {
+        return this.#_name;
+    }
+    set Name(value) {
+        if (value == null) {
+            throw "ArgumentNullException";
+        }
+        if (value.length > 31) {
+            throw "ArgumentMaxLengthExceededException";
+        }
+        this.#_name = value;
     }
     KEK;
     Erase;
