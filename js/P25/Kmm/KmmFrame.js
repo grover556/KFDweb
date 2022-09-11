@@ -153,13 +153,6 @@ class KmmFrame {
                     kmmBody.Parse(messageBody);
                     this.KmmBody = kmmBody;
                 }
-                // OTAR COMMANDS
-                else if (inventoryType == InventoryType.ListInactiveKeyIds) {
-                    console.log("InventoryType = ListInactiveKeyIds");
-                    let kmmBody = new InventoryCommandListInactiveKeyIds();
-                    kmmBody.Parse(messageBody);
-                    this.KmmBody = kmmBody;
-                }
                 else {
                     console.error("unknown inventory command type");
                     throw "unknown inventory command type";
