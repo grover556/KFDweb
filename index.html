@@ -45,16 +45,10 @@
 		<script src="js/P25/Kmm/ResponseKind.js"></script>
 		<script src="js/P25/Kmm/InventoryType.js"></script>
 		<script src="js/P25/Kmm/KmmBody.js"></script>
-		<script src="js/P25/Kmm/CapabilitiesCommand.js"></script>
-		<script src="js/P25/Kmm/CapabilitiesResponse.js"></script>
 		<script src="js/P25/Kmm/ChangeoverCommand.js"></script>
 		<script src="js/P25/Kmm/ChangeoverResponse.js"></script>
 		<script src="js/P25/Kmm/ChangeRsiCommand.js"></script>
 		<script src="js/P25/Kmm/ChangeRsiResponse.js"></script>
-		<script src="js/P25/Kmm/DeleteKeyCommand.js"></script>
-		<script src="js/P25/Kmm/DeleteKeyResponse.js"></script>
-		<script src="js/P25/Kmm/DeleteKeysetCommand.js"></script>
-		<script src="js/P25/Kmm/DeleteKeysetResponse.js"></script>
 		<script src="js/P25/Kmm/InventoryCommandListActiveKeys.js"></script>
 		<script src="js/P25/Kmm/InventoryCommandListActiveKsetIds.js"></script>
 		<script src="js/P25/Kmm/InventoryCommandListInactiveKeyIds.js"></script>
@@ -84,7 +78,6 @@
 		<script src="js/P25/Kmm/RekeyAcknowledgment.js"></script>
 		<script src="js/P25/Kmm/RsiItem.js"></script>
 		<script src="js/P25/Kmm/SessionControl.js"></script>
-		<script src="js/P25/Kmm/SetDateTimeCommand.js"></script>
 		<script src="js/P25/Kmm/ZeroizeCommand.js"></script>
 		<script src="js/P25/Kmm/ZeroizeReponse.js"></script>
 
@@ -145,20 +138,6 @@
                             </ul>
                         </div>
                     </li>
-					<li>
-						<div data-role="collapsible" data-inset="false" data-iconpos="left" style="display:none;">
-							<h2>OTAR Features</h2>
-							<ul data-role="listview">
-								<li><a class="menuItem" id="menu_otarCapabilities" href="#">Get Capabilities</a></li>
-								<li><a class="menuItem" id="menu_otarKeyAssignment" href="#">Key Assignment</a></li>
-								<li><a class="menuItem" id="menu_otarDeleteKeyset" href="#">Delete Keyset</a></li>
-								<li><a class="menuItem" id="menu_otarLoadConfig" href="#">Load Configuration</a></li>
-								<li><a class="menuItem" id="menu_otarWarmstart" href="#">Warm Start</a></li>
-								<li><a class="menuItem" id="menu_otarSetDateTime" href="#">Set Date/Time</a></li>
-								<li><a class="menuItem" id="menu_otarTotar" href="#">Tactical OTAR</a></li>
-							</ul>
-						</div>
-					</li>
                 </ul>
             </div>
             <div data-role="header" data-position="fixed">
@@ -457,51 +436,6 @@
 						</thead>
 						<tbody></tbody>
 					</table>
-            	</div>
-				<div id="otarCapabilities" class="menu_divs" style="display:none;">
-					<div class="ui-field-contain">
-                    	<button id="buttonGetCapabilities" class="ui-btn ui-btn-inline button-kfd">Get Capabilities</button>
-                	</div>
-					<h3>SU Capabilities</h3>
-					<div class="ui-grid-b ui-responsive">
-						<div class="ui-block-a" style="padding:10px,10px;">
-							<table data-role="table" id="table_supportedAlgorithms" class="table-stripe ui-responsive" style="border-collapse:separate;padding:0px 5px;">
-								<thead>
-									<tr>
-										<th>Algorithms</th>
-									</tr>
-								</thead>
-								<tbody></tbody>
-							</table>
-						</div>
-						<div class="ui-block-b">
-							<table data-role="table" id="table_supportedMessages" class="table-stripe ui-responsive" style="border-collapse:separate;padding:0px 5px;">
-								<thead>
-									<tr>
-										<th>Messages</th>
-									</tr>
-								</thead>
-								<tbody></tbody>
-							</table>
-						</div>
-						<div class="ui-block-c">
-							<table data-role="table" id="table_supportedServices" class="table-stripe ui-responsive" style="border-collapse:separate;padding:0px 5px;">
-								<thead>
-									<tr>
-										<th>Services</th>
-									</tr>
-								</thead>
-								<tbody></tbody>
-							</table>
-						</div>
-					</div>
-            	</div>
-				<div id="otarSetDateTime" class="menu_divs" style="display:none;">
-                	<h3>Set Date/Time</h3>
-					<h5 style="color:red;">PerformKmmTransfer(inKmm): unexpected kmm opcode, expected 194 got 195</h5>
-                	<div class="ui-field-contain">
-                    	<button id="buttonSetClock" class="ui-btn ui-btn-inline button-kfd">Set Date/Time</button>
-                	</div>
             	</div>
             	<div id="loadKeyContainer" class="menu_divs" style="display:none;">
                 	<h3>Load Key Container</h3>

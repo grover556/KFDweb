@@ -271,12 +271,6 @@ class KmmFrame {
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
-        else if (messageId == MessageId.CapabilitiesResponse) {
-            console.log("MessageId = CapabilitiesResponse");
-            let kmmBody = new CapabilitiesResponse();
-            kmmBody.Parse(messageBody);
-            this.KmmBody = kmmBody;
-        }
         else if (messageId == MessageId.DeleteKeyResponse) {
             console.log("MessageId = DeleteKeyResponse");
             let kmmBody = new DeleteKeyResponse();
