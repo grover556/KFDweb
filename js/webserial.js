@@ -1102,23 +1102,19 @@ async function ViewRsiInformation() {
         EnableKfdButtons();
     }
     if (rsiItems !== undefined) {
-        console.log(rsiItems);//rsiItems[0].MN, .RSI, .Status
         //$("#valueKmfRsi").text(rsi);
         //$("#table_rsiItems tbody").empty();
         rsiItems.forEach((rsi) => {
             let rsiType = "Unknown";
             let rsiTypeCode = "unk";
-            if (rsi.Self) {
-                rsiType = "Self";
-            }
-            else if ((rsi.RSI > 0) && (rsi.RSI < 9999999)) {
+            if ((rsi.RSI > 0) && (rsi.RSI < 9999999)) {
                 rsiType = "Individual";
             }
             else if ((rsi.RSI > 9999999) && (rsi.RSI < 16777216)) {
                 rsiType = "Group";
             }
             //<tr data-keysetid="1" data-active="true"><th>Yes</th><th>1</th><th>SET 01</th><th>TEK</th><th>2022-08-01 07:00</th><th></th></tr>
-            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + (rsi.Self ? "" : rsi.MN) + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + (rsi.Self ? "" : rsi.MN) + "</th><th>" +  (rsi.Self ? "" : "<a class='rsi-change' href='#'>Change</a><a class='rsi-delete' href='#'>Delete</a>") + "</th></tr>";
+            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + rsi.MN + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change' href='#'>Change</a><a class='rsi-delete' href='#'>Delete</a></th></tr>";
             $("#table_rsiItems").append(row);
             $("#table_rsiItems").table("refresh");
         });

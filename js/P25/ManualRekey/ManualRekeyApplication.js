@@ -812,11 +812,6 @@ class ManualRekeyApplication {
                 if (responseKmmBody.KmmBody instanceof InventoryResponseListRsiItems) {
                     let kmm = responseKmmBody.KmmBody;
 
-                    let selfRsi = new RspRsiInfo();
-                    selfRsi.RSI = responseKmmBody.RsiSource;
-                    selfRsi.Mr = true;
-                    result.push(selfRsi);
-
                     console.log("inventory marker: " + marker);
 
                     if (marker == 0) {

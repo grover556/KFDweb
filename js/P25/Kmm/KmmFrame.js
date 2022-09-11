@@ -63,12 +63,12 @@ class KmmFrame {
 
         /* destination rsi */
         frame[4] = this.RsiDestination >>> 16;
-        frame[5] = this.RsiDestination >>> 8;
+        frame[5] = (this.RsiDestination >>> 8) & 0xFF;
         frame[6] = this.RsiDestination & 0xFF;
 
         /* source rsi */
         frame[7] = this.RsiSource >>> 16;
-        frame[8] = this.RsiSource >>> 8;
+        frame[8] = (this.RsiSource >>> 8) & 0xFF;
         frame[9] = this.RsiSource & 0xFF;
 
         /* message body */
