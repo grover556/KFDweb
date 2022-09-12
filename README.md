@@ -3,12 +3,11 @@
 Open Source browser-based GUI for [KFDtool](https://github.com/KFDtool/KFDtool)
 Compliant with P25 standards (TIA-102.AACD-A)
 
+## [Use KFDweb here now](https://4dkfire.com/KFDweb)
 
 Features
 ----------------
 KFDweb is designed to interface with the KFDtool and [KFDshield](https://store.omahacomms.com/product/kfdshield/) hardware adapters (TWI/3WI/Three Wire Interface).
-
-[Use KFDweb here now](https://4dkfire.com/KFDweb)
 
 **Key Fill Device (KFD)**
 
