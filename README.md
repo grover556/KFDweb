@@ -3,16 +3,58 @@
 Open Source browser-based GUI for [KFDtool](https://github.com/KFDtool/KFDtool)
 Compliant with P25 standards (TIA-102.AACD-A)
 
+
 Features
 ----------------
 KFDweb is designed to interface with the KFDtool and [KFDshield](https://store.omahacomms.com/product/kfdshield/) hardware adapters (TWI/3WI/Three Wire Interface). Currently, desktop versions of Chrome, Edge, and Opera are compatible with KFDweb, but support will soon allow for support on Android devices using Chrome.
 
-Key Containers can be transerred back and forth between KFDtool software (Windows), version 1.5.1 and greater.
+**Key Fill Device (KFD)**
 
-Compatibility
+The KFDtool software supports KFD features through the KFDtool hardware adapter (TWI/3WI/Three Wire Interface), as well as through a IP (UDP) connection (DLI/Data Link Independent interface).
+
+Keys and groups of keys can be saved to an AES-256 encrypted key container file, which can then be selected and loaded into a target device in one operation.
+
+Supported Manual Rekeying Features (TIA-102.AACD-A)
+
+* 2.3.1 Keyload
+* 2.3.2 Key Erase
+* 2.3.3 Erase All Keys
+* 2.3.4 View Key Info
+* 2.3.5 View Individual RSI
+* 2.3.6 Load Individual RSI
+* 2.3.7 View KMF RSI
+* 2.3.8 Load KMF RSI
+* 2.3.9 View MNP
+* 2.3.10 Load MNP
+* 2.3.11 View Keyset Info
+* 2.3.12 Activate Keyset
+
+Key validators/generators are available for the following algorithms:
+
+* AES-256 (Algorithm ID 0x84)
+* DES-OFB (Algorithm ID 0x81)
+* DES-XL (Algorithm ID 0x9F)
+* ADP/RC4 (Algorithm ID 0xAA)
+
+
+Hardware Compatibility
 ----------------
-* KFDweb software will run on any [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) HTTP server, including localhost deployments.
-* KFDweb relies on the [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) to function. Currently, this is only supported on Chrome, Edge, and Opera browsers. Check [here](https://caniuse.com/web-serial) or [here](https://caniuse.com/mdn-api_serial) to see if your current browser supports this API.
+* Mobile Radio (MR) Emulator is not supported at this time
+* Data Link Independent (DLI) functions are not supported (IP/UDP)
+* KFDtool users will need to update to the latest firmware (v1.4.0 or greater) in order to be compatible. Firmware is available for download [here](https://kfdtool.com/download#1.4.0)
+* KFDshield users should be able to use current firmware without any issues
+
+
+Browser and OS Compatibility
+* Chrome, Edge, and Opera browsers are supported at this time, on both MacOS and Windows operating systems
+* KFDweb relies on the [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) to function. Currently, this is only supported on Chrome, Edge, and Opera browsers. Check [here](https://caniuse.com/web-serial) or [here](https://caniuse.com/mdn-api_serial) to see if your current browser supports this API
+* KFDweb software will run on any [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) HTTP server, including HTTPS and localhost deployments
+
+
+Documentation
+----------------
+A video showing basic features is [available for viewing here](https://github.com/grover556/KFDweb/raw/main/KFDweb_demo_final.mp4)
+
 
 License/Legal
 ----------------
