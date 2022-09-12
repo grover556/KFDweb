@@ -6,7 +6,9 @@ Compliant with P25 standards (TIA-102.AACD-A)
 
 Features
 ----------------
-KFDweb is designed to interface with the KFDtool and [KFDshield](https://store.omahacomms.com/product/kfdshield/) hardware adapters (TWI/3WI/Three Wire Interface). Currently, desktop versions of Chrome, Edge, and Opera are compatible with KFDweb, but support will soon allow for support on Android devices using Chrome.
+KFDweb is designed to interface with the KFDtool and [KFDshield](https://store.omahacomms.com/product/kfdshield/) hardware adapters (TWI/3WI/Three Wire Interface).
+
+[Use KFDweb here now](https://4dkfire.com/KFDweb)
 
 **Key Fill Device (KFD)**
 
@@ -46,7 +48,8 @@ Hardware Compatibility
 
 
 Browser and OS Compatibility
-* Chrome, Edge, and Opera browsers are supported at this time, on both MacOS and Windows operating systems
+----------------
+* Chrome, Edge, and Opera browsers are supported at this time, on both MacOS and Windows operating systems. Support for Android based devices is in development
 * KFDweb relies on the [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) to function. Currently, this is only supported on Chrome, Edge, and Opera browsers. Check [here](https://caniuse.com/web-serial) or [here](https://caniuse.com/mdn-api_serial) to see if your current browser supports this API
 * KFDweb software will run on any [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) HTTP server, including HTTPS and localhost deployments
 
