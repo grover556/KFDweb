@@ -1,23 +1,7 @@
 //KmmFrame
 
 class KmmFrame {
-    KmmBody;
-    RsiDestination;
-    RsiSource;
-    Version;
-    Mfid;
-    AlgorithmId;
-    KeyId;
-    Mi;
     constructor(kmmBody, contents) {
-        this.RsiDestination = 0xFFFFFF;
-        this.RsiSource = 0xFFFFFF;
-        this.Version = 0x00;
-        this.Mfid = 0x00;
-        this.AlgorithmId = 0x80;
-        this.KeyId = 0x0000;
-        this.Mi = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-
         // Had to get creative becuase JS does not support construtor overloads
         if (kmmBody instanceof KmmBody) {
             this.KmmBody = kmmBody;
@@ -62,14 +46,14 @@ class KmmFrame {
         frame[3] = messageFormat;
 
         /* destination rsi */
-        frame[4] = this.RsiDestination >>> 16;
-        frame[5] = (this.RsiDestination >>> 8) & 0xFF;
-        frame[6] = this.RsiDestination & 0xFF;
+        frame[4] = 0xFF;
+        frame[5] = 0xFF;
+        frame[6] = 0xFF;
 
         /* source rsi */
-        frame[7] = this.RsiSource >>> 16;
-        frame[8] = (this.RsiSource >>> 8) & 0xFF;
-        frame[9] = this.RsiSource & 0xFF;
+        frame[7] = 0xFF;
+        frame[8] = 0xFF;
+        frame[9] = 0xFF;
 
         /* message body */
         //Array.Copy(body, 0, frame, 10, body.length);
@@ -82,24 +66,24 @@ class KmmFrame {
 
         let data = [];
 
-        data.push(this.Version); // version
+        data.push(0x00); // mi // version
         
         data.push(mfid); // mfid
         
-        data.push(this.AlgorithmId); // algid
+        data.push(0x80); // mi // algid
 
-        data.push(this.KeyId >>> 8); // key id
-        data.push(this.KeyId & 0xFF); // key id
+        data.push(0x00); // mi // key id
+        data.push(0x00); // mi // key id
 
-        data.push(this.Mi[0]); // mi
-        data.push(this.Mi[1]); // mi
-        data.push(this.Mi[2]); // mi
-        data.push(this.Mi[3]); // mi
-        data.push(this.Mi[4]); // mi
-        data.push(this.Mi[5]); // mi
-        data.push(this.Mi[6]); // mi
-        data.push(this.Mi[7]); // mi
-        data.push(this.Mi[8]); // mi
+        data.push(0x00); // mi
+        data.push(0x00); // mi
+        data.push(0x00); // mi
+        data.push(0x00); // mi
+        data.push(0x00); // mi
+        data.push(0x00); // mi
+        data.push(0x00); // mi
+        data.push(0x00); // mi
+        data.push(0x00); // mi
 
         data = data.concat(this.ToBytes());
 
@@ -115,16 +99,6 @@ class KmmFrame {
         let messageLength = 0;
         messageLength |= contents[1] << 8;
         messageLength |= contents[2];
-
-        // Destination RSI
-        this.RsiDestination |= contents[4] << 16;
-        this.RsiDestination |= contents[5] << 8;
-        this.RsiDestination |= contents[6];
-
-        // Source RSI
-        this.RsiSource |= contents[7] << 16;
-        this.RsiSource |= contents[8] << 8;
-        this.RsiSource |= contents[9];
 
         let messageBodyLength = messageLength - 7;
         let messageBody = [messageBodyLength];
@@ -304,36 +278,22 @@ class KmmFrame {
     ParseWithPreamble(contents) {
         // TODO bounds check
 
-        this.Version = contents[0];
+        let version = contents[0];
 
-        if (this.Version == 0x00) {
-            // Version 0 preamble
-            this.Mfid = contents[1];
-            this.AlgorithmId = contents[2];
-
-            this.KeyId |= contents[3] << 8;
-            this.KeyId |= contents[4];
-
-            for (var i=0; i<9; i++) {
-                this.Mi[i] = contents[5 + i];
-            }
-
-            let frame = contents.slice(14);
-
-            if ((this.AlgorithmId == 0x80) && (this.KeyId == 0x0000)) {
-                this.Parse(this.Mfid, frame);
-            }
-            else {
-                // Decrypt the frame
-
-
-
-
-                this.Parse(this.Mfid, frame);
-            }
-        }
-        else if (this.Version != 0x00) {
+        if (version != 0x00) {
             throw "unknown preamble version";
         }
+
+        let mfid = contents[1];
+
+        // TODO algid
+
+        // TODO keyid
+
+        // TODO mi
+
+        let frame = contents.slice(14);
+
+        this.parse(mfid, frame);
     }
 }
