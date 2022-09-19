@@ -557,6 +557,10 @@ $("#buttonLoadMultipleKeys").on("click", function() {
     let containerKeys = _keyContainer.keys.filter(function(obj) { return key_set.has(obj.Id); });
     console.log(containerKeys);
 
+    if (containerKeys.length < 1) {
+        alert("You must select keys or groups to load to the device");
+    }
+
     SendKeysToRadio(containerKeys, "multiple");
     return;
 
@@ -1114,7 +1118,7 @@ async function ViewRsiInformation() {
                 rsiType = "Group";
             }
             //<tr data-keysetid="1" data-active="true"><th>Yes</th><th>1</th><th>SET 01</th><th>TEK</th><th>2022-08-01 07:00</th><th></th></tr>
-            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + rsi.MN + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change' href='#'>Change</a><a class='rsi-delete' href='#'>Delete</a></th></tr>";
+            let row = '<tr data-rsiid="' + rsi.RSI + '" data-messagenumber="' + rsi.MN + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + rsi.RSI + "</th><th>" + rsi.MN + "</th><th><a class='rsi-change space-apart' href='#'>Change</a><a class='rsi-delete space-apart' href='#'>Delete</a></th></tr>";
             $("#table_rsiItems").append(row);
             $("#table_rsiItems").table("refresh");
         });
@@ -1337,7 +1341,7 @@ async function ChangeRsiValues(rsiType, rsiOld, rsiNew, mnp) {
                 }
                 else if (rsiOld == 0) {
                     // Add new RSI
-                    let rowInfo = '<tr data-rsiid="' + result.RSI + '" data-messagenumber="' + mnp + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + result.RSI + "</th><th>" + mnp + "</th><th><a class='rsi-change' href='#'>Change</a><a class='rsi-delete' href='#'>Delete</a></th></tr>";
+                    let rowInfo = '<tr data-rsiid="' + result.RSI + '" data-messagenumber="' + mnp + '" data-rsitype="' + rsiType + '"><th>' + rsiType + '</th><th>' + result.RSI + "</th><th>" + mnp + "</th><th><a class='rsi-change space-apart' href='#'>Change</a><a class='rsi-delete space-apart' href='#'>Delete</a></th></tr>";
                     $("#table_rsiItems").append(rowInfo);
                     $("#table_rsiItems").table("refresh");
                 }

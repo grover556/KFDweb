@@ -226,7 +226,7 @@ class ManualRekeyApplication {
             let rspKmmBody1 = await this.TxRxKmm(cmdKmmBody1);
             let activeKeysetId = 0;
             if (rspKmmBody1.KmmBody instanceof InventoryResponseListActiveKsetIds) {
-                let kmm = rspKmmBody.KmmBody1;
+                let kmm = rspKmmBody1.KmmBody;
 
                 for (var i=0; i<kmm.KsetIds.length; i++) {
                     console.log("* keyset id index " + i + " *");
