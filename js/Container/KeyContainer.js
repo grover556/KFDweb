@@ -6,17 +6,6 @@ let _keyContainer = {
     source: "Memory"
 };
 
-/*
-const keyContainerOnChange = {
-    set(target, property, value) {
-        //console.log(target);
-        //console.log(property);
-        //console.log(value);
-    }
-};
-const _keyContainer = new Proxy(_keyContainerActual, keyContainerOnChange);
-*/
-
 async function CreateEkc(keyContainer, password) {
     let innerContainer, innerContainerEncrypted, outerContainer, outerContainerCompressed;
     
@@ -32,13 +21,13 @@ async function OpenEkc(file, password) {
     ResetKeyContainer();
     _keyContainer.source = file.name;
     
-    let fileContents = await ReadFileAsync(file);//ArrayBuffer
+    let fileContents = await ReadFileAsync(file);
     
     let enc = new TextEncoder("utf-8");
     let dec = new TextDecoder("utf-8");
     
     let dataLength = new DataView(fileContents, 0, 4).getInt32(0, true);
-    let compressedData = fileContents.slice(4);//ArrayBuffer
+    let compressedData = fileContents.slice(4);
     let inflated = await Decompress(compressedData);
     
     if (inflated.length != dataLength) {
@@ -53,12 +42,11 @@ async function OpenEkc(file, password) {
     let saltB64 = $(outerXml).find("Salt").text();
     saltBytes = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
     
-    //console.log("cipherValue", cipherValue);//string
     let data = window.atob(cipherValue);
-    //console.log("data", data);//string
+    
     data = Uint8Array.from(data, b => b.charCodeAt(0));
     let iv = data.slice(0,16);
-    //console.log(data);//Uint8Array
+    
     let cipher_data = data.slice(16);
 
     let temp = String.fromCharCode.apply(null, cipher_data);
@@ -92,8 +80,8 @@ async function OpenEkc(file, password) {
     //if (outerContainerVersion == "1.0")
     if (!outerContainerVersion.IsGreaterThan(minimumVersion)) {
         console.log("decrypting using crypt-js");
-        // Use crypto-js to decrypt inner container
         
+        // Use crypto-js to decrypt inner container
         let exported = await window.crypto.subtle.exportKey(
             "raw",
             derivation
@@ -144,8 +132,6 @@ async function OpenEkc(file, password) {
         }
     }
 
-    //let decrypted_data = dec.decode(decrypted_content);
-    //console.log(decrypted_data);
     var isXml;
     try {
         isXml = $.parseXML(decrypted_data);
@@ -170,13 +156,10 @@ async function OpenEkc(file, password) {
         PopulateGroups();
         
         return true;
-        //$(".menu_divs").hide();
-        //$("#manageKeys").show();
     }
 }
 
 async function CreateInnerContainer(keyContainer) {
-    //https://developer.mozilla.org/en-US/docs/Web/API/Document_object_model/How_to_create_a_DOM_tree
     // Create InnerContainer
     let ic = document.implementation.createDocument("", "", null);
     
@@ -237,7 +220,6 @@ async function CreateInnerContainer(keyContainer) {
         ele.appendChild(eleVal);
         keyItem.appendChild(ele);
         ele = ic.createElement("Key");
-        //eleVal = ic.createTextNode(key.Key);
         eleVal = ic.createTextNode(key.KeyString.join(""));
         ele.appendChild(eleVal);
         keyItem.appendChild(ele);
@@ -257,7 +239,6 @@ async function CreateInnerContainer(keyContainer) {
     let groups = ic.createElement("Groups");
     
     keyContainer.groups.forEach(group => {
-        //console.log(group);
         let groupItem = ic.createElement("GroupItem");
         let ele, eleVal;
         
@@ -291,13 +272,11 @@ async function CreateInnerContainer(keyContainer) {
     ic.documentElement.appendChild(ngnElement);
     
     const ser = new XMLSerializer();
-    //const str = ser.serializeToString(ic);
+    
     return ser.serializeToString(ic);
 }
 
 async function EncryptInnerContainer(decrypted_content, password) {
-    //https://stackoverflow.com/questions/51000585/javascript-equivilant-of-c-sharp-frombase64string
-    //https://stackoverflow.com/questions/57928974/reproduce-aes-decryption-method-from-c-sharp-in-javascript
     let parameters = {
         derivationAlgorithm: "PBKDF2",
         hashAlgorithm: "SHA512",
@@ -335,15 +314,14 @@ async function EncryptInnerContainer(decrypted_content, password) {
     let encrypted_data = await window.crypto.subtle.encrypt(
         {
             name: "AES-CBC",
-            iv//Uint8Array
+            iv
         },
-        derivation,//CryptoKey
-        decrypted_data//Uint8Array
+        derivation,
+        decrypted_data
     );
     
     encrypted_data = new Uint8Array(encrypted_data);
     
-    //https://stackoverflow.com/questions/49129643/how-do-i-merge-an-array-of-uint8arrays
     var mergedArray = new Uint8Array(encrypted_data.length + iv.length);
     mergedArray.set(iv);
     mergedArray.set(encrypted_data, iv.length);
@@ -353,7 +331,6 @@ async function EncryptInnerContainer(decrypted_content, password) {
 }
 
 async function CreateOuterContainer(cipherValue, params) {
-    // Need to convert cipherValue and params.saltBytes into base64 text
     var cipherB64 = btoa(String.fromCharCode.apply(null, new Uint8Array(cipherValue)));
     var saltB64 = btoa(String.fromCharCode.apply(null, new Uint8Array(params.saltBytes)));
     
@@ -392,55 +369,26 @@ async function CreateOuterContainer(cipherValue, params) {
     ed.setAttribute("xmlns", "http://www.w3.org/2001/04/xmlenc#");
     ed.setAttribute("Type", "http://www.w3.org/2001/04/xmlenc#Element");
     
-    let ed2 = oc.createElement("EncryptionMethod");//has rogue xmlns=""
+    let ed2 = oc.createElement("EncryptionMethod");
     ed2.setAttribute("Algorithm", "http://www.w3.org/2001/04/xmlenc#aes256-cbc");
     ed.appendChild(ed2);
     
-    let cd = oc.createElement("CipherData");//has rogue xmlns=""
-    ele = oc.createElement("CipherValue");//has rogue xmlns=""
+    let cd = oc.createElement("CipherData");
+    ele = oc.createElement("CipherValue");
     eleVal = oc.createTextNode(cipherB64);
     ele.appendChild(eleVal);
     cd.appendChild(ele);
     ed.appendChild(cd);
     ocEle.appendChild(ed);
     
-    //console.log(oc);
-    //console.log('<?xml version="1.0" encoding="UTF-8"?>' + oc.documentElement.outerHTML);
-    // XMLSerializer adds rogue xmlns="" to EncryptionMethod, CipherData, CipherValue and also indents CipherData
-    //const ser = new XMLSerializer();
-    //const str = ser.serializeToString(ic);
-    //return ser.serializeToString(oc);
-    //let xmlDoc = '<?xml version="1.0" encoding="UTF-8"?>' + ser.serializeToString(oc.documentElement);
-    //console.log($.parseXML(xmlDoc));
-    //https://stackoverflow.com/questions/17670973/converting-xmldocument-object-to-string-in-javascript
     let xmlDoc = '<?xml version="1.0" encoding="UTF-8"?>' + oc.documentElement.outerHTML;
     return xmlDoc;
     
 }
 
 async function CompressOuterContainer(content) {
-    //https://stackoverflow.com/questions/15761790/convert-a-32bit-integer-into-4-bytes-of-data-in-javascript
     let inflatedLength = content.length;
-/*
-    let deflated;
-    console.log(content);
-    if (window.CompressionStream) {
-        let decompressedBlob = new Blob([content], { type: "text/plain" });
-        console.log(decompressedBlob);
-        const compressor = new CompressionStream("gzip");
-        const compression_stream = decompressedBlob.stream().pipeThrough(compressor);
-        console.log(compression_stream);
-        const compressed_ab = await new Response(compression_stream).arrayBuffer();
-        console.log(compressed_ab);
-        deflated = new Uint8Array(compressed_ab);
-        console.log(deflated);
-    }
-    else {
-        console.log("DecompressionStream not supported, using pako");
-        deflated = pako.deflate(content);//returns Uint8Array
-        console.log(deflated);
-    }
-*/
+
     let deflated = await Compress(content);
     
     let arr = new ArrayBuffer(4);
@@ -448,7 +396,6 @@ async function CompressOuterContainer(content) {
     view.setUint32(0, inflatedLength, true);
     let sizeArray = new Uint8Array(arr);
     
-    //https://stackoverflow.com/questions/49129643/how-do-i-merge-an-array-of-uint8arrays
     var mergedArray = new Uint8Array(sizeArray.length + deflated.length);
     mergedArray.set(sizeArray);
     mergedArray.set(deflated, sizeArray.length);
@@ -498,7 +445,6 @@ function ImportKeys(innerContainer) {
                     keyItem.AlgorithmId = parseInt(value.textContent);
                     break;
                 case "Key":
-                    //keyItem.Key = Array.from(value.textContent).map((str) => parseInt(str, 16));
                     keyItem.Key = value.textContent.match(/\w{1,2}/g).map((str) => parseInt(str, 16));
                     break;
                 default:

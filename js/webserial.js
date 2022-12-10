@@ -1,13 +1,3 @@
-//https://mdn.github.io/dom-examples/web-crypto/encrypt-decrypt/index.html
-//https://github.com/google/web-serial-polyfill
-//https://groups.google.com/a/chromium.org/g/chromium-dev/c/iS3HhY_Tm6E
-//https://codesandbox.io/examples/package/web-serial-polyfill
-//https://mobile.twitter.com/rocksetta/status/1537304616395689985
-//https://hpssjellis.github.io/my-examples-of-arduino-webUSB-webSerial/public/index.html
-//https://hpssjellis.github.io/web-serial-polyfill/index.html
-//https://github.com/hpssjellis/web-serial-polyfill
-//https://github.com/google/web-serial-polyfill/issues
-
 let inputType = "dec";
 let inputBase = 10;
 let xmlDoc;
@@ -18,15 +8,6 @@ let secureContext = false;
 if (document.location.protocol.includes("https")) secureContext = true;
 else if ((document.location.host == "127.0.0.1") || (document.location.host == "localhost")) secureContext = true;
 
-// Use this for decompressing Base64 salt from XML file, "/OuterContainer/KeyDerivation/Salt"
-//https://developer.mozilla.org/en-US/docs/Web/API/atob
-//var compressedData = "";
-//var decompressedData = atob(compressedData);
-//console.log(decompressedData);
-
-//https://github.com/mdn/dom-examples/blob/master/web-crypto/encrypt-decrypt/aes-cbc.js
-
-//https://developer.mozilla.org/en-US/docs/Web/API/File_API/Using_files_from_web_applications
 const fileInputElement = document.getElementById("inputFile");
 
 $(document).ready(function() {
@@ -78,16 +59,6 @@ function ModifyKeyContainerHeader() {
 }
 
 function CancelTransfers() {
-    //$("#keyloadStatus input[type=number]");
-    //$("#keyloadStatus input[id=slider-keyload-status]") returns 2 items
-    //$("#slider-keyload-status").val("0").slider("refresh");
-    //$("#slider-keyload-status").slider("option", "value", 0);
-    //$("slider-keyload-status").prop("value", 0).slider("refresh");
-    //$.mobile.loading("checkLoaderPosition");
-    //$.mobile.loading("resetHtml");
-    //https://stackoverflow.com/questions/12795307/jquery-ui-slider-change-value-of-slider-when-changed-in-input-field
-    //https://stackoverflow.com/questions/71983489/programmatically-animating-a-jquery-slider
-    //https://stackoverflow.com/questions/25649904/set-max-attribute-for-the-jquerymobile-slider-from-javascript
     canceltransferFlag = true;
     breakNow = true;
     HideLoading();
@@ -106,19 +77,12 @@ $("#addEditRsiCancel").on("click", function() {
 });
 $("#addEditRsiConfirm").on("click", function() {
     // Validate the data, then close, clear and proceed
-    // refer to page 60 on TIA OTAR, Change-RSI-Command permutations
     let isValid = $("#addEditRsi_rsiType").hasClass("invalid");
     let rsiType = $("#addEditRsi_typeOld").val();
-    //let rsiAction = $("#addEditRsi_action").val();//add,remove,change
     let rsiOld = parseInt($("#addEditRsi_rsiOld").val());
     let rsiNew = parseInt($("#addEditRsi_rsi").val(), inputBase);
     let mnp = parseInt($("#addEditRsi_mnp").val(), inputBase);
-/*
-    if ((rsiNew == 9999999) || (rsiNew > 16777215)) {
-        alert("Please fix invalid fields before submitting");
-        return;
-    }
-*/
+
     if (rsiType == "KMF") {
         // Change KMF RSI
         if ((rsiNew < 1) || (rsiNew > 9999999)) {
@@ -152,10 +116,6 @@ $("#addEditRsiConfirm").on("click", function() {
 $("#buttonEditKeysetTaggingConfirm").on("click", function() {
     let keysetName = $("#editKeyset_name").val();
     let keysetActivationDatetime = $("#editKeyset_activeDatetime").val();
-
-
-
-
 });
 $("#buttonOpenEkc").on("click", function() {
     if ($("#passwordEkc").val() == "") {
@@ -172,7 +132,6 @@ $("#table_keyinfo tbody").on("click", "a.key-delete", function() {
     let tr = $(this).parent().parent();
     let keyset = tr.data("keysetid");
     let sln = tr.data("sln");
-    //console.log("Delete key: KSID=" + keyset + ", SLN=" + sln);
     if (window.confirm("Warning: this will erase the key (Keyset ID: " + keyset + ", SLN/CKR: " + sln + ") from the radio. Do you wish to continue?")) {
         let keyItems = [];
         let item = new CmdKeyItem();
@@ -190,21 +149,13 @@ $("#table_keysets tbody").on("click", "a.keyset-activate", function() {
     let keyset_activate = keysetId_activate - 1;
     let cryptoGroup_activate  = keyset_activate >>> 4;
     
-    //console.log("Looking for active keyset in crypto group " + cryptoGroup_activate);
     // Search all other active keysets, looking for the same crypto group
     $("#table_keysets tr[data-active='true']").each(function() {
         let ksid = parseInt($(this).attr("data-keysetid")) - 1;
         if ((ksid >>> 4) == cryptoGroup_activate) {
             keysetId_deactivate = ksid + 1;
-            //console.log("deactivating keyset id " + keysetId_deactivate);
         }
     });
-
-    // Old code, pre-crypto group
-    //let tr2 = $("#table_keysets tr[data-active='true']")[0];
-    //let keysetId_deactivate = parseInt(tr2.attributes.getNamedItem("data-keysetid").value);
-    
-    //console.log("Activate " + keysetId_activate + ", deactivate " + keysetId_deactivate);
     if (keysetId_deactivate == 255) {
         alert("Error: Cannot deactivate KEK keyset");
         return;
@@ -214,8 +165,6 @@ $("#table_keysets tbody").on("click", "a.keyset-activate", function() {
     }
 });
 $("#table_rsiItems tbody").on("click", "a.rsi-change", function() {
-    //console.log($(this).parent().parent()[0].dataset);
-    // This should trigger mra.???
     let tr = $(this).parent().parent();
     let rsiOld = parseInt(tr.attr("data-rsiid"));
     let mnpOld = parseInt(tr.attr("data-messagenumber"));
@@ -244,8 +193,6 @@ $("#table_rsiItems tbody").on("click", "a.rsi-delete", function() {
     }
 });
 $("#table_kmfRsi tbody").on("click", "a.kmf-rsi-change", function() {
-    //console.log($(this).parent().parent()[0].dataset);
-    // This should trigger mra.LoadConfig(rsi, mn);
     let tr = $(this).parent().parent();
     let rsiOld = parseInt(tr.attr("data-rsiid"));
     let mnpOld = parseInt(tr.attr("data-messagenumber"));
@@ -260,7 +207,7 @@ console.log("rsiOld: " + rsiOld + ", mnpOld: " + mnpOld);
 });
 $(".menuItem").on("click", function() {
     var menuName = $(this).attr("id").replace("menu_", "");
-    //console.log(menuName);
+    
     $(".menu_divs").hide();
     $("#" + menuName).show();
     $("#panelMenu").panel("close");
@@ -302,8 +249,6 @@ $("#buttonSaveKeyChanges").on("click", function() {
     containerKeyItem.Id = parseInt($("#loadKeySingle_containerKeyIdOld").val());
     let matchingKeys = _keyContainer.keys.filter(function(obj) { return ((obj.KeyId === containerKeyItem.KeyId) && (obj.AlgorithmId === containerKeyItem.AlgorithmId) && (obj.KeysetId === containerKeyItem.KeysetId) && (obj.ActiveKeyset === containerKeyItem.ActiveKeyset) && (keyIdOld !== containerKeyItem.KeyId)); });
     if (matchingKeys.length) {
-        //console.log(matchingKeys);
-        //if  (keyIdOld == containerKeyItem.KeyId) return;
         let keysetLabel = containerKeyItem.KeysetId;
         if (containerKeyItem.ActiveKeyset) keysetLabel = "active";
         alert("Key with same Algorithm and Key ID already exists in keyset " + keysetLabel);
@@ -329,13 +274,11 @@ $("#buttonSaveKeyChanges").on("click", function() {
 });
 $("#buttonLoadKeyToContainer").on("click", function() {
     let containerKeyItem = CreateKeyFromFields("container");
-    //console.log(containerKeyItem);
     if (containerKeyItem === undefined) {
         return;
     }
     
     // Check for identical Algorithm and Key ID combination
-    /*
     let keys = _keyContainer.keys.filter(function(obj) { return obj.KeyId === containerKeyItem.KeyId; });
     for (var i=0; i<keys.length; i++) {
         if (keys[i].AlgorithmId == containerKeyItem.AlgorithmId) {
@@ -343,7 +286,6 @@ $("#buttonLoadKeyToContainer").on("click", function() {
             return;
         }
     }
-    */
 
     let matchingKeys = _keyContainer.keys.filter(function(obj) { return obj.Name === containerKeyItem.Name; });
     if (matchingKeys.length) {
@@ -423,21 +365,6 @@ $("#buttonGetCapabilities").on("click", function() {
     GetRadioCapabilities();
 });
 $("#buttonAddRsi").on("click", function() {
-    //ChangeRsiValues("GROUP", 0, 10000000, 0);// Add group RSI
-    //ChangeRsiValues("INDIVIDUAL", 0, 9999998, 0);// Add individual RSI
-    //ChangeRsiValues("KMF", 0, 9999990, 0);// Add group RSI
-    //ChangeRsiValues("GROUP", 10000000, 0, 0); // Delete group RSI
-    //ChangeRsiValues("INDIVIDUAL", 9999998, 0, 0);// Delete individual RSI
-    //ChangeRsiValues("KMF", 9999990, 0, 0);// Delete KMF RSI
-
-    //ChangeRsiValues("KMF", 9999990, 9999991, 65534);// TEST
-/*
-    $("#addEditRsi_typeOld").val("");
-    $("#addEditRsi_action").val("add");
-    $("#addEditRsi_rsiOld").val("0");
-    $("#popupAddEditRsi").popup("open");
-    $("#addEditRsi_rsi").focus();
-*/
     $("#addEditRsi_typeOld").val("Group");
     $("#addEditRsi_action").val("add");
     $("#addEditRsi_rsiOld").val(0);
@@ -454,7 +381,6 @@ $("#buttonSaveGroupChanges").on("click", function() {
     $("#addGroupKeyList input:checked").each(function() {
         containerKeyIds.push(parseInt($(this).attr("data-container-key-id")));
     });
-    //console.log(containerGroupId, containerKeyIds);
 
     let existingGroupNames = _keyContainer.groups.filter(function(obj) { return obj.Name.toUpperCase() === containerGroupName.toUpperCase(); });
     if ((containerGroupName != containerGroupNameOriginal) && existingGroupNames.length) {

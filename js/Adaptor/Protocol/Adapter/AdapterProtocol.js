@@ -67,23 +67,11 @@ class AdapterProtocol {
         cmd.push(CMD_READ);
         cmd.push(READ_AP_VER);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
 
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
+        let rsp = await ReadPacketFromPacketBuffer();
 
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        //READ
-        
         /*
             RSP: READ AP VERSION
             [0] RSP_READ
@@ -108,12 +96,6 @@ class AdapterProtocol {
         }
         else console.error("invalid response length: expected 5 bytes, got " + rsp.length);
     }
-    async SendTest(cmd) {
-        let rsp = await Send(cmd);
-        //rsp = UnpackResponse(rsp);
-        return rsp;
-        //console.log("rsp", rsp);
-    }
     async ReadFirmwareVersion() {
         let cmd = [];
         
@@ -126,25 +108,11 @@ class AdapterProtocol {
         cmd.push(CMD_READ);
         cmd.push(READ_FW_VER);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
+        let rsp = await ReadPacketFromPacketBuffer();
 
-        //rsp = UnpackResponse(rsp);
-        //return;
-        //console.log("rsp", rsp);
-        
-        //READ
-        
         /*
             RSP: READ FW VERSION
             [0] RSP_READ
@@ -181,23 +149,10 @@ class AdapterProtocol {
         cmd.push(CMD_READ);
         cmd.push(READ_UNIQUE_ID);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: READ UNIQUE ID
@@ -237,23 +192,10 @@ class AdapterProtocol {
         cmd.push(CMD_READ);
         cmd.push(READ_MODEL_ID);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: READ MODEL ID
@@ -285,23 +227,10 @@ class AdapterProtocol {
         cmd.push(CMD_READ);
         cmd.push(READ_HW_REV);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: READ HARDWARE REVISION
@@ -335,23 +264,10 @@ class AdapterProtocol {
         cmd.push(CMD_READ);
         cmd.push(READ_SER_NUM);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: READ SERIAL NUMBER
@@ -401,23 +317,10 @@ class AdapterProtocol {
         cmd.push(hwRevMaj);
         cmd.push(hwRevMin);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: WRITE INFO
@@ -441,23 +344,10 @@ class AdapterProtocol {
         
         cmd.push(CMD_ENTER_BSL_MODE);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: ENTER BSL MODE
@@ -481,23 +371,10 @@ class AdapterProtocol {
         
         cmd.push(CMD_RESET);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: READ SERIAL NUMBER
@@ -521,23 +398,10 @@ class AdapterProtocol {
         
         cmd.push(CMD_SELF_TEST);
         
-        //SEND
-        //let rsp = await Send(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 5));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: SELF TEST
@@ -565,23 +429,10 @@ class AdapterProtocol {
         cmd.push(CMD_SEND_KEY_SIG);
         cmd.push(0x00);
         
-        //SEND
-        //let rsp = await Send2(cmd);
         await SendSerial(cmd);
         await new Promise(resolve => setTimeout(resolve, 150));
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: SEND KEY SIGNATURE
@@ -597,7 +448,7 @@ class AdapterProtocol {
     }
     async SendByte(dataByte) {
         let cmd = [];
-        //console.log("SendByte", dataByte.toString(16).toUpperCase().padStart(2,"0"));
+        
         /*
             CMD: SEND BYTE
             [0] CMD_SEND_BYTE
@@ -609,29 +460,11 @@ class AdapterProtocol {
         cmd.push(0x00);
         cmd.push(dataByte);
         
-        //SEND
-        //let rsp = await Send(cmd);
-        await SendSerial(cmd);// added await
+        await SendSerial(cmd);
         
-        if (serialModelId == "KFD100") {
-            await new Promise(resolve => setTimeout(resolve, 10));////////30
-        }
-        else if (serialModelId == "KFD-AVR") {
-            await new Promise(resolve => setTimeout(resolve, 10));
-        }
+        await new Promise(resolve => setTimeout(resolve, 10));
 
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-        
-        //rsp = UnpackResponse(rsp);
-        //console.log("rsp", rsp);
-        
-        //READ
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             RSP: SEND BYTE
@@ -654,21 +487,11 @@ class AdapterProtocol {
     }
 
     async GetByte(timeout, wait) {
-        //return;
-        //console.log("GetByte");
         if (wait) {
             await new Promise(resolve => setTimeout(resolve, 5));
         }
         
-        let rsp;
-        if (transferMethod == "RUC") {
-            rsp = await ReadPacketFromPacketBuffer();
-        }
-        else if (transferMethod == "RWT") {
-            rsp = await readWithTimeout(AP_TIMEOUT);
-        }
-
-        //rsp = UnpackResponse(rsp);
+        let rsp = await ReadPacketFromPacketBuffer();
         
         /*
             BCST: RECEIVE BYTE
@@ -680,7 +503,6 @@ class AdapterProtocol {
 
         if (rsp.length == 3) {
             if (rsp[0] == BCST_RECEIVE_BYTE) {
-                //console.log("byte:", rsp[2].toString(16).toUpperCase().padStart(2, "0"));
                 return rsp[2];
             }
             else {
