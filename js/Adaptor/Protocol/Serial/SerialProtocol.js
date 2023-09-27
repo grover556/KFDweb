@@ -34,6 +34,9 @@ const filterKfdTool = {//
 const filterKfdAvr = {
     usbVendorId: 0x2341
 };
+const filterMicroKfd = {
+    usbVendorId: 0x2341
+};
 
 let serialModelId;
 
@@ -68,13 +71,16 @@ async function connectSerial() {
     connectionMethod = "ws";
     
     try {
-        port = await navigator.serial.requestPort({filters: [filterKfdTool, filterKfdAvr]});
+        port = await navigator.serial.requestPort({filters: [filterKfdTool, filterKfdAvr, filterMicroKfd]});
         let portInfo = port.getInfo();
         if (portInfo.usbVendorId == filterKfdTool.usbVendorId) {
             serialModelId = "KFD100";
         }
         else if (portInfo.usbVendorId == filterKfdAvr.usbVendorId) {
             serialModelId = "KFD-AVR";
+        }
+        else if (portInfo.usbVendorId == filterMicroKfd.usbVendorId) {
+            serialModelId = "MicroKFD";
         }
         else {
             alert("Unsupported device type - KFDweb only supports KFDtool and KFD-AVR devices");
@@ -197,6 +203,9 @@ async function SendSerial(data) {
         frameData = CreateFrameKFD100(data);
     }
     else if (serialModelId == "KFD-AVR") {
+        frameData = CreateFrameKFDAVR(data);
+    }
+    else if (serialModelId == "MicroKFD") {
         frameData = CreateFrameKFDAVR(data);
     }
 
