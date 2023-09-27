@@ -27,7 +27,7 @@ let writer;
 let exports = {};
 let connected = false;
 
-const filterKfdTool = {//
+const filterKfdTool = {
     usbVendorId: 0x2047,
     usbProductId: 0x0A7C
 };
