@@ -618,6 +618,9 @@ async function CheckPacketBufferUntilPopulated() {
         else if (serialModelId == "KFD-AVR") {
             await new Promise(resolve => setTimeout(resolve, 10));
         }
+        else if (serialModelId == "MicroKFD") {
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
         counter++;
     }
     return;

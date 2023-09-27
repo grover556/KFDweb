@@ -1797,6 +1797,11 @@ async function ConnectDevice() {
                 await new Promise(resolve => setTimeout(resolve, 6000));
                 HideLoading();
             }
+            else if (serialModelId == "MicroKFD") {
+                ShowLoading("connect");
+                await new Promise(resolve => setTimeout(resolve, 6000));
+                HideLoading();
+            }
             
             await ReadDeviceSettings();
         }
@@ -1855,6 +1860,9 @@ async function ReadDeviceSettings() {
     else if (serialModelId == "KFD-AVR") {
         
     }
+    else if (serialModelId == "MicroKFD") {
+        
+    }
     let apVersion, fwVersion, uniqueId, modelId, hwVersion, serial;
 
     let ap = new AdapterProtocol();
@@ -1902,6 +1910,7 @@ async function ReadDeviceSettings() {
         let mId = "NOT SET";
         if (modelId == 0x01) mId = "KFD100";
         else if (modelId == 0x02) mId = "KFD-AVR";
+        //else if (modelId == 0x02) mId = "MicroKFD";
         else mId = serialModelId;
         device.modelId = mId;
     }
