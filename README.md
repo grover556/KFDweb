@@ -11,10 +11,7 @@ Features
 KFDweb is designed to interface with the KFDtool and [KFDshield](https://store.omahacomms.com/product/kfdshield/) hardware adapters (TWI/3WI/Three Wire Interface).
 
 **Key Fill Device (KFD)**
-
 The KFDtool software supports KFD features through the KFDtool hardware adapter (TWI/3WI/Three Wire Interface), as well as through a IP (UDP) connection (DLI/Data Link Independent interface).
-
-Keys and groups of keys can be saved to an AES-256 encrypted key container file, which can then be selected and loaded into a target device in one operation.
 
 Supported Manual Rekeying Features (TIA-102.AACD-A)
 
@@ -38,13 +35,20 @@ Key validators/generators are available for the following algorithms:
 * DES-XL (Algorithm ID 0x9F)
 * ADP/RC4 (Algorithm ID 0xAA)
 
+**Key Containers**
+Keys and groups of keys can be saved to an AES-256 encrypted key container file, which can then be selected and loaded into a target device in one operation. Key container files are compatible with KFDtool and KFDTool-AVR control software.
+
+* Mobile Radio (MR) Emulator is not supported at this time
+* Data Link Independent (DLI) functions are not supported (IP/UDP)
+
 
 Hardware Compatibility
 ----------------
-* Mobile Radio (MR) Emulator is not supported at this time
-* Data Link Independent (DLI) functions are not supported (IP/UDP)
-* KFDtool users will need to update to the latest firmware (v1.4.0 or greater) in order to be compatible. Firmware is available for download [here](https://kfdtool.com/download#1.4.0)
-* KFDshield users should be able to use current firmware without any issues
+Officially supports the following devices:
+* Original Duggard KFDtool
+  * KFDtool users will need to update to the latest firmware (v1.4.0 or greater) in order to be compatible. Firmware is available for download [here](https://kfdtool.com/download#1.4.0)
+* OmahaCommSys KFDShield
+* W3AXL KFDMicro
 
 
 Browser and OS Compatibility
