@@ -34,8 +34,9 @@ const filterKfdTool = {
 const filterKfdAvr = {
     usbVendorId: 0x2341
 };
-const filterMicroKfd = {
-    usbVendorId: 0x2341
+const filterKfdMicro = {
+    //usbVendorId: 0x2341
+    usbVendorId: 0x0403
 };
 
 let serialModelId;
@@ -71,7 +72,7 @@ async function connectSerial() {
     connectionMethod = "ws";
     
     try {
-        port = await navigator.serial.requestPort({filters: [filterKfdTool, filterKfdAvr, filterMicroKfd]});
+        port = await navigator.serial.requestPort({filters: [filterKfdTool, filterKfdAvr, filterKfdMicro]});
         let portInfo = port.getInfo();
         if (portInfo.usbVendorId == filterKfdTool.usbVendorId) {
             serialModelId = "KFD100";
@@ -79,11 +80,11 @@ async function connectSerial() {
         else if (portInfo.usbVendorId == filterKfdAvr.usbVendorId) {
             serialModelId = "KFD-AVR";
         }
-        else if (portInfo.usbVendorId == filterMicroKfd.usbVendorId) {
-            serialModelId = "MicroKFD";
+        else if (portInfo.usbVendorId == filterKfdMicro.usbVendorId) {
+            serialModelId = "KFDMicro";
         }
         else {
-            alert("Unsupported device type - KFDweb only supports KFDtool and KFD-AVR devices");
+            alert("Unsupported device type - KFDweb only supports KFDtool, KFD-AVR, and KFDMicro devices");
             return;
         }
         console.log("Connected to " + serialModelId);
@@ -118,7 +119,7 @@ async function connectPolyfill() {
     console.log("connectPolyfill()");
     connectionMethod = "poly";
     try {
-        port = await exports.serial.requestPort({filters: [filterKfdTool, filterKfdAvr]});
+        port = await exports.serial.requestPort({filters: [filterKfdTool, filterKfdAvr, filterKfdMicro]});
         let portInfo = port.getInfo();
 
         if (portInfo.usbVendorId == filterKfdTool.usbVendorId) {
@@ -127,8 +128,11 @@ async function connectPolyfill() {
         else if (portInfo.usbVendorId == filterKfdAvr.usbVendorId) {
             serialModelId = "KFD-AVR";
         }
+        else if (portInfo.usbVendorId == filterKfdMicro.usbVendorId) {
+            serialModelId = "KFDMicro";
+        }
         else {
-            alert("Unsupported device type - KFDweb only supports KFDtool and KFD-AVR devices");
+            alert("Unsupported device type - KFDweb only supports KFDtool, KFD-AVR, and KFDMicro devices");
             return;
         }
         console.log("Connected to " + serialModelId);
@@ -205,7 +209,7 @@ async function SendSerial(data) {
     else if (serialModelId == "KFD-AVR") {
         frameData = CreateFrameKFDAVR(data);
     }
-    else if (serialModelId == "MicroKFD") {
+    else if (serialModelId == "KFDMicro") {
         frameData = CreateFrameKFDAVR(data);
     }
 
@@ -564,6 +568,9 @@ async function OnDataReceived(data) {
     else if (serialModelId == "KFD-AVR") {
         await DecodePacketKFDAVR(data);
     }
+    else if (serialModelId == "KFDMicro") {
+        await DecodePacketKFDAVR(data);
+    }
 
     if (packetBuffer.length > 0) {
         packetReady = true;
@@ -618,7 +625,7 @@ async function CheckPacketBufferUntilPopulated() {
         else if (serialModelId == "KFD-AVR") {
             await new Promise(resolve => setTimeout(resolve, 10));
         }
-        else if (serialModelId == "MicroKFD") {
+        else if (serialModelId == "KFDMicro") {
             await new Promise(resolve => setTimeout(resolve, 10));
         }
         counter++;
