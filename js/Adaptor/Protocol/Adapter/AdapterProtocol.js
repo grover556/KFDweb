@@ -654,15 +654,18 @@ class AdapterProtocol {
     }
     async SendData(data) {
         //console.log("SendData:", BCTS(data).join("-"));
-        /*
-        for (var i=0; i<data.length; i++) {
-            await this.SendByte(data[i]);
+
+        if (FeatureAvailableSendBytes) {
+            //2.1.0
+            await this.SendBytes(data);
             await new Promise(resolve => setTimeout(resolve, 10));
         }
-        */
-        //2.1.0
-        await this.SendBytes(data);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        else {
+            for (var i=0; i<data.length; i++) {
+                await this.SendByte(data[i]);
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+        }
     }
 
     async GetByte(timeout, wait) {

@@ -616,7 +616,10 @@ async function CheckPacketBufferUntilPopulated() {
     console.warn("CheckPacketBufferUntilPopulated");
     let counter = 0;
     while((packetBuffer.length == 0) && (breakNow == false)) {
-        if (counter > 100) break;
+        if (counter > 100) {
+            alert("Communication error: check that radio is connected and in Keyloading mode");
+            break;
+        }
         console.warn("wait");
         
         if (serialModelId == "KFD100") {
