@@ -8,6 +8,8 @@ const CMD_RESET = 0x14;
 const CMD_SELF_TEST = 0x15;
 const CMD_SEND_KEY_SIG = 0x16;
 const CMD_SEND_BYTE = 0x17;
+const CMD_SEND_BYTES = 0x18;//2.1.0
+const CMD_SEND_KEY_SIG_AND_READY_REQ = 0x19;//2.2.0
 
 /* RESPONSE OPCODES */
 const RSP_ERROR = 0x20;
@@ -18,6 +20,8 @@ const RSP_RESET = 0x24;
 const RSP_SELF_TEST = 0x25;
 const RSP_SEND_KEY_SIG = 0x26;
 const RSP_SEND_BYTE = 0x27;
+const RSP_SEND_BYTES = 0x28;//2.1.0
+const RSP_SEND_KEY_SIG_AND_READY_REQ = 0x29;//2.2.0
 
 /* BROADCAST OPCODES */
 const BCST_RECEIVE_BYTE = 0x31;
@@ -33,6 +37,9 @@ const READ_SER_NUM = 0x06;
 /* WRITE OPCODES */
 const WRITE_MDL_REV = 0x01;
 const WRITE_SER = 0x02;
+const WRITE_DEFAULT_TRANSFER_SPEED = 0x03;//2.1.0
+const WRITE_TX_TRANSFER_SPEED = 0x04;//2.1.0
+const WRITE_RX_TRANSFER_SPEED = 0x05;//2.1.0
 
 /* ERROR OPCODES */
 const ERR_OTHER = 0x00;
@@ -42,6 +49,10 @@ const ERR_INVALID_READ_OPCODE = 0x03;
 const ERR_READ_FAILED = 0x04;
 const ERR_INVALID_WRITE_OPCODE = 0x05;
 const ERR_WRITE_FAILED = 0x06;
+
+var FeatureAvailableSendBytes = false;
+var FeatureAvailableSetTransferSpeed = false;
+var FeatureAvailableSendKeySignatureAndReadyReq = false;
 
 
 class AdapterProtocol {
@@ -334,6 +345,101 @@ class AdapterProtocol {
         }
         else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
     }
+    async SetDefaultTransferSpeed() {
+        //2.1.0
+        let cmd = [];
+        
+        /*
+            CMD: WRITE DEFAULT TRANSFER SPEED
+            [0] CMD_WRITE_INFO
+            [1] WRITE_DEFAULT_TRANSFER_SPEED
+            [2] speed in kilobaud
+        */
+        
+        cmd.push(CMD_WRITE_INFO);
+        cmd.push(WRITE_DEFAULT_TRANSFER_SPEED);
+        
+        await SendSerial(cmd);
+        await new Promise(resolve => setTimeout(resolve, 5));
+        
+        let rsp = await ReadPacketFromPacketBuffer();
+        
+        /*
+            RSP: WRITE INFO
+            [0] RSP_WRITE_INFO
+        */
+        
+        if (rsp.length == 1) {
+            if (rsp[0] != RSP_WRITE_INFO) {
+                console.error("invalid response opcode: expected RSP_WRITE_INFO got 0x" + rsp[0].toString(16).padStart(2,"0"));
+            }
+        }
+        else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
+    }
+    async SetTxTransferSpeed(kilobaud) {
+        //2.1.0
+        let cmd = [];
+        
+        /*
+            CMD: WRITE TX TRANSFER SPEED
+            [0] CMD_WRITE_INFO
+            [1] WRITE_TX_TRANSFER_SPEED
+            [2] speed in kilobaud
+        */
+        
+        cmd.push(CMD_WRITE_INFO);
+        cmd.push(WRITE_TX_TRANSFER_SPEED);
+        cmd.push(kilobaud);
+        
+        await SendSerial(cmd);
+        await new Promise(resolve => setTimeout(resolve, 5));
+        
+        let rsp = await ReadPacketFromPacketBuffer();
+        
+        /*
+            RSP: WRITE INFO
+            [0] RSP_WRITE_INFO
+        */
+        
+        if (rsp.length == 1) {
+            if (rsp[0] != RSP_WRITE_INFO) {
+                console.error("invalid response opcode: expected RSP_WRITE_INFO got 0x" + rsp[0].toString(16).padStart(2,"0"));
+            }
+        }
+        else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
+    }
+    async SetRxTransferSpeed(kilobaud) {
+        //2.1.0
+        let cmd = [];
+        
+        /*
+            CMD: WRITE RX TRANSFER SPEED
+            [0] CMD_WRITE_INFO
+            [1] WRITE_RX_TRANSFER_SPEED
+            [2] speed in kilobaud
+        */
+        
+        cmd.push(CMD_WRITE_INFO);
+        cmd.push(WRITE_RX_TRANSFER_SPEED);
+        cmd.push(kilobaud);
+        
+        await SendSerial(cmd);
+        await new Promise(resolve => setTimeout(resolve, 5));
+        
+        let rsp = await ReadPacketFromPacketBuffer();
+        
+        /*
+            RSP: WRITE INFO
+            [0] RSP_WRITE_INFO
+        */
+        
+        if (rsp.length == 1) {
+            if (rsp[0] != RSP_WRITE_INFO) {
+                console.error("invalid response opcode: expected RSP_WRITE_INFO got 0x" + rsp[0].toString(16).padStart(2,"0"));
+            }
+        }
+        else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
+    }
     async EnterBslMode() {
         let cmd = [];
         
@@ -446,6 +552,36 @@ class AdapterProtocol {
         }
         else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
     }
+    async SendKeySignatureAndReadyReq() {
+        //2.2.0
+        let cmd = [];
+        
+        /*
+            CMD: SEND KEY SIGNATURE AND READY REQ
+            [0] CMD_SEND_KEY_SIG_AND_READY_REQ
+            [1] reserved (set to 0x00)
+        */
+        
+        cmd.push(CMD_SEND_KEY_SIG_AND_READY_REQ);
+        cmd.push(0x00);
+        
+        await SendSerial(cmd);
+        await new Promise(resolve => setTimeout(resolve, 150));
+        
+        let rsp = await ReadPacketFromPacketBuffer();
+        
+        /*
+            RSP: SEND KEY SIGNATURE AND READY REQ
+            [0] RSP_SEND_KEY_SIG_AND_READY_REQ
+        */
+        
+        if (rsp.length == 1) {
+            if (rsp[0] != RSP_SEND_KEY_SIG_AND_READY_REQ) {
+                console.error("invalid response opcode: expected RSP_SEND_KEY_SIG_AND_READY_REQ got 0x" + rsp[0].toString(16).padStart(2,"0"));
+            }
+        }
+        else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
+    }
     async SendByte(dataByte) {
         let cmd = [];
         
@@ -478,12 +614,55 @@ class AdapterProtocol {
         }
         else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
     }
+    async SendBytes(dataBytes) {
+        //2.1.0
+        let cmd = [];
+
+        /*
+            CMD: SEND BYTE
+            [0] CMD_SEND_BYTE
+            [1] reserved (set to 0x00)
+            [2] MSB of total data bytes
+            [3] LSB of total data bytes
+            [4..] bytes to send
+        */
+
+        cmd.push(CMD_SEND_BYTES);
+        cmd.push(0x00);
+        cmd.push(dataBytes.length >> 8);
+        cmd.push(dataBytes.length);
+        cmd.push(...dataBytes);
+
+        await SendSerial(cmd);
+        
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        let rsp = await ReadPacketFromPacketBuffer();
+
+        /*
+            RSP: SEND BYTE
+            [0] RSP_SEND_BYTE
+        */
+        
+        if (rsp.length == 1) {
+            if (rsp[0] != RSP_SEND_BYTES) {
+                console.error("invalid response opcode: expected RSP_SEND_BYTES got 0x" + rsp[0].toString(16).padStart(2,"0"));
+            }
+        }
+        else console.error("invalid response length: expected 1 bytes, got " + rsp.length);
+
+    }
     async SendData(data) {
         //console.log("SendData:", BCTS(data).join("-"));
+        /*
         for (var i=0; i<data.length; i++) {
             await this.SendByte(data[i]);
             await new Promise(resolve => setTimeout(resolve, 10));
         }
+        */
+        //2.1.0
+        await this.SendBytes(data);
+        await new Promise(resolve => setTimeout(resolve, 10));
     }
 
     async GetByte(timeout, wait) {

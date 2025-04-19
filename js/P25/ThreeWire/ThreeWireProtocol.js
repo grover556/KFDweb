@@ -11,21 +11,27 @@ const OPCODE_DISCONNECT = 0x92;
 class ThreeWireProtocol {
     Protocol = new AdapterProtocol();
     async SendKeySignature() {
-        await this.Protocol.SendKeySignature();
+        if (FeatureAvailableSendKeySignatureAndReadyReq) await this.Protocol.SendKeySignatureAndReadyReq();
+        else await this.Protocol.SendKeySignature();
     }
     async InitSession() {
         breakNow == false;
 
-        // send ready req opcode
-        let cmd = [OPCODE_READY_REQ];
-        //SendData(cmd);
-        await this.Protocol.SendData(cmd);
+        if (!FeatureAvailableSendKeySignatureAndReadyReq) {
+            // send ready req opcode
+            let cmd = [OPCODE_READY_REQ];
+            //SendData(cmd);
+            await this.Protocol.SendData(cmd);
+        }
         
         // receive ready general mode opcode
         if (serialModelId == "KFD100") {
             await new Promise(resolve => setTimeout(resolve, 150));////////50
         }
         else if (serialModelId == "KFD-AVR") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
+        else if (serialModelId == "KFDMicro") {
             await new Promise(resolve => setTimeout(resolve, 150));////////50
         }
         
@@ -51,6 +57,9 @@ class ThreeWireProtocol {
         else if (serialModelId == "KFD-AVR") {
             await new Promise(resolve => setTimeout(resolve, 150));////////50
         }
+        else if (serialModelId == "KFDMicro") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
         let rsp1 = await this.Protocol.GetByte(TIMEOUT_STD, true);
         if (rsp1 != OPCODE_TRANSFER_DONE) {
             console.error("mr: unexpected opcode");
@@ -68,6 +77,9 @@ class ThreeWireProtocol {
             await new Promise(resolve => setTimeout(resolve, 150));////////50
         }
         else if (serialModelId == "KFD-AVR") {
+            await new Promise(resolve => setTimeout(resolve, 150));////////50
+        }
+        else if (serialModelId == "KFDMicro") {
             await new Promise(resolve => setTimeout(resolve, 150));////////50
         }
         let rsp2 = await this.Protocol.GetByte(TIMEOUT_STD, true);
@@ -160,7 +172,7 @@ class ThreeWireProtocol {
         let expectedCrc = CalculateCrc(toCrc);
 
         let crc = [2];
-//console.log("expectedCrc", BCTS(expectedCrc).join("-"));
+        //console.log("expectedCrc", BCTS(expectedCrc).join("-"));
         // receive crc high byte
         crc[0] = await this.Protocol.GetByte(TIMEOUT_STD, true);////////
 

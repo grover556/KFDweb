@@ -617,7 +617,7 @@ async function CheckPacketBufferUntilPopulated() {
     let counter = 0;
     while((packetBuffer.length == 0) && (breakNow == false)) {
         if (counter > 100) break;
-        console.error("wait");
+        console.warn("wait");
         
         if (serialModelId == "KFD100") {
             await new Promise(resolve => setTimeout(resolve, 10));

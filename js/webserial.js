@@ -2002,6 +2002,16 @@ async function ReadDeviceSettings() {
         alert("Warning: your KFDtool must be running Protocol version 1.1.0 or greater, see KFDtool Firmware Notice below");
         $("#firmwareNotice").collapsible("expand");
     }
+    else if (device.adapterProtocolVersion == "2.1.0") {
+        FeatureAvailableSendBytes = true;
+        FeatureAvailableSetTransferSpeed = true;
+    }
+    else if (device.adapterProtocolVersion == "2.2.0") {
+        FeatureAvailableSendBytes = true;
+        FeatureAvailableSetTransferSpeed = true;
+        FeatureAvailableSendKeySignatureAndReadyReq = true;
+    }
+
 }
 
 function ReadFileAsync(file) {
