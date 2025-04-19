@@ -11,6 +11,7 @@ Features
 KFDweb is designed to interface with the KFDtool and [KFDshield](https://store.omahacomms.com/product/kfdshield/) hardware adapters (TWI/3WI/Three Wire Interface).
 
 **Key Fill Device (KFD)**
+
 The KFDtool software supports KFD features through the KFDtool hardware adapter (TWI/3WI/Three Wire Interface), as well as through a IP (UDP) connection (DLI/Data Link Independent interface).
 
 Supported Manual Rekeying Features (TIA-102.AACD-A)
@@ -36,7 +37,10 @@ Key validators/generators are available for the following algorithms:
 * ADP/RC4 (Algorithm ID 0xAA)
 
 **Key Containers**
+
 Keys and groups of keys can be saved to an AES-256 encrypted key container file, which can then be selected and loaded into a target device in one operation. Key container files are compatible with KFDtool and KFDTool-AVR control software.
+
+Incompatibility
 
 * Mobile Radio (MR) Emulator is not supported at this time
 * Data Link Independent (DLI) functions are not supported (IP/UDP)
