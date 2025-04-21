@@ -37,7 +37,7 @@ $(document).ready(function() {
     }
     else {
         status = "<a href='https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts'>Insecure context</a>";
-        description = "This page is being hosted on a non-HTTPS server. Because of this, you are unable to communicate with the KFDtool or open or save key containers. Please ensure the page is hosted either on a HTTPS server or a localhost instance.";
+        description = "This page is being hosted on a non-HTTPS server. Because of this, you are unable to communicate with a KFD or open or save key containers. Please ensure the page is hosted either on a HTTPS server or a localhost instance.";
     }
     $("#secureContextStatus").text(status);
     $("#secureContextDetails").text(description);
@@ -264,6 +264,24 @@ $(".menuItem").on("click", function() {
     $(".menu_divs").hide();
     $("#" + menuName).show();
     $("#panelMenu").panel("close");
+
+    //loadKeyMultiple and regenerateKeys share same fieldsets
+    if (menuName == "regenerateKeys") {
+        $(".lmk").hide();
+        $(".rgk").show();
+        $("#loadKeyMultiple").show();
+        $("#regenerateKeys").hide();
+    }
+    else if (menuName == "loadKeyMultiple") {
+        $(".lmk").show();
+        $(".rgk").hide();
+    }
+    else if (menuName = "loadKeySingle") {
+        SetKeyInfoFieldsForNew();
+        ClearKeyInfo();
+    }
+    $("#addMultipleKeyList input:checked").prop("checked", false).checkboxradio("refresh");
+    $("#addMultipleGroupList input:checked").prop("checked", false).checkboxradio("refresh");
     
     if (menuName == "manageKeys") {
         
@@ -597,6 +615,76 @@ $("#buttonLoadMultipleKeys").on("click", function() {
     });
 */
     //SendMultipleKeysToRadio(keys);
+});
+$("#buttonRegenerateKeys").on("click", function() {
+    let containerKeyIds = [];
+    let containerGroupIds = [];
+    let key_set = new Set();
+
+    $("#addMultipleKeyList input:checked").each(function() {
+        containerKeyIds.push(parseInt($(this).attr("data-container-key-id")));
+        key_set.add(parseInt($(this).attr("data-container-key-id")));
+    });
+    $("#addMultipleGroupList input:checked").each(function() {
+        containerGroupIds.push(parseInt($(this).attr("data-container-group-id")));
+    });
+
+    containerGroupIds.forEach((cgid) => {
+        let containerGroup = _keyContainer.groups.filter(function(obj) { return obj.Id === cgid; });
+        containerGroup[0].Keys.forEach((ckid) => {
+            key_set.add(ckid);
+        });
+    });
+
+    if (key_set.size == 0) return;
+    else if (!window.confirm("Warning: this action will regenerate key material for all selected keys. Select OK to continue, or cancel to abort.")) {
+        return;
+    }
+
+    let containerKeys = _keyContainer.keys.filter(function(obj) { return key_set.has(obj.Id); });
+    //let keyNames = [];
+
+    $("#regenerateResultList").empty();
+    
+    containerKeys.forEach((k) => {
+        const isMatch = (element) => element.Id == k.Id;
+        let idx = _keyContainer.keys.findIndex(isMatch);
+        if (idx < 0) return;
+
+        //.push(k.Name);
+
+        // Do better than this
+        $("#loadKeySingle_algorithm").val(k.AlgorithmId).selectmenu("refresh");
+        $("#loadKeySingle_algorithm").trigger("change");
+
+        let key = "";
+        // Do better than this
+        let keylen = $("#loadKeySingle_algorithm option:selected").data("length");
+        let parity = $("#loadKeySingle_algorithm option:selected").data("parity");
+        key = generateRandomKey(keylen, parity);
+
+        let keyArray = [];
+        for (var i = 0; i< key.length; i=i+2) {
+            let pair = key[i] + key[i+1];
+            keyArray.push(parseInt(pair , 16));
+        }
+
+        // Don't need this if I do better above
+        SetKeyInfoFieldsForNew();
+        ClearKeyInfo();
+
+        _keyContainer.keys[idx].Key = keyArray;
+
+        let temp = "<li><h4>" + k.Name + "</h4>";
+        temp += "<p>Regenerated</p></li>";
+        temp = "<li><a class='ui-btn ui-btn-icon-left ui-icon-check'>" + k.Name + "</a></li>";
+        $("#regenerateResultList").append(temp);
+    });
+
+    $("#addMultipleKeyList input:checked").prop("checked", false).checkboxradio("refresh");
+    $("#addMultipleGroupList input:checked").prop("checked", false).checkboxradio("refresh");
+    $("#regenerateResultList").listview("refresh");
+    $("#popupRegenerateResults").popup("open");
 });
 $("#action_deleteKeyFromContainer").on("click", function() {
     let containerKeyId = parseInt($("#popupMenuKeyOptions_list ul").attr("data-container-key-id"));
@@ -1844,6 +1932,7 @@ function ClearPopupAddEditRsi() {
 }
 
 async function ConnectDevice() {
+    if (!confirm("Please ensure the radio is connected to the KFD and in keyfill mode before connecting to device. Select OK to continue, or cancel to abort.")) return;
     if (connected) {
         alert("KFD device already connected");
         return;
@@ -2059,6 +2148,8 @@ function PopulateKeys() {
     $("#keyContainerKeyList").empty();
     $("#addGroupKeyList").empty();
     $("#addMultipleKeyList").empty();
+    $("#regenerateKeyList").empty();
+    $("#regenerateGroupList").empty();
     //$("#addGroupKeyList").append('<div id="checkboxControls" class="ui-controlgroup-controls">');
     _keyContainer.keys.forEach(key => {
         //<li><a href="#"><h2>key 1</h2><p>AES-256, TEK, 3, 0002</p></a></li>
@@ -2233,6 +2324,8 @@ function ResetKeyContainer() {
     $("#keyContainerKeyList").empty();
     $("#addGroupKeyList").empty();
     $("#addMultipleKeyList").empty();
+    $("#regenerateKeyList").empty();
+    $("#regenerateGroupList").empty();
     $("#keyContainerGroupList").empty();
     $("#addMultipleGroupList").empty();
 }

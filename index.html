@@ -108,7 +108,7 @@
                 <ul id="menuList" data-role="listview" data-inset="false" data-shadow="false">
                     <li data-icon="home"><a id="menu_homeDiv" href="#" class="menuItem ui-btn ui-btn-icon-right ui-icon-home">Home</a></li>
                     <li class="disconnected"><a class="menuItem" id="menu_configKfd" href="#">Connect Key Fill Device</a></li>
-                    
+
                     <li><a class="menuItem" id="menu_loadKeySingle" href="#">Load Single Key</a></li>
                     <li><a class="menuItem" id="menu_loadKeyMultiple" href="#">Load Multiple Keys</a></li>
                     <li style="display:none;"><a class="menuItem" id="menu_eraseKeySingle" href="#">Erase Single Key</a></li>
@@ -131,6 +131,7 @@
                                 <li><a class="menuItem" id="menu_loadKeyContainer" href="#">Load Key Container</a></li>
 								<li><a class="menuItem" id="menu_manageKeys" href="#">Manage Keys</a></li>
                     			<li><a class="menuItem" id="menu_manageGroups" href="#">Manage Groups</a></li>
+								<li><a class="menuItem" id="menu_regenerateKeys" href="#">Regenerate Keys</a></li>
                                 <li><a class="menuItem" id="menu_exportKeyContainer" href="#">Export Key Container</a></li>
                                 <li><a class="menuItem" id="menu_resetKeyContainer" href="#">Reset Key Container</a></li>
                             </ul>
@@ -149,12 +150,12 @@
         	<div role="main" class="ui-content">
             	<div id="homeDiv" class="menu_divs">
                 	<h1>KFDweb</h1>
-					<h5 style="color:red;">This PRE-RELEASE software is still in development and should not be used for production</h5>
+					<h5 style="display:none; color:red;">This PRE-RELEASE software is still in development and should not be used for production</h5>
 					<h3>Open Source P25 Key Fill Device GUI, based on the <a href="https://github.com/KFDtool/KFDtool" target="_blank">KFDtool</a> project</h3>
-					<p>Currently compatible will all functionality of the KFDtool and supported devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
-                	<p><a href="https://kfdtool.com/store" target="_blank">KFDtool</a> and <a href="https://store.omahacommunicationsys.com" target="_blank">KFDshield</a> hardware devices are fully supported by KFDweb</p>
+					<p>Currently compatible with most functionality of the KFDtool and compatible devices. More information can be found at <a href="http://www.kfdtool.com" target="_blank">http://www.kfdtool.com</a>.</p>
+                	<p><a href="https://kfdtool.com/store" target="_blank">KFDtool</a>, <a href="https://store.omahacommunicationsys.com" target="_blank">KFDshield</a> and <a href="https://store.w3axl.com/products/kfdmicro-compact-keyloader" target="_blank">KFDMirco</a> hardware devices are fully supported by KFDweb</p>
 					<div id="demoVideo" data-role="collapsible">
-						<h4>Quick Demo Video</h4>
+						<h4>Demo Video</h4>
 						<video controls width="694">
 							<source src="KFDweb_demo_final.mp4" type="video/mp4">
 						</video>
@@ -187,6 +188,7 @@
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Manage Groups</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Create Key Group</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Edit Key Group</button>
+						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Container: Regenerate Keys</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Export Key Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Reset Key Container</button>
 						<button class="ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-star">Radio: View Key Information</button>
@@ -328,8 +330,10 @@
                 	</div>
             	</div>
             	<div id="loadKeyMultiple" class="menu_divs" style="display:none;">
-                	<h3>Load Multiple Keys</h3>
-					<button id="buttonLoadMultipleKeys" class="ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfdX">Load Keys to Radio</button>
+                	<h3 class="lmk">Load Multiple Keys</h3>
+					<h3 class="rgk" style="display:none;">Regenerate Keys</h3>
+					<button id="buttonLoadMultipleKeys" class="lmk ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfdX">Load Keys to Radio</button>
+					<button id="buttonRegenerateKeys" style="display:none;" class="rgk ui-btn ui-corner-all ui-shadow ui-btn-inline button-kfdX">Regenerate Selected Keys</button>
 					<div class="ui-grid-a">
 						<div class="ui-block-a" style="border-collapse:separate;padding:0px 5px;">
 							<fieldset id="addMultipleKeyList" data-role="controlgroup" data-filter="true" data-filter-placeholder="Filter keys..." data-mini="false">
@@ -341,7 +345,7 @@
 						</div>
 					</div>
             	</div>
-            	<div id="eraseKeySingle" class="menu_divs" style="display:none;">
+				<div id="eraseKeySingle" class="menu_divs" style="display:none;">
                 	<h3>Erase Single Key</h3>
                 	<div class="ui-field-contain" id="hexDecSlider">
                     	<select id="loadKeySingle_HexDec" data-role="slider" data-mini="true">
@@ -594,6 +598,18 @@
 										<p>Succeeded</p>
 									</li>
 								</ul>
+							</div>
+						</div>
+					</div>
+            	</div>
+				<div data-role="popup" id="popupRegenerateResults">
+					<div id="regenerateResults" style="width:220px;">
+						<div class="ui-corner-all custom-corners">
+							<div class="ui-bar ui-bar-a">
+								<h3>Regenerate Results</h3>
+							</div>
+							<div class="ui-body ui-body-a">
+								<ul id="regenerateResultList" data-role="listview" data-inset="true"></ul>
 							</div>
 						</div>
 					</div>

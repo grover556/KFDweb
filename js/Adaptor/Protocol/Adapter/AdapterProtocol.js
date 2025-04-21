@@ -54,6 +54,18 @@ var FeatureAvailableSendBytes = false;
 var FeatureAvailableSetTransferSpeed = false;
 var FeatureAvailableSendKeySignatureAndReadyReq = false;
 
+/*
+SendByte time (ms) for standard payload
+KFDtool     2599, 2594, 2568
+KFDShield	2362, 2363, 2376
+KFDMicro	3397, 3187, 3214
+
+SendBytes time (ms) for standard payload
+KFDtool     N/A
+KFDShield	872, 875, 889
+KFDMicro	903, 895, 882
+*/
+
 
 class AdapterProtocol {
     //Lower = new SerialProtocol();
@@ -79,7 +91,7 @@ class AdapterProtocol {
         cmd.push(READ_AP_VER);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
 
         let rsp = await ReadPacketFromPacketBuffer();
 
@@ -120,7 +132,7 @@ class AdapterProtocol {
         cmd.push(READ_FW_VER);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
 
@@ -161,7 +173,7 @@ class AdapterProtocol {
         cmd.push(READ_UNIQUE_ID);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -204,7 +216,7 @@ class AdapterProtocol {
         cmd.push(READ_MODEL_ID);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -239,7 +251,7 @@ class AdapterProtocol {
         cmd.push(READ_HW_REV);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -276,7 +288,7 @@ class AdapterProtocol {
         cmd.push(READ_SER_NUM);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -329,7 +341,7 @@ class AdapterProtocol {
         cmd.push(hwRevMin);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -360,7 +372,7 @@ class AdapterProtocol {
         cmd.push(WRITE_DEFAULT_TRANSFER_SPEED);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -392,7 +404,7 @@ class AdapterProtocol {
         cmd.push(kilobaud);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -424,7 +436,7 @@ class AdapterProtocol {
         cmd.push(kilobaud);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -451,7 +463,7 @@ class AdapterProtocol {
         cmd.push(CMD_ENTER_BSL_MODE);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -478,7 +490,7 @@ class AdapterProtocol {
         cmd.push(CMD_RESET);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
@@ -505,7 +517,7 @@ class AdapterProtocol {
         cmd.push(CMD_SELF_TEST);
         
         await SendSerial(cmd);
-        await new Promise(resolve => setTimeout(resolve, 5));
+        await new Promise(resolve => setTimeout(resolve, 15));
         
         let rsp = await ReadPacketFromPacketBuffer();
         
