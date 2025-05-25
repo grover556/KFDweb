@@ -61,19 +61,21 @@ class KmmFrame {
         //console.log("frame", BCTS(frame).join("-"));
         return frame;
     }
-    ToBytesWithPreamble(mfid) {
+    ToBytesWithPreamble(mfid, key) {
         // TODO add encryption, currently hardcoded to clear
 
         let data = [];
+        let frame = this.ToBytes();
+        console.log(frame);
 
-        data.push(0x00); // mi // version
+        data.push(0x00); // version
         
         data.push(mfid); // mfid
         
-        data.push(0x80); // mi // algid
+        data.push(0x80); // algid
 
-        data.push(0x00); // mi // key id
-        data.push(0x00); // mi // key id
+        data.push(0x00); // key id
+        data.push(0x00); // key id
 
         data.push(0x00); // mi
         data.push(0x00); // mi
@@ -85,8 +87,31 @@ class KmmFrame {
         data.push(0x00); // mi
         data.push(0x00); // mi
 
-        data = data.concat(this.ToBytes());
+        if (key !== undefined) {
+            data[2] = key.AlgorithmId;
+            data[3] = key.Id >>> 8;
+            data[4] = key.Id & 0xFF;
 
+            data[4] = parseInt(key.MI.substring(0, 2), 16);
+            data[5] = parseInt(key.MI.substring(2, 4), 16);
+            data[6] = parseInt(key.MI.substring(4, 6), 16);
+            data[7] = parseInt(key.MI.substring(6, 8), 16);
+            data[8] = parseInt(key.MI.substring(8, 10), 16);
+            data[9] = parseInt(key.MI.substring(10, 12), 16);
+            data[10] = parseInt(key.MI.substring(12, 14), 16);
+            data[11] = parseInt(key.MI.substring(14, 16), 16);
+            data[12] = parseInt(key.MI.substring(16, 18), 16);
+
+            if (key.Id != 0x80) {
+                // Lookup the key in container from AlgId/ID and encrypt frame
+                
+            }
+        }
+
+        // It was just this before I had the key !== undefined logic
+        //data = data.concat(this.ToBytes());
+        data = data.concat(frame);
+        
         return data;
     }
     Parse(mfid, contents) {
@@ -244,6 +269,12 @@ class KmmFrame {
             kmmBody.Parse(messageBody);
             this.KmmBody = kmmBody;
         }
+        else if (messageId == MessageId.CapabilitiesResponse) {
+            console.log("MessageId = CapabilitiesResponse");
+            let kmmBody = new CapabilitiesResponse();
+            kmmBody.Parse(messageBody);
+            this.KmmBody = kmmBody;
+        }
         else if (messageId == MessageId.SessionControl) {
             console.log("MessageId = SessionControl");
             if (messageBody.length > 0) {
@@ -277,23 +308,42 @@ class KmmFrame {
     }
     ParseWithPreamble(contents) {
         // TODO bounds check
-
+        
         let version = contents[0];
 
         if (version != 0x00) {
-            throw "unknown preamble version";
+            throw `unknown preamble version: 0x${version}, expected 0x00`;
         }
 
         let mfid = contents[1];
 
-        // TODO algid
+        let key = {};
 
-        // TODO keyid
+        // algid
+        key.AlgorithmId = contents[2];
+
+        // keyid
+        key.Id |= contents[3] << 8;
+        key.Id |= contents[4];
 
         // TODO mi
+        key.MI |= contents[5] << 8;
+        key.MI |= contents[6];
+        key.MI |= contents[7] << 8;
+        key.MI |= contents[8];
+        key.MI |= contents[9] << 8;
+        key.MI |= contents[10];
+        key.MI |= contents[11] << 8;
+        key.MI |= contents[12];
+        key.MI |= contents[13] << 8;
 
         let frame = contents.slice(14);
 
-        this.parse(mfid, frame);
+        if (key.Id != 0x80) {
+            // Lookup the key in container from AlgId/ID and decrypt frame
+
+        }
+
+        this.Parse(mfid, frame);
     }
 }

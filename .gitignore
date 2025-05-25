@@ -4,4 +4,10 @@ js/jquery-1.11.1.min.js
 js/jquery.mobile-1.4.5.min.js
 js/pako.min.js
 js/serial-1.0.13.js
+js/KFDweb_DLIbridge.js
+js/P25/Encryption
+js/P25/Kmm/ModifyKeysetAttributesCommand.js
+js/P25/Kmm/ModifyKeysetAttributesResponse.js
+js/P25/Kmm/SetDateTimeCommand.js
 KFDtool_firmware_AP_v1_1_1.zip
+**/.DS_Store

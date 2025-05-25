@@ -4,20 +4,26 @@ class ManualRekeyApplication {
     WithPreamble;
     Mfid;
     DeviceProtocol;
-    constructor(protocol, motVariant) {
+    Key = {
+        AlgorithmId: 0x80,
+        Id: 0x0000,
+        MI: 0x000000000000000000
+    };
+    constructor(protocol, motVariant, key) {
+        if (key !== undefined) {
+            this.Key = key;
+        }
         if (protocol instanceof AdapterProtocol) {
             this.WithPreamble = false;
             this.Mfid = 0x00;
             this.DeviceProtocol = new ThreeWireProtocol();
         }
-        
-        /*
-        else if (protocol instanceof UdpProtocol) {
+        else if (protocol instanceof BridgeProtocol) {
             this.WithPreamble = true;
             this.Mfid = motVariant ? 0x90:0x00;
-            console.error("DLI not implemented");
+            this.DeviceProtocol = new DataLinkIndependentProtocol(protocol, motVariant, this.Key);
         }
-        */
+        console.log(this);
     }
     async Begin() {
         await this.DeviceProtocol.SendKeySignature();
@@ -25,13 +31,14 @@ class ManualRekeyApplication {
     }
     async TxRxKmm(commandKmmBody) {
         let commandKmmFrame = new KmmFrame(commandKmmBody);
-        console.log("MRA.TxRxKmm commandKmmFrame", commandKmmFrame);
+        console.warn("MRA.TxRxKmm commandKmmFrame", commandKmmFrame);
         let toRadio = this.WithPreamble ? commandKmmFrame.ToBytesWithPreamble(this.Mfid) : commandKmmFrame.ToBytes();
-        console.log("MRA.TxRxKmm toRadio", BCTS(toRadio).join("-"));
+        console.warn(commandKmmFrame);
+        console.warn("MRA.TxRxKmm toRadio", BCTS(toRadio).join("-"));
         let fromRadio = await this.DeviceProtocol.PerformKmmTransfer(toRadio);
-        console.log("MRA.TxRxKmm fromRadio", BCTS(fromRadio).join("-"));
+        console.warn("MRA.TxRxKmm fromRadio", BCTS(fromRadio).join("-"));
         let responseKmmFrame = new KmmFrame(this.WithPreamble, fromRadio);
-        console.log("MRA.TxRxKmm responseKmmFrame", responseKmmFrame);
+        console.warn("MRA.TxRxKmm responseKmmFrame", responseKmmFrame);
         //return responseKmmFrame.KmmBody;
         return responseKmmFrame;
     }
@@ -944,5 +951,67 @@ console.log(res);
     }
     async ViewActiveSuidInfo() {
         throw "NotImplementedException";
+    }
+    async SetDateTime(activeDatetime) {
+        //throw "NotImplementedException";
+        let result = "";
+        await this.Begin();
+
+        try {
+            let commandKmmBody = new SetDateTimeCommand();
+            cmdKmmBody.KeysetActiveDateTimeISO = activeDatetime;
+            await this.TxRxKmm(commandKmmBody);
+        }
+        catch {
+            await this.End();
+            throw "";
+        }
+        await this.End();
+        return result;
+    }
+    async ModifyKeysetAttributes(keysets) {
+        throw "NotImplementedException";
+        for (var i=0;i<keysets.length;i++) {
+            let keyset = new KeysetItem();
+            keyset.KeysetId = keysets[i].ID;
+            if (keysets[i]) {
+                keyset.KeysetType = keysets[i].KeysetType;
+                keyset.ActivationDateTime = keysets[i].ActivationDateTime;
+            }
+            console.log(keyItem);
+            modifyKeyCommand.KeyItems.push(keyItem);
+        }
+    }
+    async GetCapabilities() {
+        let result = {};
+        await this.Begin();
+
+        try {
+            let commandKmmBody = new CapabilitiesCommand();
+
+            let responseKmmBody = await this.TxRxKmm(commandKmmBody);
+            console.log(responseKmmBody.KmmBody);
+            if (responseKmmBody.KmmBody instanceof CapabilitiesResponse) {
+                result.Algorithms = responseKmmBody.KmmBody.Algorithms;
+                result.OptionalServices = responseKmmBody.KmmBody.OptionalServices;
+                result.MessageIds = responseKmmBody.KmmBody.MessageIds;
+            }
+            else if (responseKmmBody.KmmBody instanceof NegativeAcknowledgment) {
+                let kmm = responseKmmBody.KmmBody;
+    
+                let statusDescr = OperationStatusExtensions.ToStatusString(kmm.Status);
+                let statusReason = OperationStatusExtensions.ToReasonString(kmm.Status);
+                throw "received negative acknowledgment status: " + statusDescr + ", " + statusReason;
+            }
+            else {
+                throw "unexpected kmm";
+            }
+        }
+        catch {
+            await this.End();
+            throw "";
+        }
+        await this.End();
+        return result;
     }
 }

@@ -32,11 +32,19 @@ const filterKfdTool = {
     usbProductId: 0x0A7C
 };
 const filterKfdAvr = {
-    usbVendorId: 0x2341
+    usbVendorId: 0x2341,
+    usbProductId: 0x0043
 };
 const filterKfdMicro = {
-    //usbVendorId: 0x2341
-    usbVendorId: 0x0403
+    usbVendorId: 0x0403,
+    usbProductId: 0x6015
+};
+const filterKfdNano = {
+
+};
+const filterKfdPico = {
+    usbVendorId: 0x2341,
+    usbProductId: 0x8037
 };
 
 let serialModelId;
@@ -69,10 +77,11 @@ let keepReading = true;
 
 async function connectSerial() {
     console.log("connectSerial()");
-    connectionMethod = "ws";
+    connectionMethod = "webserial";
     
     try {
-        port = await navigator.serial.requestPort({filters: [filterKfdTool, filterKfdAvr, filterKfdMicro]});
+        //port = await navigator.serial.requestPort({filters: [filterKfdTool, filterKfdAvr, filterKfdMicro, filterKfdPico]});
+        port = await navigator.serial.requestPort({filters: []});
         let portInfo = port.getInfo();
         if (portInfo.usbVendorId == filterKfdTool.usbVendorId) {
             serialModelId = "KFD100";
@@ -82,6 +91,9 @@ async function connectSerial() {
         }
         else if (portInfo.usbVendorId == filterKfdMicro.usbVendorId) {
             serialModelId = "KFDMicro";
+        }
+        else if (portInfo.usbVendorId == filterKfdPico.usbVendorId) {
+            serialModelId = "KFDPico";
         }
         else {
             alert("Unsupported device type - KFDweb only supports KFDtool, KFD-AVR, and KFDMicro devices");
@@ -95,13 +107,18 @@ async function connectSerial() {
         });
         port.addEventListener("disconnect", (event) => {
             // Device has been disconnected
+            DisconnectDevice();
+
+            /*
             try {
+                console.log(port);
                 port.close();
             }
             catch (error) {
                 console.error(error);
             }
             DisconnectDevice();
+            */
             
         });
 
@@ -115,10 +132,164 @@ async function connectSerial() {
     }
 }
 
+async function connectCdcAcm() {
+    try {
+
+    }
+    catch(error) {
+        console.error("Error", error);
+    }
+}
+
 async function connectPolyfill() {
     console.log("connectPolyfill()");
-    connectionMethod = "poly";
+    connectionMethod = "webusb";
+
+    const sps = {
+        baudrate: serialPortSettings.baudRate,
+        parity: serialPortSettings.parity,
+        bits: serialPortSettings.dataBits,
+        stop: serialPortSettings.stopBits,
+        overridePortSettings: true,
+        deviceFilters: [
+            { vendorId: filterKfdTool.usbVendorId, productId: filterKfdTool.usbProductId },
+            { vendorId: filterKfdAvr.usbVendorId, productId: filterKfdAvr.usbProductId },
+            { vendorId: filterKfdMicro.usbVendorId, productId: filterKfdMicro.usbProductId },
+            { vendorId: filterKfdPico.usbVendorId, productId: filterKfdPico.usbProductId }
+        ]
+    };
+    
+    let device = new WebUSBSerialDevice(sps);
+
     try {
+        polyPort = await device.requestNewPort();
+        if (polyPort.device.vendorId == filterKfdTool.usbVendorId) {
+            serialModelId = "KFD100";
+        }
+        else if (polyPort.device.vendorId == filterKfdAvr.usbVendorId) {
+            serialModelId = "KFD-AVR";
+        }
+        else if (polyPort.device.vendorId == filterKfdMicro.usbVendorId) {
+            serialModelId = "KFDMicro";
+        }
+        else if (polyPort.device.vendorId == filterKfdPico.usbVendorId) {
+            serialModelId = "KFDPico";
+        }
+        else {
+            alert("Unsupported device type - KFDweb only supports KFDtool, KFD-AVR, and KFDMicro devices");
+            return;
+        }
+
+        try {
+            await polyPort.connect((data) => {
+                //console.log(data);
+                //console.log(BCTS(data).join("-"));
+                OnDataReceived(Array.from(data));
+                setTimeout(() => { polyPort.send(data); }, 10);
+            }, (error) => {
+                console.warn("Error receiving data: " + error);
+            });
+        }
+        catch(error) {
+            console.warn("Error connecting to port: " + error.error)
+            console.warn(error);
+        }
+    }
+    catch(error) {
+        console.error("Error", error);
+    }
+
+    
+    /*
+    let frameData = CreateFrameKFDAVR([0x11,0x01]);
+    frameData = CreateFrameKFDAVR([0x11,0x03]);
+    //console.log(frameData);
+    let outData = new Uint8Array(frameData);
+    let test = polyPort.send(outData);
+    //console.log(test);
+    */
+
+
+
+
+
+    
+
+    return;
+
+    try {
+        port = await navigator.usb.requestDevice({filters: [filterKfdTool, filterKfdAvr, filterKfdMicro]});
+        console.log(port);
+        if (port.vendorId == filterKfdTool.usbVendorId) {
+            serialModelId = "KFD100";
+        }
+        else if (port.vendorId == filterKfdAvr.usbVendorId) {
+            serialModelId = "KFD-AVR";
+        }
+        else if (port.vendorId == filterKfdMicro.usbVendorId) {
+            serialModelId = "KFDMicro";
+        }
+        else {
+            alert("Unsupported device type - KFDweb only supports KFDtool, KFD-AVR, and KFDMicro devices");
+            return;
+        }
+
+        //https://github.com/google/web-serial-polyfill/issues/8
+        //https://github.com/webusb/arduino
+        //https://github.com/Shaped/webusb-ftdi
+        await port.open(serialPortSettings);
+        await port.selectConfiguration(1);
+        port.configuration.interfaces.forEach(element => {
+            element.alternates.forEach(elementalt => {
+                if (elementalt.interfaceClass==0xff) {
+                    this.interfaceNumber_ = element.interfaceNumber;
+                    elementalt.endpoints.forEach(elementendpoint => {
+                        if (elementendpoint.direction == "out") {
+                            port.endpointOut_ = elementendpoint.endpointNumber;
+                        }
+                        if (elementendpoint.direction=="in") {
+                            port.endpointIn_ =elementendpoint.endpointNumber;
+                        }
+                    });
+                }
+            });
+        });
+        //console.log(port);
+
+        //
+        //await port.open();
+        //
+        await port.claimInterface(0);
+        let frameData = CreateFrameKFDAVR([17,1]);
+        let outData = new Uint8Array(frameData);
+        console.log(outData);
+        let to = await port.transferOut(port.endpointOut_, outData);
+        let inData = await port.transferIn(port.endpointIn_, 64);
+        console.log(inData);
+        console.log(Array.from(inData.data));
+
+        /*
+        await port.transferOut(
+            2,
+            new Uint8Array(
+                new TextEncoder().encode("test value\n")
+            ),
+        );
+        await device.controlTransferOut({
+            requestType: "class",
+            recipient: "interface",
+            request: 0x22,
+            value: 0x01,
+            index: 0x02
+        });
+        */
+
+        //await port.close();
+        connected = true;
+
+        //reader = port.readable.getReader();
+
+        return;
         port = await exports.serial.requestPort({filters: [filterKfdTool, filterKfdAvr, filterKfdMicro]});
         let portInfo = port.getInfo();
 
@@ -149,7 +320,13 @@ async function connectPolyfill() {
 
 async function DisconnectDevice() {
     console.log("disconnecting device");
-    await port.close();
+    if (port) {
+        if (port.connected) await port.close();
+    }
+    else if (usbDevice) {
+        if (usbDevice.opened) await usbDevice.close();
+    }
+    
     connected = false;
     ShowDeviceDisconnected();
 }
@@ -212,26 +389,48 @@ async function SendSerial(data) {
     else if (serialModelId == "KFDMicro") {
         frameData = CreateFrameKFDAVR(data);
     }
-
+    else if (serialModelId == "KFDPico") {
+        frameData = CreateFrameKFDAVR(data);
+    }
+    
     let outData = new Uint8Array(frameData);
     
-    if (connectionMethod == "poly") {
-        //console.log("sending via polyfill");
-        polyWriter.ready.then(() => {
-            const myWritten = polyWriter.write(frameData);
-            //console.log("myWritten", myWritten);
-        });
-        return [];
-    }
-    else {
+    console.log(serialModelId, connectionMethod);
+    if (connectionMethod == "webserial") {
         const writer = port.writable.getWriter();
         writer.write(outData);
         writer.releaseLock();
     }
+    else if (connectionMethod == "webusb") {
+        //await port.send(outData);
+        console.log("usb mode:", usbMode);
+        //console.log(frameData, outData);
+        //await usbDevice.transferOut(4, outData);
+        //console.log(usbDevice);
+        //if (usbMode == "CDC-ACM") await port.send(outData);//await usbDevice.transferOut(4, outData);
+        if (usbMode == "CDC-ACM") await usbDevice.transferOut(usbDevice.endpointOut, outData);//4//2//usbDevice.endpointOut
+        else if (usbMode == "FTDI") await port.send(outData);
+    }
+}
+
+async function readCdcAsm() {
+    console.log("readCdcAsm");
+    while (usbDevice.opened) {
+        try {
+            while (true) {
+                const result = await usbDevice.transferIn(3, 64);
+                let uintArr = new Uint8Array(result.data.buffer);
+                OnDataReceived(Array.from(uintArr));
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+    }
 }
 
 async function readUntilClosed() {
-    while (port.readable && keepReading) {
+    while (port.connected && port.readable && keepReading) {
         try {
             while (true) {
                 const {value, done} = await reader.read();
@@ -248,9 +447,28 @@ async function readUntilClosed() {
             reader.releaseLock();
         }
     }
-    await DisconnectDevice();
+    //await DisconnectDevice();// disabled becuase it is handled by port.disconnect
 }
 
+/*
+async function SendAcm(data) {
+    frameData = CreateFrameKFDAVR(data);
+    let outData = new Uint8Array(frameData);
+    await dev.transferOut(this.endpointOut, outData);
+}
+
+async function readAcmUntilClosed() {
+    let readLoop = () => {
+        this.device.transferIn(this.endpointIn, 64).then(result => {
+            let value = new Uint8Array(result.data.buffer);
+            OnDataReceived(Array.from(value));
+            readLoop();
+        }, error => {
+            this.onReceiveError(error);
+        });
+    }
+}
+*/
 async function Send(data) {
     if (!connected) {
         alert("No device is connected");
@@ -280,7 +498,7 @@ async function Send(data) {
 
     console.log("outData:", BCTS(frameData).join("-"));
     
-    if (connectionMethod == "poly") {
+    if (connectionMethod == "webusb") {
         console.log("sending via polyfill");
         polyWriter.ready.then(() => {
             //let inputArrayBuffer = str2ab(myData2);
@@ -465,7 +683,8 @@ async function DecodePacketKFD100(data) {
                 for (var i=0; i<frameBuffer.length; i++) {
                     if (frameBuffer[i] == KFD100_const.ESC) {
                         // this won't work if more than one are removed??
-                        frameBuffer = frameBuffer.splice(i + 1);
+                        //frameBuffer = frameBuffer.splice(i + 1);
+                        frameBuffer = frameBuffer.slice(0, i).concat(frameBuffer.slice(i + 1));
                         if (i == frameBuffer.length) {
                             console.error("escape character at end");
                         }
@@ -512,7 +731,8 @@ async function DecodePacketKFDAVR(data) {
                 for (var i=0; i<frameBuffer.length; i++) {
                     if (frameBuffer[i] == KFDAVR_const.ESC) {
                         // this won't work if more than one are removed??
-                        frameBuffer = frameBuffer.splice(i + 1);
+                        //frameBuffer = frameBuffer.splice(i + 1);
+                        frameBuffer = frameBuffer.slice(0, i).concat(frameBuffer.slice(i + 1));
                         if (i == frameBuffer.length) {
                             console.error("escape character at end");
                         }
@@ -544,7 +764,7 @@ async function DecodePacketKFDAVR(data) {
             if (foundStart) {
                 frameBuffer.push(b);
             }
-           //frameBuffer.push(b);
+            //frameBuffer.push(b);
         }
         byteCounter++;
     });
@@ -569,6 +789,9 @@ async function OnDataReceived(data) {
         await DecodePacketKFDAVR(data);
     }
     else if (serialModelId == "KFDMicro") {
+        await DecodePacketKFDAVR(data);
+    }
+    else if (serialModelId == "KFDPico") {
         await DecodePacketKFDAVR(data);
     }
 
@@ -629,6 +852,9 @@ async function CheckPacketBufferUntilPopulated() {
             await new Promise(resolve => setTimeout(resolve, 10));
         }
         else if (serialModelId == "KFDMicro") {
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
+        else if (serialModelId == "KFDPico") {
             await new Promise(resolve => setTimeout(resolve, 10));
         }
         counter++;

@@ -45,9 +45,9 @@ class Mfid90SessionControlVer1 extends KmmBody {
         contents.push(this.IsSessionTypeIncluded ? 1 : 0);
 
         if (this.IsSessionTypeIncluded) {
-            contents.push(SessionType);
+            contents.push(this.SessionType);
         }
-        
+
         return contents;
     }
     Parse(contents) {

@@ -1,3 +1,17 @@
+html,
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+body {
+    display: flex;
+}
+.menu_divs {
+    padding: 10px;
+}
+
 #menuList li.ui-li-static {
     padding-top: 0;
     padding-bottom: 0;
@@ -17,10 +31,10 @@
     background-color: rgba(255,0,0,0.3);
 }
 .connection-status-disconnected {
-    background-color: rgba(255,0,0,0.3);
+    /* background color of indicator */
 }
 .connection-status-connected {
-    background-color: rgba(0,255,0,0.3);
+    /* background color of indicator */
 }
 .keyCheckbox-small {
     font-size: 12px;
@@ -80,11 +94,41 @@
 a+a.space-apart {
     margin-left: 10px;
 }
-a.keyError {
+.keyError {
     background-color: rgba(255,0,0,0.3) !important;
 }
 a.disabled {
     opacity: 0.5;
     pointer-events: none;
     cursor: default;
+}
+input.hexdec-input, #loadKeySingle_key{
+    font-family: monospace;
+}
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #333;
+}
+li a i, button i {
+    padding-right: 10px;
+}
+.sidebar-sticky h6:not(:first-child) {
+    padding-top: 10px;
+}
+.spinner-wrapper {
+    background-color: rgba(128, 128, 128, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+}
+.spinner-border {
+    height: 60px;
+    width: 60px;
 }
